@@ -1,0 +1,26 @@
+{
+  "id": "cassinooo",
+  "title": "Cassinooo",
+  "description": "Mesa de cassino compartilhada para Foundry VTT. Primeira versão: Blackjack com 6 assentos definidos pelo GM.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13.348",
+    "maximum": "13"
+  },
+  "authors": [
+    {
+      "name": "Hideki Morooka"
+    }
+  ],
+  "url": "https://github.com/baenreiiryn/cassinooo",
+  "manifest": "https://raw.githubusercontent.com/baenreiiryn/cassinooo/main/module.json",
+  "download": "https://github.com/baenreiiryn/cassinooo/archive/refs/heads/main.zip",
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/cassinooo.css"
+  ],
+  "socket": true
+}
