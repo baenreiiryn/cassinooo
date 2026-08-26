@@ -1,0 +1,270 @@
+/* Cassinooo 0.6.0 — Blackjack table art layout */
+.cassinooo-blackjack-table .window-content {
+  background: #140706;
+}
+
+.cassinooo-blackjack-table .cassinooo-board {
+  overflow: auto;
+  padding-bottom: 12px;
+}
+
+.cassinooo-blackjack-table .cassinooo-felt {
+  width: 1040px;
+  min-width: 1040px;
+  height: 693px;
+  border: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(20, 4, 3, .05), rgba(20, 4, 3, .16)),
+    url("../assets/blackjack-table-bg.jpg") center center / cover no-repeat;
+  box-shadow:
+    inset 0 0 0 2px rgba(221, 153, 76, .42),
+    0 14px 34px rgba(0,0,0,.45);
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-zone {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  transform: none;
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.cassinooo-blackjack-table .cassinooo-role-label {
+  position: absolute;
+  left: 50%;
+  top: 44.5%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(22, 5, 4, .72);
+  border: 1px solid rgba(224, 167, 89, .45);
+  text-shadow: 0 1px 3px #000;
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-zone > strong {
+  position: absolute;
+  left: 50%;
+  top: 47.5%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(22, 5, 4, .72);
+  text-shadow: 0 1px 3px #000;
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-tabletop {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.cassinooo-blackjack-table .cassinooo-deck-wrap {
+  position: absolute;
+  left: 69.2%;
+  top: 49.8%;
+  width: 76px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.cassinooo-blackjack-table .cassinooo-deck {
+  width: 54px;
+  height: 74px;
+}
+
+.cassinooo-blackjack-table .cassinooo-deck-card,
+.cassinooo-blackjack-table .cassinooo-flying-card,
+.cassinooo-blackjack-table .cassinooo-playing-card.hidden-card {
+  background-image: url("../assets/blackjack-card-back-balor.svg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-color: #c99151;
+}
+
+.cassinooo-blackjack-table .cassinooo-deck-card {
+  width: 42px;
+  height: 59px;
+  background-color: #2b0907;
+}
+
+.cassinooo-blackjack-table .cassinooo-deck-card.back-3 { left: 0; top: 8px; }
+.cassinooo-blackjack-table .cassinooo-deck-card.back-2 { left: 4px; top: 4px; }
+.cassinooo-blackjack-table .cassinooo-deck-card.back-1 { left: 8px; top: 0; }
+
+.cassinooo-blackjack-table .cassinooo-deck-wrap small {
+  margin-top: 2px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  background: rgba(20,5,4,.68);
+  color: #f0d6a1;
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-tabletop > div:last-child {
+  position: absolute;
+  left: 50%;
+  top: 52.2%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  pointer-events: auto;
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-hand {
+  min-height: 64px;
+  justify-content: center;
+}
+
+.cassinooo-blackjack-table .cassinooo-dealer-tabletop > div:last-child > .cassinooo-score {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: rgba(22,5,4,.76);
+  text-shadow: 0 1px 3px #000;
+}
+
+.cassinooo-blackjack-table .cassinooo-table-marking {
+  left: 50%;
+  top: 58.5%;
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(44, 5, 5, .44);
+  color: rgba(248, 205, 134, .86);
+  text-shadow: 0 1px 3px #000;
+}
+
+.cassinooo-blackjack-table .cassinooo-table-marking strong {
+  font-size: 1rem;
+}
+
+.cassinooo-blackjack-table .cassinooo-table-marking span {
+  font-size: .65rem;
+}
+
+/* Six player stations follow the gold betting circles painted into the artwork. */
+.cassinooo-blackjack-table .cassinooo-seat {
+  width: 168px;
+  min-height: 126px;
+  padding: 7px;
+  border-radius: 12px;
+  background: rgba(20, 6, 6, .80);
+  border: 1px solid rgba(214, 157, 83, .58);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.38);
+  transform: translate(-50%, -50%);
+}
+
+.cassinooo-blackjack-table .cassinooo-seat.seat-side-left {
+  left: 18.2%;
+  top: 66.5%;
+}
+.cassinooo-blackjack-table .cassinooo-seat.seat-diagonal-left {
+  left: 27.2%;
+  top: 73.4%;
+}
+.cassinooo-blackjack-table .cassinooo-seat.seat-bottom-left {
+  left: 39.1%;
+  top: 79%;
+}
+.cassinooo-blackjack-table .cassinooo-seat.seat-bottom-right {
+  left: 60.2%;
+  right: auto;
+  bottom: auto;
+  top: 79%;
+}
+.cassinooo-blackjack-table .cassinooo-seat.seat-diagonal-right {
+  left: 72.8%;
+  right: auto;
+  top: 73.4%;
+}
+.cassinooo-blackjack-table .cassinooo-seat.seat-side-right {
+  left: 81.8%;
+  right: auto;
+  top: 66.5%;
+}
+
+.cassinooo-blackjack-table .cassinooo-seat.active-turn {
+  border-color: #ffd66d;
+  transform: translate(-50%, -50%) scale(1.035);
+  box-shadow:
+    0 0 0 2px rgba(255, 214, 109, .28),
+    0 0 26px rgba(255, 184, 62, .92),
+    0 8px 16px rgba(0,0,0,.42);
+}
+
+@keyframes cassinooo-turn-pulse-v060 {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(255,214,109,.24), 0 0 16px rgba(255,184,62,.58), 0 8px 16px rgba(0,0,0,.42);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255,214,109,.48), 0 0 34px rgba(255,184,62,1), 0 8px 16px rgba(0,0,0,.42);
+  }
+}
+.cassinooo-blackjack-table .cassinooo-seat.active-turn {
+  animation: cassinooo-turn-pulse-v060 1.35s ease-in-out infinite;
+}
+
+.cassinooo-blackjack-table .cassinooo-seat-number {
+  margin-bottom: 3px;
+  font-size: .62rem;
+}
+.cassinooo-blackjack-table .cassinooo-seat select {
+  min-height: 25px;
+  margin-bottom: 4px;
+  font-size: .72rem;
+}
+.cassinooo-blackjack-table .cassinooo-wager-field {
+  margin: 3px 0 2px;
+  gap: 4px;
+}
+.cassinooo-blackjack-table .cassinooo-wager-field span {
+  font-size: .62rem;
+}
+.cassinooo-blackjack-table .cassinooo-wager-field input {
+  height: 24px;
+  font-size: .72rem;
+}
+.cassinooo-blackjack-table .cassinooo-hand {
+  min-height: 46px;
+  gap: 2px;
+}
+.cassinooo-blackjack-table .cassinooo-playing-card {
+  width: 31px;
+  height: 44px;
+  font-size: .78rem;
+}
+.cassinooo-blackjack-table .cassinooo-flying-card {
+  width: 31px;
+  height: 44px;
+  border-width: 2px;
+  background-color: #2b0907;
+}
+
+.cassinooo-blackjack-table .cassinooo-payout-board {
+  right: 1.5%;
+  bottom: 1.7%;
+  width: 220px;
+  max-height: 150px;
+  overflow: auto;
+  background: rgba(19, 5, 4, .88);
+  border-color: rgba(214, 157, 83, .62);
+  box-shadow: 0 8px 20px rgba(0,0,0,.42);
+}
+
+.cassinooo-blackjack-table .cassinooo-payout-board h3 {
+  font-size: .75rem;
+}
+.cassinooo-blackjack-table .cassinooo-payout-board table {
+  font-size: .66rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-blackjack-table .cassinooo-seat.active-turn {
+    animation: none;
+  }
+}
