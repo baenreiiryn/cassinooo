@@ -1,0 +1,83 @@
+<section class="cassinooo-table-shell">
+  <header class="cassinooo-table-header">
+    <div>
+      <h2>Mesa de Blackjack</h2>
+      <p>6 lugares compartilhados entre todos os jogadores conectados.</p>
+    </div>
+    {{#if isGM}}
+      <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do GM</span>
+    {{/if}}
+  </header>
+
+  <div class="cassinooo-seat-row cassinooo-seat-row-top">
+    {{#each seats}}
+      {{#if (lt index 3)}}
+        <article class="cassinooo-seat">
+          <span class="cassinooo-seat-number">Lugar {{number}}</span>
+          {{#if ../isGM}}
+            <select data-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
+              <option value="">— Lugar vazio —</option>
+              {{#each options}}
+                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
+              {{/each}}
+            </select>
+          {{else}}
+            <strong>{{occupantName}}</strong>
+            {{#if occupied}}
+              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">
+                {{#if occupantActive}}Online{{else}}Offline{{/if}}
+              </small>
+            {{/if}}
+          {{/if}}
+          <div class="cassinooo-card-slot">Cartas</div>
+        </article>
+      {{/if}}
+    {{/each}}
+  </div>
+
+  <div class="cassinooo-felt">
+    <div class="cassinooo-dealer">
+      <span>DEALER</span>
+      <div class="cassinooo-dealer-cards">
+        <div class="cassinooo-playing-card placeholder">?</div>
+        <div class="cassinooo-playing-card placeholder">?</div>
+      </div>
+    </div>
+
+    <div class="cassinooo-table-marking">
+      <strong>BLACKJACK</strong>
+      <span>Paga 3 para 2</span>
+    </div>
+  </div>
+
+  <div class="cassinooo-seat-row cassinooo-seat-row-bottom">
+    {{#each seats}}
+      {{#if (gte index 3)}}
+        <article class="cassinooo-seat">
+          <div class="cassinooo-card-slot">Cartas</div>
+          <span class="cassinooo-seat-number">Lugar {{number}}</span>
+          {{#if ../isGM}}
+            <select data-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
+              <option value="">— Lugar vazio —</option>
+              {{#each options}}
+                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
+              {{/each}}
+            </select>
+          {{else}}
+            <strong>{{occupantName}}</strong>
+            {{#if occupied}}
+              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">
+                {{#if occupantActive}}Online{{else}}Offline{{/if}}
+              </small>
+            {{/if}}
+          {{/if}}
+        </article>
+      {{/if}}
+    {{/each}}
+  </div>
+
+  <footer class="cassinooo-table-footer">
+    <i class="fa-solid fa-circle-info"></i>
+    Nesta versão os assentos já são compartilhados. Distribuição de cartas e regras do Blackjack entram na próxima etapa.
+  </footer>
+</section>
