@@ -1,0 +1,207 @@
+.cassinooo-blackjack-table .window-content {
+  padding: 0;
+  overflow: auto;
+  background: #17130f;
+}
+
+.cassinooo-table-shell {
+  min-height: 100%;
+  padding: 18px;
+  color: #f5ead4;
+  background: radial-gradient(circle at 50% 42%, #2a241b 0%, #17130f 70%);
+  box-sizing: border-box;
+}
+
+.cassinooo-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.cassinooo-table-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.cassinooo-table-header p {
+  margin: 4px 0 0;
+  color: #c8bda9;
+}
+
+.cassinooo-gm-badge {
+  padding: 6px 10px;
+  border: 1px solid #a98745;
+  border-radius: 999px;
+  color: #ead29c;
+  white-space: nowrap;
+}
+
+.cassinooo-seat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cassinooo-seat {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #5c4d35;
+  border-radius: 10px;
+  background: rgba(24, 20, 15, 0.94);
+  text-align: center;
+}
+
+.cassinooo-seat-number {
+  display: block;
+  margin-bottom: 6px;
+  color: #d8bd80;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cassinooo-seat select {
+  width: 100%;
+  min-height: 32px;
+  margin-bottom: 8px;
+}
+
+.cassinooo-seat strong {
+  display: block;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cassinooo-status {
+  display: inline-block;
+  margin-bottom: 7px;
+  font-size: 0.72rem;
+}
+
+.cassinooo-status.online {
+  color: #9fd49f;
+}
+
+.cassinooo-status.offline {
+  color: #b8aa98;
+}
+
+.cassinooo-card-slot {
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgba(229, 213, 181, 0.3);
+  border-radius: 7px;
+  color: rgba(229, 213, 181, 0.45);
+  font-size: 0.75rem;
+}
+
+.cassinooo-seat-row-top .cassinooo-card-slot {
+  margin-top: 4px;
+}
+
+.cassinooo-seat-row-bottom .cassinooo-card-slot {
+  margin-bottom: 8px;
+}
+
+.cassinooo-felt {
+  position: relative;
+  min-height: 290px;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 10px solid #3c2819;
+  border-radius: 48% 48% 42% 42% / 36% 36% 44% 44%;
+  background: radial-gradient(circle at 50% 45%, #17693f 0%, #0e4e30 58%, #083923 100%);
+  box-shadow: inset 0 0 0 2px #8c6834, inset 0 0 40px rgba(0, 0, 0, 0.38);
+}
+
+.cassinooo-dealer {
+  padding-top: 28px;
+  text-align: center;
+  color: #ead29c;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.cassinooo-dealer-cards {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cassinooo-playing-card {
+  width: 54px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #eee7da;
+  color: #222;
+  font-size: 1.4rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+.cassinooo-playing-card.placeholder {
+  background: repeating-linear-gradient(45deg, #27211b, #27211b 6px, #4b3c2d 6px, #4b3c2d 12px);
+  color: #d8bd80;
+}
+
+.cassinooo-table-marking {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(239, 215, 162, 0.82);
+  text-align: center;
+}
+
+.cassinooo-table-marking strong {
+  font-size: 1.55rem;
+  letter-spacing: 0.14em;
+}
+
+.cassinooo-table-marking span {
+  margin-top: 3px;
+  font-size: 0.75rem;
+}
+
+.cassinooo-table-footer {
+  margin-top: 12px;
+  color: #bfb19c;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.cassinooo-journal-launcher {
+  width: 100%;
+  padding-top: 6px;
+}
+
+#cassinooo-open-blackjack {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .cassinooo-seat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cassinooo-felt {
+    min-height: 230px;
+    border-radius: 28px;
+  }
+
+  .cassinooo-table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
