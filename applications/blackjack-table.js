@@ -77,7 +77,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       };
     });
 
-    const hideHoleCard = state.phase === "players";
+    const hideHoleCard = state.phase === "players" || state.phase === "dealing";
     const dealerCards = (state.dealer?.cards ?? []).map((card, index) => cardView(card, hideHoleCard && index === 1));
     const visibleDealerScore = hideHoleCard && state.dealer?.cards?.length
       ? this._scoreVisibleDealerCard(state.dealer.cards[0])
@@ -97,7 +97,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       deckCount: state.deck?.length ?? 0,
       phase: state.phase,
       message: state.message,
-      roundActive: state.phase === "players" || state.phase === "dealer",
+      roundActive: ["dealing", "players", "dealer"].includes(state.phase),
       playerTurnActive: state.phase === "players" && Boolean(activeHand),
       activePlayerName: activeUser?.name ?? "",
       hasRound: state.phase !== "idle",
@@ -124,30 +124,26 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
 
     if (!game.user?.isGM) return;
 
-    this.element.querySelector("[data-start-round]")?.addEventListener("click", async () => {
-      await startRound();
-      await this.render({ force: true });
+    this.element.querySelector("[data-start-round]")?.addEventListener("click", () => {
+      void startRound();
     });
 
     this.element.querySelector("[data-reset-round]")?.addEventListener("click", async () => {
       await resetRound();
-      await this.render({ force: true });
     });
 
     this.element.querySelector("[data-give-card]")?.addEventListener("click", async () => {
       await gmGiveCard();
-      await this.render({ force: true });
     });
 
     this.element.querySelector("[data-pass-turn]")?.addEventListener("click", async () => {
       await gmPassTurn();
-      await this.render({ force: true });
     });
 
     for (const select of this.element.querySelectorAll("select[data-seat-index]")) {
       select.addEventListener("change", async (event) => {
         const current = getBlackjackState();
-        if (current.phase === "players" || current.phase === "dealer") {
+        if (["dealing", "players", "dealer"].includes(current.phase)) {
           ui.notifications?.warn("Encerre ou reinicie a rodada antes de trocar os jogadores de lugar.");
           await this.render({ force: true });
           return;
@@ -165,9 +161,18 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _animateDeal(animation) {
-    if (animation?.type !== "deal-to-seat") return;
+    if (!["deal-to-seat", "deal-to-dealer", "reveal-dealer-hole"].includes(animation?.type)) return;
+
+    if (animation.type === "reveal-dealer-hole") {
+      const hidden = this.element.querySelector(".cassinooo-dealer-hand .hidden-card");
+      hidden?.classList.add("revealing");
+      return;
+    }
+
     const deck = this.element.querySelector(".cassinooo-deck");
-    const target = this.element.querySelector(`.cassinooo-seat[data-seat-index="${animation.seatIndex}"] .cassinooo-hand`);
+    const target = animation.type === "deal-to-dealer"
+      ? this.element.querySelector(".cassinooo-dealer-hand")
+      : this.element.querySelector(`.cassinooo-seat[data-seat-index="${animation.seatIndex}"] .cassinooo-hand`);
     if (!deck || !target) return;
 
     const board = this.element.querySelector(".cassinooo-felt");
@@ -191,6 +196,6 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       flying.style.opacity = "0.98";
     });
 
-    window.setTimeout(() => flying.remove(), 520);
+    window.setTimeout(() => flying.remove(), 540);
   }
 }
