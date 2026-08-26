@@ -1,12 +1,6 @@
 import { CasinoSettings } from "../applications/casino-settings.js";
+import { BACKGROUND_SETTINGS } from "./backgrounds.js";
 import { MODULE_ID } from "./state.js";
-
-export const BACKGROUND_SETTINGS = {
-  blackjack: "blackjackBackground",
-  roulette: "rouletteBackground",
-  beholdem: "beholdemBackground",
-  dragonDice: "dragonDiceBackground"
-};
 
 export function registerModuleSettings() {
   for (const settingKey of Object.values(BACKGROUND_SETTINGS)) {
@@ -28,10 +22,4 @@ export function registerModuleSettings() {
     type: CasinoSettings,
     restricted: true
   });
-}
-
-export function getTableBackground(gameId) {
-  const key = BACKGROUND_SETTINGS[gameId];
-  if (!key) return "";
-  return game.settings.get(MODULE_ID, key) ?? "";
 }
