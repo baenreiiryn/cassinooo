@@ -1,5 +1,6 @@
 import { BlackjackTable } from "../applications/blackjack-table.js";
 import { MODULE_ID, SOCKET_NAME, registerSettings } from "./state.js";
+import { handleBlackjackSocket, registerBlackjackSetting } from "./blackjack.js";
 
 let blackjackTable = null;
 
@@ -8,22 +9,22 @@ function getBlackjackTable() {
   return blackjackTable;
 }
 
-function openBlackjackTable() {
+function openCasinoTable() {
   getBlackjackTable().render({ force: true });
 }
 
 function injectJournalButton(app, element) {
   if (!(element instanceof HTMLElement)) return;
-  if (element.querySelector("#cassinooo-open-blackjack")) return;
+  if (element.querySelector("#cassinooo-open-table")) return;
 
   const wrapper = document.createElement("div");
   wrapper.className = "cassinooo-journal-launcher";
 
   const button = document.createElement("button");
-  button.id = "cassinooo-open-blackjack";
+  button.id = "cassinooo-open-table";
   button.type = "button";
-  button.innerHTML = '<i class="fa-solid fa-club"></i> Blackjack';
-  button.addEventListener("click", openBlackjackTable);
+  button.innerHTML = '<i class="fa-solid fa-dice"></i> Mesa do Cassino';
+  button.addEventListener("click", openCasinoTable);
 
   wrapper.append(button);
 
@@ -35,11 +36,14 @@ function injectJournalButton(app, element) {
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Inicializando Cassinooo`);
   registerSettings();
+  registerBlackjackSetting();
 });
 
 Hooks.once("ready", () => {
   game.socket.on(SOCKET_NAME, async (message) => {
-    if (message?.type !== "seats-updated") return;
+    await handleBlackjackSocket(message);
+
+    if (!["seats-updated", "blackjack-updated"].includes(message?.type)) return;
     if (!blackjackTable?.rendered) return;
     await blackjackTable.render({ force: true });
   });
@@ -47,7 +51,6 @@ Hooks.once("ready", () => {
 
 Hooks.on("renderJournalDirectory", injectJournalButton);
 
-// Fallback para o ciclo ApplicationV2 do Foundry VTT v13.
 Hooks.on("renderApplicationV2", (app, element) => {
   if (app?.constructor?.name !== "JournalDirectory") return;
   injectJournalButton(app, element);
