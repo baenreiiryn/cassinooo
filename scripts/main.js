@@ -13,6 +13,11 @@ function openCasinoTable() {
   getBlackjackTable().render({ force: true });
 }
 
+async function refreshOpenTable() {
+  if (!blackjackTable?.rendered) return;
+  await blackjackTable.render({ force: true });
+}
+
 function injectJournalButton(app, element) {
   if (!(element instanceof HTMLElement)) return;
   if (element.querySelector("#cassinooo-open-table")) return;
@@ -44,11 +49,11 @@ Hooks.once("ready", () => {
     await handleBlackjackSocket(message);
 
     if (!["seats-updated", "blackjack-updated"].includes(message?.type)) return;
-    if (!blackjackTable?.rendered) return;
-    await blackjackTable.render({ force: true });
+    await refreshOpenTable();
   });
 });
 
+Hooks.on("cassinoooBlackjackUpdated", refreshOpenTable);
 Hooks.on("renderJournalDirectory", injectJournalButton);
 
 Hooks.on("renderApplicationV2", (app, element) => {
