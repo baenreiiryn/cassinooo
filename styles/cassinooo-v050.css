@@ -1,0 +1,116 @@
+.cassinooo-wager-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0 4px;
+  color: #e8cd91;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.cassinooo-wager-field input {
+  min-width: 0;
+  width: 100%;
+  height: 27px;
+  text-align: right;
+}
+
+.cassinooo-wager-field input:disabled {
+  opacity: 0.75;
+}
+
+.cassinooo-payout-board {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 250px;
+  padding: 9px;
+  border: 1px solid #d4b467;
+  border-radius: 9px;
+  background: rgba(18, 13, 9, 0.94);
+  box-shadow: 0 5px 18px rgba(0,0,0,.42);
+  z-index: 8;
+}
+
+.cassinooo-payout-board h3 {
+  margin: 0 0 6px;
+  color: #f0d99f;
+  font-size: .85rem;
+  text-align: center;
+}
+
+.cassinooo-payout-board table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .68rem;
+}
+
+.cassinooo-payout-board th,
+.cassinooo-payout-board td {
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(216,189,128,.18);
+  text-align: left;
+}
+
+.cassinooo-payout-board th:nth-child(2),
+.cassinooo-payout-board th:nth-child(3),
+.cassinooo-payout-board td:nth-child(2),
+.cassinooo-payout-board td:nth-child(3) {
+  text-align: right;
+}
+
+.cassinooo-payout-board .positive { color: #9fe0a4; font-weight: 800; }
+.cassinooo-payout-board .negative { color: #ef9b91; font-weight: 800; }
+
+.cassinooo-deck-card,
+.cassinooo-flying-card,
+.cassinooo-playing-card.hidden-card {
+  background-image: url("../assets/balor-card-back.svg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-color: #2d1010 !important;
+  color: transparent !important;
+}
+
+.cassinooo-playing-card.hidden-card {
+  border: 2px solid #d9ae58;
+}
+
+.cassinooo-journal-launcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  width: 100%;
+  padding-top: 6px;
+}
+
+.cassinooo-journal-launcher button {
+  width: 100%;
+  min-width: 0;
+  font-size: .76rem;
+}
+
+.cassinooo-placeholder .window-content {
+  padding: 0;
+  background: #17130f;
+}
+
+.cassinooo-placeholder-shell {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: #f5ead4;
+  background: radial-gradient(circle at 50% 30%, #33261b, #17130f 72%);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.cassinooo-placeholder-shell h2,
+.cassinooo-placeholder-shell p { margin: 0; }
+.cassinooo-placeholder-shell p { max-width: 380px; color: #c8bda9; }
+.cassinooo-placeholder-shell strong { color: #e5c77f; text-transform: uppercase; letter-spacing: .12em; }
+.cassinooo-placeholder-icon { font-size: 2.4rem; color: #d2aa57; }
