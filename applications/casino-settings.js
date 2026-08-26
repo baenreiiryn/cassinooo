@@ -1,5 +1,5 @@
 import { MODULE_ID, SOCKET_NAME } from "../scripts/state.js";
-import { BACKGROUND_SETTINGS, getTableBackground } from "../scripts/module-settings.js";
+import { BACKGROUND_SETTINGS, getTableBackground } from "../scripts/backgrounds.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const FilePicker = foundry.applications.apps.FilePicker;
