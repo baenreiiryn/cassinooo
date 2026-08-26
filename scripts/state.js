@@ -12,7 +12,7 @@ const EMPTY_SEATS = {
 
 export function registerSettings() {
   game.settings.register(MODULE_ID, "seats", {
-    name: "Assentos da mesa de Blackjack",
+    name: "Assentos da Mesa do Cassino",
     scope: "world",
     config: false,
     type: Object,
@@ -27,7 +27,7 @@ export function getSeats() {
 
 export async function assignSeat(index, userId) {
   if (!game.user?.isGM) {
-    ui.notifications?.warn("Apenas o GM pode alterar os assentos do Blackjack.");
+    ui.notifications?.warn("Apenas o Mestre pode alterar os assentos da Mesa do Cassino.");
     return false;
   }
 
@@ -47,7 +47,6 @@ export async function assignSeat(index, userId) {
   }
 
   seats[index] = userId || "";
-
   await game.settings.set(MODULE_ID, "seats", Object.fromEntries(seats.map((id, i) => [i, id])));
   return true;
 }
