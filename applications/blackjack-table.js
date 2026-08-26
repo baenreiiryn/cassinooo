@@ -136,10 +136,12 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
 
     this.element.querySelector("[data-give-card]")?.addEventListener("click", async () => {
       await gmGiveCard();
+      await this.render({ force: true });
     });
 
     this.element.querySelector("[data-pass-turn]")?.addEventListener("click", async () => {
       await gmPassTurn();
+      await this.render({ force: true });
     });
 
     for (const select of this.element.querySelectorAll("select[data-seat-index]")) {
@@ -177,7 +179,6 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const flying = document.createElement("div");
     flying.className = "cassinooo-flying-card";
-    flying.textContent = "";
     flying.style.left = `${from.left - boardRect.left + from.width / 2 - 19}px`;
     flying.style.top = `${from.top - boardRect.top + from.height / 2 - 27}px`;
     board.append(flying);
