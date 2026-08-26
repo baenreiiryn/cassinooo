@@ -4,19 +4,29 @@ Módulo de cassino compartilhado para **Foundry VTT 13.348**.
 
 ## Versão atual
 
-`0.1.0`
+`0.2.0`
 
-Primeiro protótipo:
+### Blackjack
 
-- mesa visual de Blackjack;
-- 6 assentos;
-- o GM escolhe qual jogador ocupa cada assento;
-- todos os clientes veem a mesma configuração;
-- botão **Blackjack** na parte inferior da aba **Diário**;
-- sincronização por socket do módulo;
-- sem sistema próprio de fichas (as apostas poderão usar o ouro do Actor futuramente).
+- botão **Mesa do Cassino** na parte inferior da aba **Diário**;
+- mesa visual compartilhada em tempo real;
+- Dealer/Mestre no centro superior;
+- 6 assentos ao redor da mesa: 2 laterais, 2 diagonais e 2 inferiores;
+- o Mestre escolhe qual jogador ocupa cada assento;
+- distribuição de 2 cartas para cada jogador e para o Dealer;
+- segunda carta do Dealer permanece oculta durante a vez dos jogadores;
+- cada jogador controla apenas a própria mão com **Pedir** e **Parar**;
+- Ás vale 1 ou 11;
+- J, Q e K valem 10;
+- Blackjack natural é 21 com duas cartas;
+- Dealer compra até 16 e para em qualquer 17;
+- cálculo automático de vitória, derrota, empate e estouro;
+- estado e ações sincronizados entre os clientes;
+- sem sistema próprio de fichas: apostas poderão usar o ouro do Actor futuramente.
 
-## Instalação pelo Foundry
+Ainda não implementados: dividir, dobrar, seguro e apostas.
+
+## Instalação / atualização pelo Foundry
 
 Em **Add-on Modules → Install Module**, use esta Manifest URL:
 
@@ -24,19 +34,10 @@ Em **Add-on Modules → Install Module**, use esta Manifest URL:
 https://raw.githubusercontent.com/baenreiiryn/cassinooo/main/module.json
 ```
 
-O manifesto baixa o módulo diretamente do branch `main` do GitHub.
+Quem já instalou uma versão anterior pode usar a atualização de módulos do Foundry; o manifesto agora informa a versão `0.2.0`.
 
 ## Compatibilidade
 
 - Foundry VTT mínimo: 13
 - Verificado para: 13.348
 - Máximo: 13
-
-## Próximas etapas
-
-- baralho e dealer;
-- distribuição de cartas;
-- Pedir / Parar;
-- cálculo de Blackjack e estouro;
-- rodada sincronizada para os seis jogadores;
-- apostas usando a moeda/ouro do Actor.
