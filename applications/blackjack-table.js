@@ -42,7 +42,16 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const wagers = getBlackjackWagers();
     const players = game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, active: u.active }));
     const roundLocked = ["dealing", "players", "dealer"].includes(state.phase);
-    const positionClasses = ["seat-side-left", "seat-side-right", "seat-diagonal-left", "seat-diagonal-right", "seat-bottom-left", "seat-bottom-right"];
+
+    // Number seats visually from left to right around the table arc.
+    const positionClasses = [
+      "seat-side-left",
+      "seat-diagonal-left",
+      "seat-bottom-left",
+      "seat-bottom-right",
+      "seat-diagonal-right",
+      "seat-side-right"
+    ];
 
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
