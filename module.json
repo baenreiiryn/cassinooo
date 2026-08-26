@@ -1,8 +1,8 @@
 {
   "id": "cassinooo",
   "title": "Cassinooo",
-  "description": "Mesa de cassino compartilhada para Foundry VTT. Blackjack em tempo real para até 6 jogadores, com mesa controlada pelo Mestre, carrossel de turnos e distribuição animada.",
-  "version": "0.4.0",
+  "description": "Cassino compartilhado para Foundry VTT com Blackjack em tempo real e mesas independentes para futuros jogos.",
+  "version": "0.5.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13.348",
@@ -20,7 +20,8 @@
     "scripts/main.js"
   ],
   "styles": [
-    "styles/cassinooo.css"
+    "styles/cassinooo.css",
+    "styles/cassinooo-v050.css"
   ],
   "socket": true
 }
