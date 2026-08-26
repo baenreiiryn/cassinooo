@@ -2,7 +2,7 @@
   "id": "cassinooo",
   "title": "Cassinooo",
   "description": "Cassino compartilhado para Foundry VTT com Blackjack em tempo real e mesas independentes para futuros jogos.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13.348",
