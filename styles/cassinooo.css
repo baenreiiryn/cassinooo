@@ -47,7 +47,7 @@
 }
 
 .cassinooo-gm-controls button,
-.cassinooo-player-actions button {
+.cassinooo-turn-controls button {
   min-height: 34px;
 }
 
@@ -55,13 +55,43 @@
   min-height: 34px;
   display: grid;
   place-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
   padding: 6px 12px;
   border: 1px solid rgba(216, 189, 128, 0.28);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.18);
   color: #dfc891;
   text-align: center;
+}
+
+.cassinooo-turn-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(226, 193, 102, 0.48);
+  border-radius: 10px;
+  background: rgba(61, 43, 18, 0.72);
+}
+
+.cassinooo-turn-controls > div {
+  min-width: 180px;
+}
+
+.cassinooo-turn-label {
+  display: block;
+  color: #d7bd7c;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.cassinooo-turn-controls strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1rem;
 }
 
 .cassinooo-board {
@@ -75,6 +105,7 @@
   min-width: 1040px;
   height: 610px;
   margin: 0 auto;
+  overflow: hidden;
   border: 12px solid #3c2819;
   border-radius: 50% 50% 44% 44% / 38% 38% 47% 47%;
   background: radial-gradient(circle at 50% 42%, #187047 0%, #0e5132 58%, #083a24 100%);
@@ -84,9 +115,9 @@
 
 .cassinooo-dealer-zone {
   position: absolute;
-  top: 28px;
+  top: 20px;
   left: 50%;
-  width: 280px;
+  width: 390px;
   transform: translateX(-50%);
   text-align: center;
   z-index: 3;
@@ -103,8 +134,53 @@
 
 .cassinooo-dealer-zone > strong {
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
+
+.cassinooo-dealer-tabletop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.cassinooo-deck-wrap {
+  width: 72px;
+  text-align: center;
+}
+
+.cassinooo-deck-wrap small {
+  display: block;
+  margin-top: 5px;
+  color: rgba(238, 218, 174, 0.72);
+  font-size: 0.66rem;
+}
+
+.cassinooo-deck {
+  position: relative;
+  width: 46px;
+  height: 64px;
+  margin: 0 auto;
+}
+
+.cassinooo-deck-card,
+.cassinooo-flying-card {
+  position: absolute;
+  width: 38px;
+  height: 54px;
+  border: 2px solid #e1c98e;
+  border-radius: 5px;
+  background:
+    linear-gradient(135deg, transparent 46%, rgba(232, 206, 146, 0.45) 47% 53%, transparent 54%),
+    linear-gradient(45deg, transparent 46%, rgba(232, 206, 146, 0.45) 47% 53%, transparent 54%),
+    #432d20;
+  background-size: 10px 10px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.4);
+}
+
+.cassinooo-deck-card.back-3 { left: 0; top: 6px; }
+.cassinooo-deck-card.back-2 { left: 3px; top: 3px; }
+.cassinooo-deck-card.back-1 { left: 6px; top: 0; }
 
 .cassinooo-table-marking {
   position: absolute;
@@ -141,37 +217,38 @@
   text-align: center;
   box-sizing: border-box;
   z-index: 4;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.cassinooo-seat.seat-side-left {
-  left: 14px;
-  top: 142px;
+.cassinooo-seat.active-turn {
+  border-color: #f2cd66;
+  box-shadow:
+    0 0 0 2px rgba(242, 205, 102, 0.36),
+    0 0 22px rgba(255, 210, 79, 0.72),
+    0 5px 13px rgba(0, 0, 0, 0.32);
+  animation: cassinooo-turn-pulse 1.35s ease-in-out infinite;
 }
 
-.cassinooo-seat.seat-side-right {
-  right: 14px;
-  top: 142px;
+@keyframes cassinooo-turn-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(242,205,102,.28), 0 0 15px rgba(255,210,79,.5), 0 5px 13px rgba(0,0,0,.32); }
+  50% { box-shadow: 0 0 0 3px rgba(242,205,102,.5), 0 0 30px rgba(255,210,79,.88), 0 5px 13px rgba(0,0,0,.32); }
 }
 
-.cassinooo-seat.seat-diagonal-left {
-  left: 105px;
-  top: 342px;
+.cassinooo-turn-indicator {
+  margin-top: 4px;
+  color: #f2cd66;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.cassinooo-seat.seat-diagonal-right {
-  right: 105px;
-  top: 342px;
-}
-
-.cassinooo-seat.seat-bottom-left {
-  left: 306px;
-  bottom: 10px;
-}
-
-.cassinooo-seat.seat-bottom-right {
-  right: 306px;
-  bottom: 10px;
-}
+.cassinooo-seat.seat-side-left { left: 14px; top: 142px; }
+.cassinooo-seat.seat-side-right { right: 14px; top: 142px; }
+.cassinooo-seat.seat-diagonal-left { left: 105px; top: 342px; }
+.cassinooo-seat.seat-diagonal-right { right: 105px; top: 342px; }
+.cassinooo-seat.seat-bottom-left { left: 306px; bottom: 10px; }
+.cassinooo-seat.seat-bottom-right { right: 306px; bottom: 10px; }
 
 .cassinooo-seat-number {
   display: block;
@@ -216,6 +293,7 @@
 }
 
 .cassinooo-dealer-hand {
+  min-width: 100px;
   min-height: 72px;
 }
 
@@ -233,12 +311,14 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-.cassinooo-playing-card.red {
-  color: #a82727;
-}
+.cassinooo-playing-card.red { color: #a82727; }
 
 .cassinooo-playing-card.hidden-card {
-  background: repeating-linear-gradient(45deg, #27211b, #27211b 5px, #5c4631 5px, #5c4631 10px);
+  background:
+    linear-gradient(135deg, transparent 46%, rgba(232, 206, 146, 0.45) 47% 53%, transparent 54%),
+    linear-gradient(45deg, transparent 46%, rgba(232, 206, 146, 0.45) 47% 53%, transparent 54%),
+    #432d20;
+  background-size: 10px 10px;
   color: #e3cb95;
 }
 
@@ -267,17 +347,12 @@
   font-size: 0.72rem;
 }
 
-.cassinooo-player-actions {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.cassinooo-player-actions button {
-  flex: 1;
-  min-width: 0;
-  padding-inline: 7px;
+.cassinooo-flying-card {
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.9;
+  transform: translate(0, 0) rotate(-4deg);
+  transition: transform 480ms cubic-bezier(.2,.8,.2,1), opacity 480ms ease;
 }
 
 .cassinooo-table-footer {
@@ -292,16 +367,15 @@
   padding-top: 6px;
 }
 
-#cassinooo-open-table {
-  width: 100%;
+#cassinooo-open-table { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-seat.active-turn { animation: none; }
+  .cassinooo-flying-card { transition-duration: 1ms; }
 }
 
 @media (max-width: 900px) {
-  .cassinooo-table-header {
-    flex-direction: column;
-  }
-
-  .cassinooo-gm-controls {
-    justify-content: flex-start;
-  }
+  .cassinooo-table-header { flex-direction: column; }
+  .cassinooo-gm-controls { justify-content: flex-start; }
+  .cassinooo-turn-controls { justify-content: flex-start; flex-wrap: wrap; }
 }
