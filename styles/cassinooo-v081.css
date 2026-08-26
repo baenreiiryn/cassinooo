@@ -1,0 +1,9 @@
+/* Ajustes finais da roleta para Foundry/Chromium */
+.cassinooo-wheel-pocket span {
+  transform: translateX(-50%) rotate(var(--label-angle));
+}
+
+@keyframes cassinooo-ball-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(var(--roulette-ball-end)); }
+}
