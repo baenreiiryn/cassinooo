@@ -51,11 +51,15 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
       };
     });
 
-    const wheelNumbers = WHEEL_ORDER.map((number, index) => ({
-      number,
-      color: numberColor(number),
-      style: `--i:${index}; --angle:${index * (360 / WHEEL_ORDER.length)}deg;`
-    }));
+    const step = 360 / WHEEL_ORDER.length;
+    const wheelNumbers = WHEEL_ORDER.map((number, index) => {
+      const angle = index * step;
+      return {
+        number,
+        color: numberColor(number),
+        style: `--i:${index}; --angle:${angle}deg; --label-angle:${-angle}deg;`
+      };
+    });
 
     const gridNumbers = [];
     for (let row = 0; row < 3; row += 1) {
@@ -134,7 +138,7 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const targetIndex = WHEEL_ORDER.indexOf(result);
     const pocketAngle = targetIndex * (360 / WHEEL_ORDER.length);
     const wheelRotation = 1440 + (360 - pocketAngle);
-    const ballRotation = 1800 + pocketAngle;
+    const ballRotation = 1800;
 
     wheel.style.setProperty("--roulette-wheel-end", `${wheelRotation}deg`);
     ball.style.setProperty("--roulette-ball-end", `${ballRotation}deg`);
