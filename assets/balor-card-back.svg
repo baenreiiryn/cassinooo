@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 168">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#160b0b"/>
+      <stop offset="0.5" stop-color="#4b1414"/>
+      <stop offset="1" stop-color="#120808"/>
+    </linearGradient>
+    <radialGradient id="fire" cx="50%" cy="58%" r="55%">
+      <stop offset="0" stop-color="#ffbd4a"/>
+      <stop offset="0.42" stop-color="#d33b1f"/>
+      <stop offset="1" stop-color="#431010" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="3" y="3" width="114" height="162" rx="10" fill="url(#bg)" stroke="#e1b65e" stroke-width="4"/>
+  <rect x="10" y="10" width="100" height="148" rx="7" fill="none" stroke="#7f5524" stroke-width="2"/>
+  <circle cx="60" cy="91" r="49" fill="url(#fire)" opacity="0.7"/>
+  <path d="M37 65 C22 48 23 30 41 19 C39 35 48 43 55 50 L60 43 L65 50 C72 43 81 35 79 19 C97 30 98 48 83 65 L94 74 L84 80 C88 91 86 108 78 119 L68 110 L60 132 L52 110 L42 119 C34 108 32 91 36 80 L26 74 Z" fill="#1a0b0b" stroke="#f0a83e" stroke-width="3"/>
+  <path d="M43 72 Q50 61 56 73 L52 82 Q47 81 43 72ZM77 72 Q70 61 64 73 L68 82 Q73 81 77 72Z" fill="#ffcf5b"/>
+  <path d="M46 95 Q60 107 74 95 Q70 117 60 121 Q50 117 46 95Z" fill="#090404" stroke="#c84b28" stroke-width="2"/>
+  <path d="M52 101 L56 110 L60 102 L64 110 L68 101" fill="none" stroke="#f3d8a0" stroke-width="2"/>
+  <path d="M18 27 L29 18 M102 27 L91 18 M18 141 L29 150 M102 141 L91 150" stroke="#d69a3b" stroke-width="3"/>
+  <text x="60" y="151" text-anchor="middle" font-family="serif" font-size="11" font-weight="700" fill="#e9c77d">CASSINOOO</text>
+</svg>
