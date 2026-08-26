@@ -1,4 +1,5 @@
 import { assignSeat, getSeats, SOCKET_NAME } from "../scripts/state.js";
+import { getTableBackground } from "../scripts/backgrounds.js";
 import {
   getBlackjackState,
   getBlackjackWagers,
@@ -42,16 +43,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const wagers = getBlackjackWagers();
     const players = game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, active: u.active }));
     const roundLocked = ["dealing", "players", "dealer"].includes(state.phase);
-
-    // Number seats visually from left to right around the table arc.
-    const positionClasses = [
-      "seat-side-left",
-      "seat-diagonal-left",
-      "seat-bottom-left",
-      "seat-bottom-right",
-      "seat-diagonal-right",
-      "seat-side-right"
-    ];
+    const positionClasses = ["seat-side-left", "seat-diagonal-left", "seat-bottom-left", "seat-bottom-right", "seat-diagonal-right", "seat-side-right"];
 
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
@@ -104,6 +96,18 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _onRender(context, options) {
     super._onRender(context, options);
+
+    const felt = this.element.querySelector(".cassinooo-felt");
+    const background = getTableBackground("blackjack");
+    if (felt) {
+      felt.style.backgroundImage = background
+        ? `linear-gradient(rgba(20,4,3,.05), rgba(20,4,3,.16)), url(${JSON.stringify(background)})`
+        : "radial-gradient(circle at 50% 42%, #5f1713 0%, #32100e 58%, #170706 100%)";
+      felt.style.backgroundPosition = "center center";
+      felt.style.backgroundSize = background ? "cover" : "auto";
+      felt.style.backgroundRepeat = "no-repeat";
+    }
+
     const state = getBlackjackState();
     const animation = state.lastAnimation;
     if (animation?.nonce && animation.nonce !== this._lastAnimationNonce) {
