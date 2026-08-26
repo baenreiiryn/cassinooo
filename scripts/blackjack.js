@@ -8,6 +8,10 @@ function emptyGameState() {
     deck: [],
     dealer: { cards: [], score: 0 },
     hands: {},
+    turnOrder: [],
+    activeTurn: -1,
+    activeSeatIndex: null,
+    lastAnimation: null,
     message: "Aguardando o Mestre iniciar uma rodada."
   };
 }
@@ -72,24 +76,13 @@ function draw(state) {
   return state.deck.pop();
 }
 
-function primaryGM() {
-  return game.users
-    .filter((user) => user.isGM && user.active)
-    .sort((a, b) => a.id.localeCompare(b.id))[0] ?? null;
-}
-
-export function isPrimaryGM() {
-  const gm = primaryGM();
-  return Boolean(game.user?.isGM && gm?.id === game.user.id);
-}
-
 function makeHand(userId, seatIndex) {
   return {
     userId,
     seatIndex,
     cards: [],
     score: 0,
-    status: "playing",
+    status: "waiting",
     result: ""
   };
 }
@@ -101,16 +94,38 @@ function updateHandScore(hand) {
     hand.result = "Estourou";
   } else if (hand.score === 21) {
     hand.status = "standing";
-    if (hand.cards.length === 2) hand.result = "Blackjack!";
+    hand.result = hand.cards.length === 2 ? "Blackjack!" : "21";
   }
 }
 
-function allPlayersFinished(state) {
-  return Object.values(state.hands).every((hand) => hand.status !== "playing");
+function currentHand(state) {
+  const userId = state.turnOrder?.[state.activeTurn];
+  return userId ? state.hands?.[userId] : null;
+}
+
+function setActiveTurn(state, index) {
+  state.activeTurn = index;
+  const userId = state.turnOrder[index];
+  const hand = userId ? state.hands[userId] : null;
+  state.activeSeatIndex = hand?.seatIndex ?? null;
+  if (hand) {
+    hand.status = "playing";
+    const user = game.users.get(userId);
+    state.message = `Turno de ${user?.name ?? "Jogador"}.`;
+  }
+}
+
+function findNextTurn(state, startIndex) {
+  for (let i = startIndex; i < state.turnOrder.length; i += 1) {
+    const hand = state.hands[state.turnOrder[i]];
+    if (hand && hand.status === "waiting") return i;
+  }
+  return -1;
 }
 
 async function finishDealerAndRound(state) {
   state.phase = "dealer";
+  state.activeSeatIndex = null;
   state.message = "O Dealer está jogando...";
 
   state.dealer.score = scoreHand(state.dealer.cards);
@@ -145,6 +160,15 @@ async function finishDealerAndRound(state) {
   return saveState(state);
 }
 
+async function advanceTurn(state) {
+  const next = findNextTurn(state, state.activeTurn + 1);
+  if (next >= 0) {
+    setActiveTurn(state, next);
+    return saveState(state);
+  }
+  return finishDealerAndRound(state);
+}
+
 export async function startRound() {
   if (!game.user?.isGM) return false;
 
@@ -161,21 +185,28 @@ export async function startRound() {
   const state = emptyGameState();
   state.phase = "players";
   state.deck = shuffle(buildDeck());
-  state.message = "Cartas distribuídas. Jogadores: pedir ou parar.";
 
-  for (const { userId, seatIndex } of occupied) state.hands[userId] = makeHand(userId, seatIndex);
+  for (const { userId, seatIndex } of occupied) {
+    state.hands[userId] = makeHand(userId, seatIndex);
+    state.turnOrder.push(userId);
+  }
 
   for (let round = 0; round < 2; round += 1) {
-    for (const hand of Object.values(state.hands)) hand.cards.push(draw(state));
+    for (const userId of state.turnOrder) state.hands[userId].cards.push(draw(state));
     state.dealer.cards.push(draw(state));
   }
 
   for (const hand of Object.values(state.hands)) updateHandScore(hand);
   state.dealer.score = scoreHand(state.dealer.cards);
 
-  if (allPlayersFinished(state)) return finishDealerAndRound(state);
-  await saveState(state);
-  return true;
+  const first = findNextTurn(state, 0);
+  if (first >= 0) {
+    setActiveTurn(state, first);
+    await saveState(state);
+    return true;
+  }
+
+  return finishDealerAndRound(state);
 }
 
 export async function resetRound() {
@@ -184,49 +215,49 @@ export async function resetRound() {
   return true;
 }
 
-async function applyPlayerAction({ userId, action }) {
+export async function gmGiveCard() {
+  if (!game.user?.isGM) return false;
   const state = getBlackjackState();
   if (state.phase !== "players") return false;
 
-  const hand = state.hands[userId];
+  const hand = currentHand(state);
   if (!hand || hand.status !== "playing") return false;
 
-  if (action === "hit") {
-    hand.cards.push(draw(state));
-    updateHandScore(hand);
-  } else if (action === "stand") {
-    hand.status = "standing";
-    hand.result = hand.result || "Parou";
-  } else return false;
+  const card = draw(state);
+  hand.cards.push(card);
+  updateHandScore(hand);
+  state.lastAnimation = {
+    nonce: `${Date.now()}-${Math.random()}`,
+    type: "deal-to-seat",
+    seatIndex: hand.seatIndex,
+    card
+  };
 
-  if (allPlayersFinished(state)) return finishDealerAndRound(state);
-  await saveState(state);
-  return true;
+  if (hand.status === "playing") {
+    const user = game.users.get(hand.userId);
+    state.message = `${user?.name ?? "Jogador"} recebeu ${card.rank}${card.suit}.`;
+    await saveState(state);
+    return true;
+  }
+
+  return advanceTurn(state);
+}
+
+export async function gmPassTurn() {
+  if (!game.user?.isGM) return false;
+  const state = getBlackjackState();
+  if (state.phase !== "players") return false;
+
+  const hand = currentHand(state);
+  if (!hand || hand.status !== "playing") return false;
+
+  hand.status = "standing";
+  hand.result = hand.result || "Parou";
+  return advanceTurn(state);
 }
 
 export async function handleBlackjackSocket(message) {
+  // Os jogadores não enviam mais ações. O socket continua sendo usado
+  // para atualizar instantaneamente todas as mesas abertas.
   if (!message) return;
-
-  if (message.type === "blackjack-action" && isPrimaryGM()) {
-    const user = game.users.get(message.userId);
-    if (!user) return;
-    await applyPlayerAction({ userId: message.userId, action: message.action });
-  }
-}
-
-export async function requestPlayerAction(action) {
-  const state = getBlackjackState();
-  const hand = state.hands[game.user.id];
-  if (!hand || hand.status !== "playing" || state.phase !== "players") return false;
-
-  if (game.user.isGM && isPrimaryGM()) {
-    return applyPlayerAction({ userId: game.user.id, action });
-  }
-
-  game.socket.emit(SOCKET_NAME, {
-    type: "blackjack-action",
-    userId: game.user.id,
-    action
-  });
-  return true;
 }
