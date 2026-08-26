@@ -1,8 +1,11 @@
 import { getTableBackground } from "../scripts/backgrounds.js";
 import {
   assignRouletteSeat,
+  getRouletteBetOptions,
+  getRouletteBets,
   getRouletteSeats,
   getRouletteState,
+  requestRouletteBetChange,
   resetRoulette,
   spinRoulette
 } from "../scripts/roulette.js";
@@ -17,13 +20,20 @@ function numberColor(number) {
   return RED.has(number) ? "red" : "black";
 }
 
+function formatDelta(value) {
+  const n = Number(value) || 0;
+  if (n > 0) return `+${n} PO`;
+  if (n < 0) return `${n} PO`;
+  return "0 PO";
+}
+
 export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
   _lastSpinNonce = null;
 
   static DEFAULT_OPTIONS = {
     id: "cassinooo-roulette-table",
     classes: ["cassinooo", "cassinooo-roulette-table"],
-    position: { width: 1180, height: 860 },
+    position: { width: 1180, height: 900 },
     window: { title: "Cassinooo — Roleta", icon: "fa-solid fa-circle-notch" }
   };
 
@@ -35,18 +45,27 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const context = await super._prepareContext(options);
     const state = getRouletteState();
     const seatIds = getRouletteSeats();
+    const bets = getRouletteBets();
+    const betOptions = getRouletteBetOptions();
     const players = game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, active: u.active }));
+    const locked = state.phase === "spinning";
 
     const seatClasses = ["seat-bottom-1", "seat-bottom-2", "seat-bottom-3", "seat-bottom-4", "seat-right-1", "seat-right-2"];
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
+      const bet = userId ? (bets[userId] ?? { type: "", amount: 0 }) : { type: "", amount: 0 };
       return {
         index,
         number: index + 1,
         positionClass: seatClasses[index],
+        userId,
         occupied: Boolean(occupant),
         occupantName: occupant?.name ?? "Lugar vazio",
         occupantActive: occupant?.active ?? false,
+        betType: bet.type ?? "",
+        betAmount: bet.amount ?? 0,
+        canEditBet: Boolean(occupant && !locked && (game.user?.isGM || game.user?.id === userId)),
+        betOptions: betOptions.map((option) => ({ ...option, selected: option.value === bet.type })),
         options: players.map((player) => ({ ...player, selected: player.id === userId }))
       };
     });
@@ -75,6 +94,13 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
       gridNumbers.push(rowNumbers);
     }
 
+    const roundResults = (state.roundResults ?? []).map((entry) => ({
+      ...entry,
+      deltaText: formatDelta(entry.delta),
+      positive: entry.delta > 0,
+      negative: entry.delta < 0
+    }));
+
     return foundry.utils.mergeObject(context, {
       isGM: game.user?.isGM ?? false,
       seats,
@@ -86,7 +112,9 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
       spinning: state.phase === "spinning",
       settled: state.phase === "settled",
       message: state.message,
-      spinNonce: state.spinNonce
+      spinNonce: state.spinNonce,
+      showResults: state.phase === "settled" && roundResults.length > 0,
+      roundResults
     });
   }
 
@@ -108,6 +136,23 @@ export class RouletteTable extends HandlebarsApplicationMixin(ApplicationV2) {
     if (state.phase === "spinning" && state.spinNonce && state.spinNonce !== this._lastSpinNonce) {
       this._lastSpinNonce = state.spinNonce;
       requestAnimationFrame(() => this._animateSpin(state.result));
+    }
+
+    for (const seat of this.element.querySelectorAll(".cassinooo-roulette-seat[data-seat-index]")) {
+      const select = seat.querySelector("select[data-roulette-bet-type]");
+      const input = seat.querySelector("input[data-roulette-bet-amount]");
+      if (!select || !input) continue;
+
+      const saveBet = async () => {
+        const userId = seat.dataset.userId;
+        if (!userId) return;
+        const amount = Math.max(0, Math.floor(Number(input.value) || 0));
+        input.value = String(amount);
+        await requestRouletteBetChange(userId, select.value, amount);
+      };
+
+      select.addEventListener("change", saveBet);
+      input.addEventListener("change", saveBet);
     }
 
     if (!game.user?.isGM) return;
