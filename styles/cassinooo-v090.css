@@ -1,0 +1,116 @@
+/* Cassinooo 0.9.0 — apostas e pagamentos da Roleta */
+
+.cassinooo-roulette-table .cassinooo-roulette-seat {
+  width: 196px;
+  height: 154px;
+  padding: 8px;
+}
+
+.cassinooo-roulette-table .cassinooo-roulette-seat > select[data-roulette-seat-index] {
+  min-height: 27px;
+  margin-top: 5px;
+  margin-bottom: 4px;
+  font-size: .68rem;
+}
+
+.cassinooo-roulette-bet-fields {
+  display: grid;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.cassinooo-roulette-bet-fields label {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  color: #ead6a6;
+  font-size: .61rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.cassinooo-roulette-bet-fields label > span {
+  white-space: nowrap;
+}
+
+.cassinooo-roulette-bet-fields select,
+.cassinooo-roulette-bet-fields input {
+  width: 100%;
+  min-width: 0;
+  height: 27px;
+  margin: 0;
+  font-size: .66rem;
+  box-sizing: border-box;
+}
+
+.cassinooo-roulette-bet-fields input {
+  text-align: right;
+}
+
+.cassinooo-roulette-bet-fields select:disabled,
+.cassinooo-roulette-bet-fields input:disabled {
+  opacity: .72;
+}
+
+/* Reposiciona o L para acomodar os controles maiores. */
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-bottom-1 { left: 35px; bottom: 18px; }
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-bottom-2 { left: 240px; bottom: 18px; }
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-bottom-3 { left: 445px; bottom: 18px; }
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-bottom-4 { left: 650px; bottom: 18px; }
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-right-1 { right: 16px; top: 330px; }
+.cassinooo-roulette-table .cassinooo-roulette-seat.seat-right-2 { right: 16px; top: 492px; }
+
+.cassinooo-roulette-payout-board {
+  position: absolute;
+  right: 222px;
+  bottom: 182px;
+  width: 355px;
+  max-height: 165px;
+  overflow: auto;
+  padding: 9px;
+  border: 1px solid rgba(227, 192, 118, .82);
+  border-radius: 10px;
+  background: rgba(15, 20, 13, .94);
+  box-shadow: 0 7px 20px rgba(0,0,0,.42);
+  z-index: 12;
+}
+
+.cassinooo-roulette-payout-board h3 {
+  margin: 0 0 6px;
+  color: #f3d995;
+  font-size: .82rem;
+  text-align: center;
+}
+
+.cassinooo-roulette-payout-board table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .65rem;
+}
+
+.cassinooo-roulette-payout-board th,
+.cassinooo-roulette-payout-board td {
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(226, 206, 164, .16);
+  text-align: left;
+}
+
+.cassinooo-roulette-payout-board th:nth-child(3),
+.cassinooo-roulette-payout-board th:nth-child(4),
+.cassinooo-roulette-payout-board td:nth-child(3),
+.cassinooo-roulette-payout-board td:nth-child(4) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cassinooo-roulette-payout-board .positive {
+  color: #9ee6a9;
+  font-weight: 900;
+}
+
+.cassinooo-roulette-payout-board .negative {
+  color: #f19a91;
+  font-weight: 900;
+}
