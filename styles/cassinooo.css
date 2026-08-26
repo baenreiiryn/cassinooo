@@ -6,28 +6,36 @@
 
 .cassinooo-table-shell {
   min-height: 100%;
-  padding: 18px;
+  padding: 16px;
   color: #f5ead4;
-  background: radial-gradient(circle at 50% 42%, #2a241b 0%, #17130f 70%);
+  background: radial-gradient(circle at 50% 35%, #2a241b 0%, #17130f 72%);
   box-sizing: border-box;
 }
 
 .cassinooo-table-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .cassinooo-table-header h2 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
 }
 
 .cassinooo-table-header p {
   margin: 4px 0 0;
   color: #c8bda9;
+}
+
+.cassinooo-gm-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .cassinooo-gm-badge {
@@ -38,40 +46,152 @@
   white-space: nowrap;
 }
 
-.cassinooo-seat-row {
+.cassinooo-gm-controls button,
+.cassinooo-player-actions button {
+  min-height: 34px;
+}
+
+.cassinooo-message {
+  min-height: 34px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  place-items: center;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border: 1px solid rgba(216, 189, 128, 0.28);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #dfc891;
+  text-align: center;
+}
+
+.cassinooo-board {
+  overflow-x: auto;
+  padding: 4px 0 10px;
+}
+
+.cassinooo-felt {
+  position: relative;
+  width: 1040px;
+  min-width: 1040px;
+  height: 610px;
+  margin: 0 auto;
+  border: 12px solid #3c2819;
+  border-radius: 50% 50% 44% 44% / 38% 38% 47% 47%;
+  background: radial-gradient(circle at 50% 42%, #187047 0%, #0e5132 58%, #083a24 100%);
+  box-shadow: inset 0 0 0 2px #8c6834, inset 0 0 55px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+.cassinooo-dealer-zone {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  width: 280px;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 3;
+}
+
+.cassinooo-role-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #ead29c;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.cassinooo-dealer-zone > strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.cassinooo-table-marking {
+  position: absolute;
+  left: 50%;
+  top: 250px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(239, 215, 162, 0.55);
+  text-align: center;
+  pointer-events: none;
+}
+
+.cassinooo-table-marking strong {
+  font-size: 1.7rem;
+  letter-spacing: 0.16em;
+}
+
+.cassinooo-table-marking span {
+  margin-top: 3px;
+  font-size: 0.78rem;
 }
 
 .cassinooo-seat {
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid #5c4d35;
-  border-radius: 10px;
-  background: rgba(24, 20, 15, 0.94);
+  position: absolute;
+  width: 205px;
+  min-height: 150px;
+  padding: 9px;
+  border: 1px solid #6b583b;
+  border-radius: 11px;
+  background: rgba(24, 20, 15, 0.95);
+  box-shadow: 0 5px 13px rgba(0, 0, 0, 0.28);
   text-align: center;
+  box-sizing: border-box;
+  z-index: 4;
+}
+
+.cassinooo-seat.seat-side-left {
+  left: 14px;
+  top: 142px;
+}
+
+.cassinooo-seat.seat-side-right {
+  right: 14px;
+  top: 142px;
+}
+
+.cassinooo-seat.seat-diagonal-left {
+  left: 105px;
+  top: 342px;
+}
+
+.cassinooo-seat.seat-diagonal-right {
+  right: 105px;
+  top: 342px;
+}
+
+.cassinooo-seat.seat-bottom-left {
+  left: 306px;
+  bottom: 10px;
+}
+
+.cassinooo-seat.seat-bottom-right {
+  right: 306px;
+  bottom: 10px;
 }
 
 .cassinooo-seat-number {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   color: #d8bd80;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .cassinooo-seat select {
   width: 100%;
-  min-height: 32px;
-  margin-bottom: 8px;
+  min-height: 30px;
+  margin-bottom: 7px;
 }
 
-.cassinooo-seat strong {
+.cassinooo-player-name {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -79,105 +199,91 @@
 
 .cassinooo-status {
   display: inline-block;
-  margin-bottom: 7px;
-  font-size: 0.72rem;
+  margin-bottom: 5px;
+  font-size: 0.7rem;
 }
 
-.cassinooo-status.online {
-  color: #9fd49f;
-}
+.cassinooo-status.online { color: #9fd49f; }
+.cassinooo-status.offline { color: #b8aa98; }
 
-.cassinooo-status.offline {
-  color: #b8aa98;
-}
-
-.cassinooo-card-slot {
-  min-height: 46px;
-  display: grid;
-  place-items: center;
-  border: 1px dashed rgba(229, 213, 181, 0.3);
-  border-radius: 7px;
-  color: rgba(229, 213, 181, 0.45);
-  font-size: 0.75rem;
-}
-
-.cassinooo-seat-row-top .cassinooo-card-slot {
-  margin-top: 4px;
-}
-
-.cassinooo-seat-row-bottom .cassinooo-card-slot {
-  margin-bottom: 8px;
-}
-
-.cassinooo-felt {
-  position: relative;
-  min-height: 290px;
-  margin: 12px 0;
-  overflow: hidden;
-  border: 10px solid #3c2819;
-  border-radius: 48% 48% 42% 42% / 36% 36% 44% 44%;
-  background: radial-gradient(circle at 50% 45%, #17693f 0%, #0e4e30 58%, #083923 100%);
-  box-shadow: inset 0 0 0 2px #8c6834, inset 0 0 40px rgba(0, 0, 0, 0.38);
-}
-
-.cassinooo-dealer {
-  padding-top: 28px;
-  text-align: center;
-  color: #ead29c;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.cassinooo-dealer-cards {
+.cassinooo-hand {
+  min-height: 62px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.cassinooo-dealer-hand {
+  min-height: 72px;
 }
 
 .cassinooo-playing-card {
-  width: 54px;
-  height: 76px;
+  width: 38px;
+  height: 54px;
   display: grid;
   place-items: center;
-  border-radius: 6px;
-  background: #eee7da;
-  color: #222;
-  font-size: 1.4rem;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  background: #f2eadc;
+  color: #1e1e1e;
+  font-size: 0.96rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-.cassinooo-playing-card.placeholder {
-  background: repeating-linear-gradient(45deg, #27211b, #27211b 6px, #4b3c2d 6px, #4b3c2d 12px);
-  color: #d8bd80;
+.cassinooo-playing-card.red {
+  color: #a82727;
 }
 
-.cassinooo-table-marking {
-  position: absolute;
-  left: 50%;
-  bottom: 34px;
-  transform: translateX(-50%);
+.cassinooo-playing-card.hidden-card {
+  background: repeating-linear-gradient(45deg, #27211b, #27211b 5px, #5c4631 5px, #5c4631 10px);
+  color: #e3cb95;
+}
+
+.cassinooo-empty-hand {
+  color: rgba(229, 213, 181, 0.42);
+  font-size: 0.72rem;
+}
+
+.cassinooo-hand-meta {
+  min-height: 22px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  color: rgba(239, 215, 162, 0.82);
-  text-align: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 2px;
+  flex-wrap: wrap;
 }
 
-.cassinooo-table-marking strong {
-  font-size: 1.55rem;
-  letter-spacing: 0.14em;
+.cassinooo-score {
+  color: #f0d99f;
+  font-weight: 800;
 }
 
-.cassinooo-table-marking span {
-  margin-top: 3px;
-  font-size: 0.75rem;
+.cassinooo-result {
+  color: #d9d0c0;
+  font-size: 0.72rem;
+}
+
+.cassinooo-player-actions {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.cassinooo-player-actions button {
+  flex: 1;
+  min-width: 0;
+  padding-inline: 7px;
 }
 
 .cassinooo-table-footer {
-  margin-top: 12px;
+  margin-top: 8px;
   color: #bfb19c;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   text-align: center;
 }
 
@@ -186,22 +292,16 @@
   padding-top: 6px;
 }
 
-#cassinooo-open-blackjack {
+#cassinooo-open-table {
   width: 100%;
 }
 
-@media (max-width: 720px) {
-  .cassinooo-seat-row {
-    grid-template-columns: 1fr;
-  }
-
-  .cassinooo-felt {
-    min-height: 230px;
-    border-radius: 28px;
-  }
-
+@media (max-width: 900px) {
   .cassinooo-table-header {
-    align-items: flex-start;
     flex-direction: column;
+  }
+
+  .cassinooo-gm-controls {
+    justify-content: flex-start;
   }
 }
