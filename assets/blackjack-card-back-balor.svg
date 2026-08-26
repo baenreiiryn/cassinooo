@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#4a1611"/><stop offset="100%" stop-color="#170705"/></linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="55%"><stop offset="0%" stop-color="#ffb455" stop-opacity="0.95"/><stop offset="100%" stop-color="#ffb455" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect x="6" y="6" width="188" height="268" rx="18" fill="url(#bg)" stroke="#d7b06b" stroke-width="6"/>
+  <rect x="18" y="18" width="164" height="244" rx="12" fill="none" stroke="#7e432d" stroke-width="2.5"/>
+  <circle cx="100" cy="126" r="56" fill="url(#glow)"/>
+  <path d="M55 63 C34 36,36 10,58 18 C83 28,81 63,76 83" fill="none" stroke="#18100f" stroke-width="16" stroke-linecap="round"/>
+  <path d="M145 63 C166 36,164 10,142 18 C117 28,119 63,124 83" fill="none" stroke="#18100f" stroke-width="16" stroke-linecap="round"/>
+  <path d="M100 63 C65 63,48 90,48 124 C48 165,69 194,100 208 C131 194,152 165,152 124 C152 90,135 63,100 63Z" fill="#9a1e19" stroke="#2b0908" stroke-width="6"/>
+  <path d="M72 151 C85 163,115 163,128 151" fill="none" stroke="#2b0908" stroke-width="6" stroke-linecap="round"/>
+  <path d="M78 112 L92 118 L78 124 Z" fill="#f5d99a"/><path d="M122 112 L108 118 L122 124 Z" fill="#f5d99a"/>
+  <ellipse cx="86" cy="118" rx="12" ry="6" fill="#ffcc66" opacity="0.55"/><ellipse cx="114" cy="118" rx="12" ry="6" fill="#ffcc66" opacity="0.55"/>
+  <path d="M91 148 L100 159 L109 148" fill="#f2d7a4"/><path d="M86 175 L100 160 L114 175" fill="none" stroke="#f2d7a4" stroke-width="4"/>
+  <path d="M100 33 L112 61 L100 75 L88 61 Z" fill="#1d1110" stroke="#d7b06b" stroke-width="2"/>
+  <text x="100" y="247" text-anchor="middle" fill="#d7b06b" font-family="serif" font-size="22" letter-spacing="3">BALOR</text>
+</svg>
