@@ -1,7 +1,8 @@
 import { assignSeat, getSeats, SOCKET_NAME } from "../scripts/state.js";
 import {
   getBlackjackState,
-  requestPlayerAction,
+  gmGiveCard,
+  gmPassTurn,
   resetRound,
   startRound
 } from "../scripts/blackjack.js";
@@ -18,12 +19,14 @@ function cardView(card, hidden = false) {
 }
 
 export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
+  _lastAnimationNonce = null;
+
   static DEFAULT_OPTIONS = {
     id: "cassinooo-blackjack-table",
     classes: ["cassinooo", "cassinooo-blackjack-table"],
     position: {
       width: 1120,
-      height: 820
+      height: 840
     },
     window: {
       title: "Cassinooo — Mesa do Cassino",
@@ -69,7 +72,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
         score: hand?.score ?? null,
         hasHand: Boolean(hand),
         result: hand?.result ?? "",
-        canAct: Boolean(userId && userId === game.user?.id && state.phase === "players" && hand?.status === "playing"),
+        isActive: state.phase === "players" && state.activeSeatIndex === index,
         options: players.map((player) => ({ ...player, selected: player.id === userId }))
       };
     });
@@ -81,6 +84,8 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       : (state.dealer?.score || null);
 
     const activeGM = game.users.find((user) => user.isGM && user.active) ?? game.users.find((user) => user.isGM);
+    const activeHand = state.activeTurn >= 0 ? state.hands?.[state.turnOrder?.[state.activeTurn]] : null;
+    const activeUser = activeHand ? game.users.get(activeHand.userId) : null;
 
     return foundry.utils.mergeObject(context, {
       isGM: game.user?.isGM ?? false,
@@ -89,10 +94,14 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       dealerCards,
       dealerScore: visibleDealerScore,
       showDealerScore: Boolean(dealerCards.length),
+      deckCount: state.deck?.length ?? 0,
       phase: state.phase,
       message: state.message,
       roundActive: state.phase === "players" || state.phase === "dealer",
-      hasRound: state.phase !== "idle"
+      playerTurnActive: state.phase === "players" && Boolean(activeHand),
+      activePlayerName: activeUser?.name ?? "",
+      hasRound: state.phase !== "idle",
+      lastAnimation: state.lastAnimation ?? null
     });
   }
 
@@ -106,11 +115,11 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
 
-    for (const button of this.element.querySelectorAll("button[data-blackjack-action]")) {
-      button.addEventListener("click", async (event) => {
-        const action = event.currentTarget.dataset.blackjackAction;
-        await requestPlayerAction(action);
-      });
+    const state = getBlackjackState();
+    const animation = state.lastAnimation;
+    if (animation?.nonce && animation.nonce !== this._lastAnimationNonce) {
+      this._lastAnimationNonce = animation.nonce;
+      requestAnimationFrame(() => this._animateDeal(animation));
     }
 
     if (!game.user?.isGM) return;
@@ -125,10 +134,18 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       await this.render({ force: true });
     });
 
+    this.element.querySelector("[data-give-card]")?.addEventListener("click", async () => {
+      await gmGiveCard();
+    });
+
+    this.element.querySelector("[data-pass-turn]")?.addEventListener("click", async () => {
+      await gmPassTurn();
+    });
+
     for (const select of this.element.querySelectorAll("select[data-seat-index]")) {
       select.addEventListener("change", async (event) => {
-        const state = getBlackjackState();
-        if (state.phase === "players" || state.phase === "dealer") {
+        const current = getBlackjackState();
+        if (current.phase === "players" || current.phase === "dealer") {
           ui.notifications?.warn("Encerre ou reinicie a rodada antes de trocar os jogadores de lugar.");
           await this.render({ force: true });
           return;
@@ -143,5 +160,36 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
         await this.render({ force: true });
       });
     }
+  }
+
+  _animateDeal(animation) {
+    if (animation?.type !== "deal-to-seat") return;
+    const deck = this.element.querySelector(".cassinooo-deck");
+    const target = this.element.querySelector(`.cassinooo-seat[data-seat-index="${animation.seatIndex}"] .cassinooo-hand`);
+    if (!deck || !target) return;
+
+    const board = this.element.querySelector(".cassinooo-felt");
+    if (!board) return;
+
+    const boardRect = board.getBoundingClientRect();
+    const from = deck.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+
+    const flying = document.createElement("div");
+    flying.className = "cassinooo-flying-card";
+    flying.textContent = "";
+    flying.style.left = `${from.left - boardRect.left + from.width / 2 - 19}px`;
+    flying.style.top = `${from.top - boardRect.top + from.height / 2 - 27}px`;
+    board.append(flying);
+
+    const dx = to.left - boardRect.left + to.width / 2 - (from.left - boardRect.left + from.width / 2);
+    const dy = to.top - boardRect.top + to.height / 2 - (from.top - boardRect.top + from.height / 2);
+
+    requestAnimationFrame(() => {
+      flying.style.transform = `translate(${dx}px, ${dy}px) rotate(8deg)`;
+      flying.style.opacity = "0.98";
+    });
+
+    window.setTimeout(() => flying.remove(), 520);
   }
 }
