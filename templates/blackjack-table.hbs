@@ -1,61 +1,48 @@
 <section class="cassinooo-table-shell">
   <header class="cassinooo-table-header">
     <div>
-      <h2>Mesa de Blackjack</h2>
-      <p>6 lugares compartilhados entre todos os jogadores conectados.</p>
+      <h2>Mesa do Cassino</h2>
+      <p>Blackjack compartilhado em tempo real para até 6 jogadores.</p>
     </div>
     {{#if isGM}}
-      <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do GM</span>
+      <div class="cassinooo-gm-controls">
+        <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
+        {{#if roundActive}}
+          <button type="button" data-reset-round><i class="fa-solid fa-rotate-left"></i> Reiniciar rodada</button>
+        {{else}}
+          <button type="button" data-start-round><i class="fa-solid fa-cards"></i> Distribuir cartas</button>
+          {{#if hasRound}}
+            <button type="button" data-reset-round><i class="fa-solid fa-rotate-left"></i> Limpar mesa</button>
+          {{/if}}
+        {{/if}}
+      </div>
     {{/if}}
   </header>
 
-  <div class="cassinooo-seat-row cassinooo-seat-row-top">
-    {{#each seats}}
-      {{#if (lt index 3)}}
-        <article class="cassinooo-seat">
-          <span class="cassinooo-seat-number">Lugar {{number}}</span>
-          {{#if ../isGM}}
-            <select data-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
-              <option value="">— Lugar vazio —</option>
-              {{#each options}}
-                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
-              {{/each}}
-            </select>
-          {{else}}
-            <strong>{{occupantName}}</strong>
-            {{#if occupied}}
-              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">
-                {{#if occupantActive}}Online{{else}}Offline{{/if}}
-              </small>
-            {{/if}}
-          {{/if}}
-          <div class="cassinooo-card-slot">Cartas</div>
-        </article>
-      {{/if}}
-    {{/each}}
-  </div>
+  <div class="cassinooo-message" aria-live="polite">{{message}}</div>
 
-  <div class="cassinooo-felt">
-    <div class="cassinooo-dealer">
-      <span>DEALER</span>
-      <div class="cassinooo-dealer-cards">
-        <div class="cassinooo-playing-card placeholder">?</div>
-        <div class="cassinooo-playing-card placeholder">?</div>
+  <div class="cassinooo-board">
+    <div class="cassinooo-felt">
+      <section class="cassinooo-dealer-zone">
+        <span class="cassinooo-role-label">DEALER / MESTRE</span>
+        <strong>{{dealerName}}</strong>
+        <div class="cassinooo-hand cassinooo-dealer-hand">
+          {{#each dealerCards}}
+            <div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
+          {{/each}}
+        </div>
+        {{#if showDealerScore}}<span class="cassinooo-score">Pontuação: {{dealerScore}}</span>{{/if}}
+      </section>
+
+      <div class="cassinooo-table-marking">
+        <strong>BLACKJACK</strong>
+        <span>Dealer para em 17</span>
       </div>
-    </div>
 
-    <div class="cassinooo-table-marking">
-      <strong>BLACKJACK</strong>
-      <span>Paga 3 para 2</span>
-    </div>
-  </div>
-
-  <div class="cassinooo-seat-row cassinooo-seat-row-bottom">
-    {{#each seats}}
-      {{#if (gte index 3)}}
-        <article class="cassinooo-seat">
-          <div class="cassinooo-card-slot">Cartas</div>
+      {{#each seats}}
+        <article class="cassinooo-seat {{positionClass}}">
           <span class="cassinooo-seat-number">Lugar {{number}}</span>
+
           {{#if ../isGM}}
             <select data-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
               <option value="">— Lugar vazio —</option>
@@ -64,20 +51,42 @@
               {{/each}}
             </select>
           {{else}}
-            <strong>{{occupantName}}</strong>
+            <strong class="cassinooo-player-name">{{occupantName}}</strong>
             {{#if occupied}}
               <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">
                 {{#if occupantActive}}Online{{else}}Offline{{/if}}
               </small>
             {{/if}}
           {{/if}}
+
+          <div class="cassinooo-hand">
+            {{#each cards}}
+              <div class="cassinooo-playing-card {{#if red}}red{{/if}}">{{label}}</div>
+            {{/each}}
+            {{#unless cards.length}}
+              <span class="cassinooo-empty-hand">Sem cartas</span>
+            {{/unless}}
+          </div>
+
+          {{#if hasHand}}
+            <div class="cassinooo-hand-meta">
+              <span class="cassinooo-score">{{score}}</span>
+              {{#if result}}<span class="cassinooo-result">{{result}}</span>{{/if}}
+            </div>
+          {{/if}}
+
+          {{#if canAct}}
+            <div class="cassinooo-player-actions">
+              <button type="button" data-blackjack-action="hit"><i class="fa-solid fa-plus"></i> Pedir</button>
+              <button type="button" data-blackjack-action="stand"><i class="fa-solid fa-hand"></i> Parar</button>
+            </div>
+          {{/if}}
         </article>
-      {{/if}}
-    {{/each}}
+      {{/each}}
+    </div>
   </div>
 
   <footer class="cassinooo-table-footer">
-    <i class="fa-solid fa-circle-info"></i>
-    Nesta versão os assentos já são compartilhados. Distribuição de cartas e regras do Blackjack entram na próxima etapa.
+    <strong>Regras atuais:</strong> Blackjack natural = 21 com 2 cartas; Ás vale 1 ou 11; figuras valem 10; Dealer compra até 16 e para em qualquer 17. Dividir, dobrar, seguro e apostas entram depois.
   </footer>
 </section>
