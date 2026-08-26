@@ -1,7 +1,7 @@
 <section class="cassinooo-table-shell">
   <header class="cassinooo-table-header">
     <div>
-      <h2>Mesa do Cassino</h2>
+      <h2>Blackjack</h2>
       <p>Blackjack compartilhado em tempo real para até 6 jogadores.</p>
     </div>
     {{#if isGM}}
@@ -11,9 +11,7 @@
           <button type="button" data-reset-round><i class="fa-solid fa-rotate-left"></i> Reiniciar rodada</button>
         {{else}}
           <button type="button" data-start-round><i class="fa-solid fa-cards"></i> Distribuir cartas</button>
-          {{#if hasRound}}
-            <button type="button" data-reset-round><i class="fa-solid fa-broom"></i> Limpar mesa</button>
-          {{/if}}
+          {{#if hasRound}}<button type="button" data-reset-round><i class="fa-solid fa-broom"></i> Limpar mesa</button>{{/if}}
         {{/if}}
       </div>
     {{/if}}
@@ -21,18 +19,13 @@
 
   <div class="cassinooo-message" aria-live="polite">{{message}}</div>
 
-  {{#if isGM}}
-    {{#if playerTurnActive}}
-      <div class="cassinooo-turn-controls">
-        <div>
-          <span class="cassinooo-turn-label">TURNO ATUAL</span>
-          <strong>{{activePlayerName}}</strong>
-        </div>
-        <button type="button" data-give-card><i class="fa-solid fa-hand-holding"></i> Entregar carta</button>
-        <button type="button" data-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>
-      </div>
-    {{/if}}
-  {{/if}}
+  {{#if isGM}}{{#if playerTurnActive}}
+    <div class="cassinooo-turn-controls">
+      <div><span class="cassinooo-turn-label">TURNO ATUAL</span><strong>{{activePlayerName}}</strong></div>
+      <button type="button" data-give-card><i class="fa-solid fa-hand-holding"></i> Entregar carta</button>
+      <button type="button" data-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>
+    </div>
+  {{/if}}{{/if}}
 
   <div class="cassinooo-board">
     <div class="cassinooo-felt">
@@ -48,68 +41,68 @@
             </div>
             <small>{{deckCount}} cartas</small>
           </div>
-
           <div>
             <div class="cassinooo-hand cassinooo-dealer-hand">
-              {{#each dealerCards}}
-                <div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
-              {{/each}}
+              {{#each dealerCards}}<div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>{{/each}}
             </div>
             {{#if showDealerScore}}<span class="cassinooo-score">Pontuação: {{dealerScore}}</span>{{/if}}
           </div>
         </div>
       </section>
 
-      <div class="cassinooo-table-marking">
-        <strong>BLACKJACK</strong>
-        <span>Dealer para em 17</span>
-      </div>
+      <div class="cassinooo-table-marking"><strong>BLACKJACK</strong><span>Blackjack paga 3:2</span></div>
 
       {{#each seats}}
         <article class="cassinooo-seat {{positionClass}} {{#if isActive}}active-turn{{/if}}" data-seat-index="{{index}}">
           <span class="cassinooo-seat-number">Lugar {{number}}</span>
-
           {{#if ../isGM}}
             <select data-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
               <option value="">— Lugar vazio —</option>
-              {{#each options}}
-                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
-              {{/each}}
+              {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
             </select>
           {{else}}
             <strong class="cassinooo-player-name">{{occupantName}}</strong>
-            {{#if occupied}}
-              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">
-                {{#if occupantActive}}Online{{else}}Offline{{/if}}
-              </small>
-            {{/if}}
+            {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
+          {{/if}}
+
+          {{#if occupied}}
+            <label class="cassinooo-wager-field">
+              <span>Aposta (PO)</span>
+              <input type="number" min="0" step="1" value="{{bet}}" data-wager-user-id="{{userId}}" {{#unless canEditBet}}disabled{{/unless}}>
+            </label>
           {{/if}}
 
           <div class="cassinooo-hand">
-            {{#each cards}}
-              <div class="cassinooo-playing-card {{#if red}}red{{/if}}">{{label}}</div>
-            {{/each}}
-            {{#unless cards.length}}
-              <span class="cassinooo-empty-hand">Sem cartas</span>
-            {{/unless}}
+            {{#each cards}}<div class="cassinooo-playing-card {{#if red}}red{{/if}}">{{label}}</div>{{/each}}
+            {{#unless cards.length}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
           </div>
 
-          {{#if hasHand}}
-            <div class="cassinooo-hand-meta">
-              <span class="cassinooo-score">{{score}}</span>
-              {{#if result}}<span class="cassinooo-result">{{result}}</span>{{/if}}
-            </div>
-          {{/if}}
-
-          {{#if isActive}}
-            <div class="cassinooo-turn-indicator"><i class="fa-solid fa-caret-up"></i> Turno</div>
-          {{/if}}
+          {{#if hasHand}}<div class="cassinooo-hand-meta"><span class="cassinooo-score">{{score}}</span>{{#if result}}<span class="cassinooo-result">{{result}}</span>{{/if}}</div>{{/if}}
+          {{#if isActive}}<div class="cassinooo-turn-indicator"><i class="fa-solid fa-caret-up"></i> Turno</div>{{/if}}
         </article>
       {{/each}}
+
+      {{#if showResults}}
+        <aside class="cassinooo-payout-board">
+          <h3>Resultado da Rodada</h3>
+          <table>
+            <thead><tr><th>Jogador</th><th>Aposta</th><th>Saldo</th></tr></thead>
+            <tbody>
+              {{#each roundResults}}
+                <tr>
+                  <td title="{{result}}">{{name}}</td>
+                  <td>{{bet}} PO</td>
+                  <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{delta}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </aside>
+      {{/if}}
     </div>
   </div>
 
   <footer class="cassinooo-table-footer">
-    <strong>Controle atual:</strong> somente o Mestre opera a mesa. Os jogadores informam por voz se querem carta ou passar. O assento iluminado indica de quem é a vez.
+    Vitória normal: +1× aposta. Blackjack natural: +1,5× aposta. Empate: 0. Derrota: perde a aposta inteira.
   </footer>
 </section>
