@@ -55,7 +55,7 @@
       </section>
 
       {{#each seats}}
-        <article class="cassinooo-roulette-seat {{positionClass}}" data-seat-index="{{index}}">
+        <article class="cassinooo-roulette-seat {{positionClass}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
           <span class="cassinooo-seat-number">Lugar {{number}}</span>
           {{#if ../isGM}}
             <select data-roulette-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
@@ -70,12 +70,51 @@
               <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>
             {{/if}}
           {{/if}}
+
+          {{#if occupied}}
+            <div class="cassinooo-roulette-bet-fields">
+              <label>
+                <span>Apostar em</span>
+                <select data-roulette-bet-type {{#unless canEditBet}}disabled{{/unless}}>
+                  <option value="">— Escolha —</option>
+                  {{#each betOptions}}
+                    <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                  {{/each}}
+                </select>
+              </label>
+              <label>
+                <span>Aposta (PO)</span>
+                <input type="number" min="0" step="1" value="{{betAmount}}" data-roulette-bet-amount {{#unless canEditBet}}disabled{{/unless}}>
+              </label>
+            </div>
+          {{/if}}
         </article>
       {{/each}}
+
+      {{#if showResults}}
+        <aside class="cassinooo-roulette-payout-board">
+          <h3>Resultado — {{result}}</h3>
+          <table>
+            <thead>
+              <tr><th>Jogador</th><th>Aposta</th><th>PO</th><th>Saldo</th></tr>
+            </thead>
+            <tbody>
+              {{#each roundResults}}
+                <tr>
+                  <td>{{name}}</td>
+                  <td title="{{betLabel}}">{{betLabel}}</td>
+                  <td>{{amount}}</td>
+                  <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </aside>
+      {{/if}}
     </div>
   </div>
 
   <footer class="cassinooo-table-footer">
-    O Mestre gira a roleta. Todos os jogadores veem a mesma animação e a casa vencedora é destacada ao final.
+    Número exato paga 35:1; dúzia paga 2:1; vermelho/preto, par/ímpar e baixo/alto pagam 1:1. O quadro mostra o saldo líquido da rodada.
   </footer>
 </section>
