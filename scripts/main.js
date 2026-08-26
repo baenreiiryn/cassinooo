@@ -1,15 +1,23 @@
 import { BlackjackTable } from "../applications/blackjack-table.js";
+import { RouletteTable } from "../applications/roulette-table.js";
 import { GamePlaceholder } from "../applications/game-placeholder.js";
 import { MODULE_ID, SOCKET_NAME, registerSettings } from "./state.js";
 import { registerModuleSettings } from "./module-settings.js";
 import { handleBlackjackSocket, registerBlackjackSetting } from "./blackjack.js";
+import { handleRouletteSocket, registerRouletteSettings } from "./roulette.js";
 
 let blackjackTable = null;
+let rouletteTable = null;
 const futureGames = new Map();
 
 function getBlackjackTable() {
   blackjackTable ??= new BlackjackTable();
   return blackjackTable;
+}
+
+function getRouletteTable() {
+  rouletteTable ??= new RouletteTable();
+  return rouletteTable;
 }
 
 function getFutureGame(id, config) {
@@ -18,9 +26,7 @@ function getFutureGame(id, config) {
 }
 
 function openBlackjack() { getBlackjackTable().render({ force: true }); }
-function openRoulette() {
-  getFutureGame("roulette", { title: "Roleta", icon: "fa-solid fa-circle-notch", gameName: "Roleta", description: "A mesa de roleta será implementada como um jogo independente." }).render({ force: true });
-}
+function openRoulette() { getRouletteTable().render({ force: true }); }
 function openBeholdem() {
   getFutureGame("beholdem", { title: "Beholdem", icon: "fa-solid fa-spade", gameName: "Beholdem", description: "Texas Hold'em compartilhado para a mesa do Cassinooo." }).render({ force: true });
 }
@@ -28,9 +34,18 @@ function openDragonDice() {
   getFutureGame("dragon-dice", { title: "Dados do Dragão", icon: "fa-solid fa-dice-d20", gameName: "Dados do Dragão", description: "Jogo de dados do Cassinooo, a ser implementado em uma mesa própria." }).render({ force: true });
 }
 
-async function refreshOpenTable() {
+async function refreshOpenBlackjack() {
   if (!blackjackTable?.rendered) return;
   await blackjackTable.render({ force: true });
+}
+
+async function refreshOpenRoulette() {
+  if (!rouletteTable?.rendered) return;
+  await rouletteTable.render({ force: true });
+}
+
+async function refreshOpenCasinoTables() {
+  await Promise.all([refreshOpenBlackjack(), refreshOpenRoulette()]);
 }
 
 function makeLauncherButton({ id, icon, label, onClick }) {
@@ -67,18 +82,23 @@ Hooks.once("init", () => {
   registerSettings();
   registerModuleSettings();
   registerBlackjackSetting();
+  registerRouletteSettings();
 });
 
 Hooks.once("ready", () => {
   game.socket.on(SOCKET_NAME, async (message) => {
     await handleBlackjackSocket(message);
-    if (!["seats-updated", "blackjack-updated", "backgrounds-updated"].includes(message?.type)) return;
-    await refreshOpenTable();
+    await handleRouletteSocket(message);
+
+    if (["seats-updated", "blackjack-updated"].includes(message?.type)) await refreshOpenBlackjack();
+    if (["roulette-seats-updated", "roulette-updated"].includes(message?.type)) await refreshOpenRoulette();
+    if (message?.type === "backgrounds-updated") await refreshOpenCasinoTables();
   });
 });
 
-Hooks.on("cassinoooBlackjackUpdated", refreshOpenTable);
-Hooks.on("cassinoooBackgroundsUpdated", refreshOpenTable);
+Hooks.on("cassinoooBlackjackUpdated", refreshOpenBlackjack);
+Hooks.on("cassinoooRouletteUpdated", refreshOpenRoulette);
+Hooks.on("cassinoooBackgroundsUpdated", refreshOpenCasinoTables);
 Hooks.on("renderJournalDirectory", injectJournalButtons);
 Hooks.on("renderApplicationV2", (app, element) => {
   if (app?.constructor?.name !== "JournalDirectory") return;
