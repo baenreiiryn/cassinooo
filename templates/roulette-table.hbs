@@ -1,0 +1,81 @@
+<section class="cassinooo-roulette-shell">
+  <header class="cassinooo-table-header">
+    <div>
+      <h2>Roleta</h2>
+      <p>Roleta europeia 0–36 compartilhada em tempo real.</p>
+    </div>
+    {{#if isGM}}
+      <div class="cassinooo-gm-controls">
+        <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
+        <button type="button" data-spin-roulette {{#if spinning}}disabled{{/if}}><i class="fa-solid fa-rotate"></i> Girar roleta</button>
+        <button type="button" data-reset-roulette {{#if spinning}}disabled{{/if}}><i class="fa-solid fa-broom"></i> Limpar resultado</button>
+      </div>
+    {{/if}}
+  </header>
+
+  <div class="cassinooo-message" aria-live="polite">{{message}}</div>
+
+  <div class="cassinooo-board">
+    <div class="cassinooo-roulette-felt">
+      <section class="cassinooo-wheel-zone">
+        <div class="cassinooo-roulette-wheel">
+          <div class="cassinooo-roulette-wheel-inner">
+            {{#each wheelNumbers}}
+              <div class="cassinooo-wheel-pocket {{color}}" style="{{style}}"><span>{{number}}</span></div>
+            {{/each}}
+            <div class="cassinooo-wheel-hub"></div>
+          </div>
+          <div class="cassinooo-roulette-ball-orbit"><div class="cassinooo-roulette-ball"></div></div>
+        </div>
+        {{#if hasResult}}
+          <div class="cassinooo-roulette-result {{#if settled}}settled{{/if}}">
+            <span>RESULTADO</span>
+            <strong>{{result}}</strong>
+          </div>
+        {{/if}}
+      </section>
+
+      <section class="cassinooo-betting-layout">
+        <div class="cassinooo-zero-cell {{#if zeroWinner}}winner{{/if}}" data-number="0">0</div>
+        <div class="cassinooo-number-grid">
+          {{#each gridNumbers}}
+            <div class="cassinooo-number-row">
+              {{#each this}}
+                <div class="cassinooo-number-cell {{color}} {{#if winner}}winner{{/if}}" data-number="{{number}}">{{number}}</div>
+              {{/each}}
+            </div>
+          {{/each}}
+        </div>
+        <div class="cassinooo-dozens-row">
+          <div>1st 12</div><div>2nd 12</div><div>3rd 12</div>
+        </div>
+        <div class="cassinooo-outside-row">
+          <div>1–18</div><div>PAR</div><div class="red-diamond">◆</div><div class="black-diamond">◆</div><div>ÍMPAR</div><div>19–36</div>
+        </div>
+      </section>
+
+      {{#each seats}}
+        <article class="cassinooo-roulette-seat {{positionClass}}" data-seat-index="{{index}}">
+          <span class="cassinooo-seat-number">Lugar {{number}}</span>
+          {{#if ../isGM}}
+            <select data-roulette-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
+              <option value="">— Lugar vazio —</option>
+              {{#each options}}
+                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
+              {{/each}}
+            </select>
+          {{else}}
+            <strong class="cassinooo-player-name">{{occupantName}}</strong>
+            {{#if occupied}}
+              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>
+            {{/if}}
+          {{/if}}
+        </article>
+      {{/each}}
+    </div>
+  </div>
+
+  <footer class="cassinooo-table-footer">
+    O Mestre gira a roleta. Todos os jogadores veem a mesma animação e a casa vencedora é destacada ao final.
+  </footer>
+</section>
