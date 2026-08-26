@@ -1,6 +1,11 @@
 import { MODULE_ID, SOCKET_NAME, getSeats } from "./state.js";
 
 export const BLACKJACK_SETTING = "blackjackState";
+const DEAL_DELAY = 620;
+
+function sleep(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
 function emptyGameState() {
   return {
@@ -32,6 +37,7 @@ export function getBlackjackState() {
 
 async function saveState(state) {
   await game.settings.set(MODULE_ID, BLACKJACK_SETTING, state);
+  Hooks.callAll("cassinoooBlackjackUpdated", foundry.utils.deepClone(state));
   game.socket.emit(SOCKET_NAME, { type: "blackjack-updated" });
   return state;
 }
@@ -116,24 +122,31 @@ function setActiveTurn(state, index) {
 }
 
 function findNextTurn(state, startIndex) {
-  for (let i = startIndex; i < state.turnOrder.length; i += 1) {
+  for (let i = Math.max(0, startIndex); i < state.turnOrder.length; i += 1) {
     const hand = state.hands[state.turnOrder[i]];
-    if (hand && hand.status === "waiting") return i;
+    if (hand?.status === "waiting") return i;
   }
   return -1;
 }
 
-async function finishDealerAndRound(state) {
-  state.phase = "dealer";
-  state.activeSeatIndex = null;
-  state.message = "O Dealer está jogando...";
+function hasUnfinishedPlayers(state) {
+  return state.turnOrder.some((userId) => {
+    const status = state.hands[userId]?.status;
+    return status === "waiting" || status === "playing";
+  });
+}
 
-  state.dealer.score = scoreHand(state.dealer.cards);
-  while (state.dealer.score < 17) {
-    state.dealer.cards.push(draw(state));
-    state.dealer.score = scoreHand(state.dealer.cards);
-  }
+async function animateState(state, animation, message) {
+  state.lastAnimation = {
+    nonce: `${Date.now()}-${Math.random()}`,
+    ...animation
+  };
+  if (message) state.message = message;
+  await saveState(state);
+  await sleep(DEAL_DELAY);
+}
 
+async function settleRound(state) {
   const dealerBust = state.dealer.score > 21;
   const dealerBlackjack = state.dealer.score === 21 && state.dealer.cards.length === 2;
 
@@ -153,11 +166,40 @@ async function finishDealerAndRound(state) {
   }
 
   state.phase = "finished";
+  state.activeTurn = -1;
+  state.activeSeatIndex = null;
+  state.lastAnimation = null;
   state.message = dealerBust
     ? `Dealer estourou com ${state.dealer.score}. Rodada encerrada.`
     : `Dealer parou em ${state.dealer.score}. Rodada encerrada.`;
 
   return saveState(state);
+}
+
+async function playDealer(state) {
+  state.phase = "dealer";
+  state.activeTurn = -1;
+  state.activeSeatIndex = null;
+  state.dealer.score = scoreHand(state.dealer.cards);
+
+  await animateState(
+    state,
+    { type: "reveal-dealer-hole" },
+    `Vez do Dealer. Carta fechada revelada: ${state.dealer.score}.`
+  );
+
+  while (state.dealer.score < 17) {
+    const card = draw(state);
+    state.dealer.cards.push(card);
+    state.dealer.score = scoreHand(state.dealer.cards);
+    await animateState(
+      state,
+      { type: "deal-to-dealer", card },
+      `Dealer compra ${card.rank}${card.suit} e fica com ${state.dealer.score}.`
+    );
+  }
+
+  return settleRound(state);
 }
 
 async function advanceTurn(state) {
@@ -166,7 +208,16 @@ async function advanceTurn(state) {
     setActiveTurn(state, next);
     return saveState(state);
   }
-  return finishDealerAndRound(state);
+
+  if (hasUnfinishedPlayers(state)) {
+    const fallback = findNextTurn(state, 0);
+    if (fallback >= 0) {
+      setActiveTurn(state, fallback);
+      return saveState(state);
+    }
+  }
+
+  return playDealer(state);
 }
 
 export async function startRound() {
@@ -183,21 +234,45 @@ export async function startRound() {
   }
 
   const state = emptyGameState();
-  state.phase = "players";
+  state.phase = "dealing";
   state.deck = shuffle(buildDeck());
+  state.message = "Distribuindo as cartas...";
 
   for (const { userId, seatIndex } of occupied) {
     state.hands[userId] = makeHand(userId, seatIndex);
     state.turnOrder.push(userId);
   }
 
+  await saveState(state);
+
   for (let round = 0; round < 2; round += 1) {
-    for (const userId of state.turnOrder) state.hands[userId].cards.push(draw(state));
-    state.dealer.cards.push(draw(state));
+    for (const userId of state.turnOrder) {
+      const hand = state.hands[userId];
+      const card = draw(state);
+      hand.cards.push(card);
+      hand.score = scoreHand(hand.cards);
+      const user = game.users.get(userId);
+      await animateState(
+        state,
+        { type: "deal-to-seat", seatIndex: hand.seatIndex, card, initialDeal: true },
+        `Distribuindo para ${user?.name ?? "Jogador"}...`
+      );
+    }
+
+    const dealerCard = draw(state);
+    state.dealer.cards.push(dealerCard);
+    state.dealer.score = scoreHand(state.dealer.cards);
+    await animateState(
+      state,
+      { type: "deal-to-dealer", card: dealerCard, initialDeal: true },
+      round === 0 ? "Dealer recebe a primeira carta." : "Dealer recebe a carta fechada."
+    );
   }
 
   for (const hand of Object.values(state.hands)) updateHandScore(hand);
   state.dealer.score = scoreHand(state.dealer.cards);
+  state.phase = "players";
+  state.lastAnimation = null;
 
   const first = findNextTurn(state, 0);
   if (first >= 0) {
@@ -206,7 +281,7 @@ export async function startRound() {
     return true;
   }
 
-  return finishDealerAndRound(state);
+  return playDealer(state);
 }
 
 export async function resetRound() {
@@ -226,20 +301,22 @@ export async function gmGiveCard() {
   const card = draw(state);
   hand.cards.push(card);
   updateHandScore(hand);
-  state.lastAnimation = {
-    nonce: `${Date.now()}-${Math.random()}`,
-    type: "deal-to-seat",
-    seatIndex: hand.seatIndex,
-    card
-  };
+
+  const user = game.users.get(hand.userId);
+  await animateState(
+    state,
+    { type: "deal-to-seat", seatIndex: hand.seatIndex, card },
+    `${user?.name ?? "Jogador"} recebeu ${card.rank}${card.suit}.`
+  );
 
   if (hand.status === "playing") {
-    const user = game.users.get(hand.userId);
-    state.message = `${user?.name ?? "Jogador"} recebeu ${card.rank}${card.suit}.`;
+    state.lastAnimation = null;
+    state.message = `Turno de ${user?.name ?? "Jogador"}.`;
     await saveState(state);
     return true;
   }
 
+  // Estouro ou 21 encerra apenas esta mão; os outros jogadores continuam normalmente.
   return advanceTurn(state);
 }
 
@@ -257,7 +334,6 @@ export async function gmPassTurn() {
 }
 
 export async function handleBlackjackSocket(message) {
-  // Os jogadores não enviam mais ações. O socket continua sendo usado
-  // para atualizar instantaneamente todas as mesas abertas.
+  // Os jogadores apenas assistem. O socket mantém todas as mesas abertas sincronizadas.
   if (!message) return;
 }
