@@ -12,7 +12,7 @@
         {{else}}
           <button type="button" data-start-round><i class="fa-solid fa-cards"></i> Distribuir cartas</button>
           {{#if hasRound}}
-            <button type="button" data-reset-round><i class="fa-solid fa-rotate-left"></i> Limpar mesa</button>
+            <button type="button" data-reset-round><i class="fa-solid fa-broom"></i> Limpar mesa</button>
           {{/if}}
         {{/if}}
       </div>
@@ -21,17 +21,43 @@
 
   <div class="cassinooo-message" aria-live="polite">{{message}}</div>
 
+  {{#if isGM}}
+    {{#if playerTurnActive}}
+      <div class="cassinooo-turn-controls">
+        <div>
+          <span class="cassinooo-turn-label">TURNO ATUAL</span>
+          <strong>{{activePlayerName}}</strong>
+        </div>
+        <button type="button" data-give-card><i class="fa-solid fa-hand-holding"></i> Entregar carta</button>
+        <button type="button" data-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>
+      </div>
+    {{/if}}
+  {{/if}}
+
   <div class="cassinooo-board">
     <div class="cassinooo-felt">
       <section class="cassinooo-dealer-zone">
         <span class="cassinooo-role-label">DEALER / MESTRE</span>
         <strong>{{dealerName}}</strong>
-        <div class="cassinooo-hand cassinooo-dealer-hand">
-          {{#each dealerCards}}
-            <div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
-          {{/each}}
+        <div class="cassinooo-dealer-tabletop">
+          <div class="cassinooo-deck-wrap">
+            <div class="cassinooo-deck" aria-label="Baralho do dealer">
+              <div class="cassinooo-deck-card back-3"></div>
+              <div class="cassinooo-deck-card back-2"></div>
+              <div class="cassinooo-deck-card back-1"></div>
+            </div>
+            <small>{{deckCount}} cartas</small>
+          </div>
+
+          <div>
+            <div class="cassinooo-hand cassinooo-dealer-hand">
+              {{#each dealerCards}}
+                <div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
+              {{/each}}
+            </div>
+            {{#if showDealerScore}}<span class="cassinooo-score">Pontuação: {{dealerScore}}</span>{{/if}}
+          </div>
         </div>
-        {{#if showDealerScore}}<span class="cassinooo-score">Pontuação: {{dealerScore}}</span>{{/if}}
       </section>
 
       <div class="cassinooo-table-marking">
@@ -40,7 +66,7 @@
       </div>
 
       {{#each seats}}
-        <article class="cassinooo-seat {{positionClass}}">
+        <article class="cassinooo-seat {{positionClass}} {{#if isActive}}active-turn{{/if}}" data-seat-index="{{index}}">
           <span class="cassinooo-seat-number">Lugar {{number}}</span>
 
           {{#if ../isGM}}
@@ -75,11 +101,8 @@
             </div>
           {{/if}}
 
-          {{#if canAct}}
-            <div class="cassinooo-player-actions">
-              <button type="button" data-blackjack-action="hit"><i class="fa-solid fa-plus"></i> Pedir</button>
-              <button type="button" data-blackjack-action="stand"><i class="fa-solid fa-hand"></i> Parar</button>
-            </div>
+          {{#if isActive}}
+            <div class="cassinooo-turn-indicator"><i class="fa-solid fa-caret-up"></i> Turno</div>
           {{/if}}
         </article>
       {{/each}}
@@ -87,6 +110,6 @@
   </div>
 
   <footer class="cassinooo-table-footer">
-    <strong>Regras atuais:</strong> Blackjack natural = 21 com 2 cartas; Ás vale 1 ou 11; figuras valem 10; Dealer compra até 16 e para em qualquer 17. Dividir, dobrar, seguro e apostas entram depois.
+    <strong>Controle atual:</strong> somente o Mestre opera a mesa. Os jogadores informam por voz se querem carta ou passar. O assento iluminado indica de quem é a vez.
   </footer>
 </section>
