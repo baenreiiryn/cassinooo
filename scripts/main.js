@@ -1,6 +1,7 @@
 import { BlackjackTable } from "../applications/blackjack-table.js";
 import { GamePlaceholder } from "../applications/game-placeholder.js";
 import { MODULE_ID, SOCKET_NAME, registerSettings } from "./state.js";
+import { registerModuleSettings } from "./module-settings.js";
 import { handleBlackjackSocket, registerBlackjackSetting } from "./blackjack.js";
 
 let blackjackTable = null;
@@ -64,18 +65,20 @@ function injectJournalButtons(app, element) {
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Inicializando Cassinooo`);
   registerSettings();
+  registerModuleSettings();
   registerBlackjackSetting();
 });
 
 Hooks.once("ready", () => {
   game.socket.on(SOCKET_NAME, async (message) => {
     await handleBlackjackSocket(message);
-    if (!["seats-updated", "blackjack-updated"].includes(message?.type)) return;
+    if (!["seats-updated", "blackjack-updated", "backgrounds-updated"].includes(message?.type)) return;
     await refreshOpenTable();
   });
 });
 
 Hooks.on("cassinoooBlackjackUpdated", refreshOpenTable);
+Hooks.on("cassinoooBackgroundsUpdated", refreshOpenTable);
 Hooks.on("renderJournalDirectory", injectJournalButtons);
 Hooks.on("renderApplicationV2", (app, element) => {
   if (app?.constructor?.name !== "JournalDirectory") return;
