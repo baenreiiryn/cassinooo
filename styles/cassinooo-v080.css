@@ -1,0 +1,321 @@
+/* Cassinooo 0.8.0 — Roleta + correção do verso das cartas */
+
+/* O fundo configurável do Blackjack nunca interfere no verso das cartas. */
+.cassinooo-blackjack-table .cassinooo-deck-card,
+.cassinooo-blackjack-table .cassinooo-flying-card,
+.cassinooo-blackjack-table .cassinooo-playing-card.hidden-card {
+  background-image: url("../assets/balor-card-back.svg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-color: #2b0907 !important;
+}
+
+.cassinooo-roulette-table .window-content {
+  padding: 0;
+  overflow: auto;
+  background: #11150f;
+}
+
+.cassinooo-roulette-shell {
+  min-height: 100%;
+  padding: 16px;
+  color: #f4ead7;
+  background: radial-gradient(circle at 50% 20%, #24331f, #10150e 72%);
+  box-sizing: border-box;
+}
+
+.cassinooo-roulette-felt {
+  position: relative;
+  width: 1100px;
+  min-width: 1100px;
+  height: 690px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 10px solid #846c45;
+  border-radius: 44px;
+  background: radial-gradient(circle at 55% 42%, #2d8b46 0%, #17622f 62%, #0d3c20 100%);
+  box-shadow: inset 0 0 0 3px rgba(232,212,166,.45), inset 0 0 55px rgba(0,0,0,.28), 0 14px 34px rgba(0,0,0,.38);
+  box-sizing: border-box;
+}
+
+.cassinooo-wheel-zone {
+  position: absolute;
+  left: 38px;
+  top: 70px;
+  width: 390px;
+  text-align: center;
+  z-index: 3;
+}
+
+.cassinooo-roulette-wheel {
+  position: relative;
+  width: 330px;
+  height: 330px;
+  margin: 0 auto;
+  border: 15px solid #9b7443;
+  border-radius: 50%;
+  background: #4d2b18;
+  box-shadow: inset 0 0 0 6px #c6a66d, inset 0 0 35px #120b07, 0 8px 22px rgba(0,0,0,.5);
+}
+
+.cassinooo-roulette-wheel-inner {
+  --roulette-wheel-end: 0deg;
+  position: absolute;
+  inset: 17px;
+  border: 7px solid #d0b27a;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #805128 0 21%, transparent 22%),
+    repeating-conic-gradient(from -4.86deg, #1e1e1e 0deg 4.86deg, #a32323 4.86deg 9.73deg);
+  box-shadow: inset 0 0 26px rgba(0,0,0,.55);
+}
+
+.cassinooo-roulette-wheel-inner::after {
+  content: "";
+  position: absolute;
+  inset: 61px;
+  border: 5px solid #c9a86d;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b78b4e 0%, #735026 58%, #332112 100%);
+  box-shadow: inset 0 0 13px rgba(0,0,0,.5);
+}
+
+.cassinooo-wheel-pocket {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 25px;
+  height: 124px;
+  margin-left: -12.5px;
+  margin-top: -124px;
+  transform-origin: 12.5px 124px;
+  transform: rotate(var(--angle));
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cassinooo-wheel-pocket span {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 22px;
+  transform: translateX(-50%) rotate(calc(-1 * var(--angle)));
+  color: white;
+  font-size: 9px;
+  font-weight: 900;
+  text-shadow: 0 1px 2px #000;
+}
+
+.cassinooo-wheel-pocket.green span {
+  padding: 2px 0;
+  border-radius: 4px;
+  background: #1f7b42;
+}
+
+.cassinooo-wheel-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 27px;
+  height: 27px;
+  transform: translate(-50%, -50%);
+  border: 4px solid #e0c28b;
+  border-radius: 50%;
+  background: #9f7138;
+  box-shadow: 0 0 0 5px #543419, 0 3px 7px rgba(0,0,0,.4);
+  z-index: 6;
+}
+
+.cassinooo-roulette-ball-orbit {
+  --roulette-ball-end: 0deg;
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.cassinooo-roulette-ball {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 13px;
+  height: 13px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: #fff5d9;
+  box-shadow: 0 1px 4px #000, inset -2px -2px 3px rgba(0,0,0,.28);
+}
+
+@keyframes cassinooo-wheel-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(var(--roulette-wheel-end)); }
+}
+
+@keyframes cassinooo-ball-spin {
+  0% { transform: rotate(0deg); }
+  72% { transform: rotate(calc(var(--roulette-ball-end) * .90)); }
+  100% { transform: rotate(var(--roulette-ball-end)); }
+}
+
+.cassinooo-roulette-wheel-inner.is-spinning {
+  animation: cassinooo-wheel-spin 4.2s cubic-bezier(.12,.68,.18,1) forwards;
+}
+
+.cassinooo-roulette-ball-orbit.is-spinning {
+  animation: cassinooo-ball-spin 4.2s cubic-bezier(.12,.73,.14,1) forwards;
+}
+
+.cassinooo-roulette-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 6px 13px;
+  border: 1px solid #d2b170;
+  border-radius: 999px;
+  background: rgba(18,26,15,.87);
+  color: #ddc58f;
+}
+
+.cassinooo-roulette-result span {
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.cassinooo-roulette-result strong {
+  font-size: 1.45rem;
+  color: #fff1be;
+}
+
+.cassinooo-roulette-result.settled {
+  box-shadow: 0 0 18px rgba(255,213,94,.55);
+}
+
+.cassinooo-betting-layout {
+  position: absolute;
+  left: 455px;
+  top: 86px;
+  width: 475px;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  grid-template-rows: auto 43px 39px;
+  color: white;
+  font-weight: 800;
+  text-align: center;
+  z-index: 4;
+}
+
+.cassinooo-zero-cell {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  min-height: 132px;
+  border: 2px solid #e6e0c6;
+  border-radius: 20px 0 0 20px;
+  background: #16733b;
+  font-size: 1.05rem;
+}
+
+.cassinooo-number-grid {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.cassinooo-number-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.cassinooo-number-cell {
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245,238,215,.9);
+  font-size: .76rem;
+  text-shadow: 0 1px 2px #000;
+  box-sizing: border-box;
+}
+
+.cassinooo-number-cell.red { background: rgba(171,35,35,.88); }
+.cassinooo-number-cell.black { background: rgba(23,23,23,.92); }
+
+.cassinooo-dozens-row {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.cassinooo-dozens-row > div,
+.cassinooo-outside-row > div {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245,238,215,.9);
+  background: rgba(21,96,50,.74);
+  font-size: .72rem;
+}
+
+.cassinooo-outside-row {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.cassinooo-outside-row .red-diamond { color: #d63636; font-size: 1.15rem; text-shadow: 0 1px 2px #000; }
+.cassinooo-outside-row .black-diamond { color: #171717; font-size: 1.15rem; text-shadow: 0 0 1px #fff; }
+
+.cassinooo-number-cell.winner,
+.cassinooo-zero-cell.winner {
+  position: relative;
+  z-index: 7;
+  border-color: #ffe474;
+  box-shadow: inset 0 0 0 3px #ffe474, 0 0 22px rgba(255,220,78,.95);
+  animation: cassinooo-winning-number 1s ease-in-out infinite;
+}
+
+@keyframes cassinooo-winning-number {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.65); }
+}
+
+.cassinooo-roulette-seat {
+  position: absolute;
+  width: 188px;
+  height: 92px;
+  padding: 8px;
+  border: 1px solid rgba(223,185,116,.68);
+  border-radius: 11px;
+  background: rgba(19,25,16,.9);
+  box-shadow: 0 5px 13px rgba(0,0,0,.34);
+  text-align: center;
+  box-sizing: border-box;
+  z-index: 8;
+}
+
+.cassinooo-roulette-seat select {
+  width: 100%;
+  min-height: 29px;
+  margin-top: 7px;
+}
+
+/* L: quatro na base + dois na lateral direita */
+.cassinooo-roulette-seat.seat-bottom-1 { left: 58px; bottom: 24px; }
+.cassinooo-roulette-seat.seat-bottom-2 { left: 265px; bottom: 24px; }
+.cassinooo-roulette-seat.seat-bottom-3 { left: 472px; bottom: 24px; }
+.cassinooo-roulette-seat.seat-bottom-4 { left: 679px; bottom: 24px; }
+.cassinooo-roulette-seat.seat-right-1 { right: 20px; top: 355px; }
+.cassinooo-roulette-seat.seat-right-2 { right: 20px; top: 465px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-roulette-wheel-inner.is-spinning,
+  .cassinooo-roulette-ball-orbit.is-spinning,
+  .cassinooo-number-cell.winner,
+  .cassinooo-zero-cell.winner {
+    animation-duration: 1ms;
+  }
+}
