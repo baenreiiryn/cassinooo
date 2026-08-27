@@ -5,6 +5,7 @@ export const DRAGON_DICE_SEATS_SETTING = "dragonDiceSeats";
 export const DRAGON_DICE_BETS_SETTING = "dragonDiceBets";
 
 const EMPTY_SEATS = { 0:"",1:"",2:"",3:"",4:"",5:"" };
+export const DRAGON_VISUAL_SEAT_ORDER = [5,1,4,3,2,0];
 export const DRAGON_BET_TYPES = [
   { id:"heart", label:"❤️ Coração do Dragão", payout:1 },
   { id:"gold", label:"☀️ Escamas Douradas", payout:6 },
@@ -18,6 +19,7 @@ function emptyState(){
   return {
     phase:"idle",
     dice:null,
+    rollJSON:null,
     rollNonce:null,
     lastAnimation:null,
     roundResults:[],
@@ -27,6 +29,7 @@ function emptyState(){
 function sanitize(value){ const n=Number(value); return Number.isFinite(n) ? Math.max(0,Math.floor(n)) : 0; }
 function primaryGM(){ return game.users.filter(u=>u.isGM&&u.active).sort((a,b)=>a.id.localeCompare(b.id))[0] ?? null; }
 function isPrimaryGM(){ return Boolean(game.user?.isGM && primaryGM()?.id===game.user.id); }
+function sleep(ms){ return new Promise(resolve=>window.setTimeout(resolve,ms)); }
 
 export function registerDragonDiceSettings(){
   game.settings.register(MODULE_ID, DRAGON_DICE_STATE_SETTING, { name:"Estado dos Dados do Dragão", scope:"world", config:false, type:Object, default:emptyState() });
@@ -79,32 +82,78 @@ export async function requestDragonBetChange(userId,betId,value){
   return true;
 }
 
-function rollHiddenDice(){
-  return { d4:1+Math.floor(Math.random()*4), d6:1+Math.floor(Math.random()*6), d8:1+Math.floor(Math.random()*8) };
+function getRollClass(){
+  return CONFIG?.Dice?.rolls?.[0] ?? foundry?.dice?.Roll ?? globalThis.Roll;
 }
-async function showDiceSoNice(dice,{hidden=false,synchronize=false}={}){
-  if(!game.dice3d?.show) return false;
-  const data={ formula:"1d4 + 1d6 + 1d8", results:[dice.d4,dice.d6,dice.d8] };
+
+async function createDragonRoll(){
+  const RollClass=getRollClass();
+  if(!RollClass) throw new Error("Foundry Roll API indisponível.");
+  const roll=await new RollClass("1d4 + 1d6 + 1d8").evaluate({allowInteractive:false});
+  const values=roll.dice.map(die=>{
+    const result=die.results?.find(r=>r.active!==false);
+    return Number(result?.result ?? die.total ?? 0);
+  });
+  if(values.length<3) throw new Error("Não foi possível ler d4, d6 e d8 da rolagem.");
+  return {
+    roll,
+    rollJSON:JSON.stringify(roll.toJSON()),
+    dice:{d4:values[0],d6:values[1],d8:values[2]}
+  };
+}
+
+function restoreDragonRoll(rollJSON){
+  if(!rollJSON) return null;
+  try {
+    const RollClass=getRollClass();
+    return RollClass?.fromJSON?.(rollJSON) ?? null;
+  } catch(err){
+    console.warn(`${MODULE_ID} | Não foi possível restaurar a Roll dos Dados do Dragão`,err);
+    return null;
+  }
+}
+
+async function showDiceSoNiceRoll(roll,{hidden=false,synchronize=false}={}){
+  if(!roll || !game.dice3d?.showForRoll) return false;
   try {
     const whisper=hidden ? [game.user.id] : null;
-    return await game.dice3d.show(data,game.user,synchronize,whisper,false);
-  } catch(err){ console.warn(`${MODULE_ID} | Dice So Nice unavailable`,err); return false; }
+    return await game.dice3d.showForRoll(roll,game.user,synchronize,whisper,false);
+  } catch(err){
+    console.warn(`${MODULE_ID} | Dice So Nice não conseguiu exibir a rolagem`,err);
+    return false;
+  }
 }
 
 export async function gmRollDragonDice(){
   if(!game.user?.isGM) return false;
   const current=getDragonDiceState();
   if(current.phase==="rolling" || current.phase==="betting") return false;
-  const dice=rollHiddenDice();
+
+  let generated;
+  try {
+    generated=await createDragonRoll();
+  } catch(err){
+    console.error(`${MODULE_ID} | Falha ao gerar Dados do Dragão`,err);
+    ui.notifications?.error("Não foi possível rolar os Dados do Dragão.");
+    return false;
+  }
+
   const state=emptyState();
   state.phase="rolling";
-  state.dice=dice;
+  state.dice=generated.dice;
+  state.rollJSON=generated.rollJSON;
   state.rollNonce=`${Date.now()}-${Math.random()}`;
   state.lastAnimation={nonce:state.rollNonce,type:"cup-roll"};
   state.message="O crupiê sacode o copo... os dados permanecem escondidos.";
   await saveState(state);
-  void showDiceSoNice(dice,{hidden:true,synchronize:false});
-  await new Promise(r=>window.setTimeout(r,1500));
+
+  // A Roll real do Foundry é enviada ao Dice So Nice. Como synchronize=false,
+  // a animação 3D fica somente no cliente do Mestre enquanto o copo é sacudido.
+  await Promise.all([
+    showDiceSoNiceRoll(generated.roll,{hidden:true,synchronize:false}),
+    sleep(1500)
+  ]);
+
   state.phase="betting";
   state.lastAnimation={nonce:`${Date.now()}-${Math.random()}`,type:"cup-cover"};
   state.message="O copo está sobre os dados. Façam suas apostas.";
@@ -152,7 +201,10 @@ export async function gmRevealDragonDice(){
   const sum=state.dice.d4+state.dice.d6+state.dice.d8;
   state.message=`Revelado: ${state.dice.d4} — ${state.dice.d6} — ${state.dice.d8}. Soma ${sum}.`;
   await saveState(state);
-  await showDiceSoNice(state.dice,{hidden:false,synchronize:true});
+
+  // Reconstroi a mesma Roll avaliada para todos verem exatamente os mesmos dados.
+  const roll=restoreDragonRoll(state.rollJSON);
+  await showDiceSoNiceRoll(roll,{hidden:false,synchronize:true});
   return true;
 }
 
