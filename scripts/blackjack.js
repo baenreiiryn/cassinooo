@@ -149,7 +149,10 @@ async function advanceTurn(state) {
 export async function startRound() {
   if (!game.user?.isGM) return false;
   const wagers = getBlackjackWagers();
-  const occupied = getSeats().map((userId, seatIndex) => ({ userId, seatIndex })).filter(({ userId }) => Boolean(userId && game.users.get(userId)));
+  const occupied = getSeats()
+    .map((userId, seatIndex) => ({ userId, seatIndex }))
+    .filter(({ userId }) => Boolean(userId && game.users.get(userId)))
+    .reverse();
   if (!occupied.length) { ui.notifications?.warn("Defina pelo menos um jogador em um assento antes de distribuir as cartas."); return false; }
 
   const state = emptyGameState(); state.phase = "dealing"; state.deck = shuffle(buildDeck()); state.message = "Distribuindo as cartas...";
