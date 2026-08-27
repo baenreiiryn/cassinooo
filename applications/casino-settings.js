@@ -1,5 +1,5 @@
 import { MODULE_ID, SOCKET_NAME } from "../scripts/state.js";
-import { BACKGROUND_SETTINGS, getTableBackground } from "../scripts/backgrounds.js";
+import { BACKGROUND_SETTINGS, CARD_BACK_SETTINGS, getTableBackground, getCardBack, applyCardBackVariables } from "../scripts/backgrounds.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const FilePicker = foundry.applications.apps.FilePicker;
@@ -8,16 +8,11 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "cassinooo-settings",
     classes: ["cassinooo", "cassinooo-settings"],
-    position: { width: 720, height: 680 },
-    window: {
-      title: "Cassinooo — Configurações",
-      icon: "fa-solid fa-gears"
-    }
+    position: { width: 760, height: 820 },
+    window: { title: "Cassinooo — Configurações", icon: "fa-solid fa-gears" }
   };
 
-  static PARTS = {
-    form: { template: "modules/cassinooo/templates/casino-settings.hbs" }
-  };
+  static PARTS = { form: { template: "modules/cassinooo/templates/casino-settings.hbs" } };
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -27,13 +22,16 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
         { id: "roulette", label: "Roleta", icon: "fa-solid fa-circle-notch", value: getTableBackground("roulette") },
         { id: "beholdem", label: "Beholdem", icon: "fa-solid fa-spade", value: getTableBackground("beholdem") },
         { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20", value: getTableBackground("dragonDice") }
+      ],
+      cardBacks: [
+        { id: "blackjackCardBack", label: "Verso — Blackjack", icon: "fa-solid fa-club", value: getCardBack("blackjack") },
+        { id: "beholdemCardBack", label: "Verso — Beholdem", icon: "fa-solid fa-spade", value: getCardBack("beholdem") }
       ]
     });
   }
 
   _onRender(context, options) {
     super._onRender(context, options);
-
     for (const button of this.element.querySelectorAll("button[data-file-picker]")) {
       button.addEventListener("click", async (event) => {
         event.preventDefault();
@@ -41,7 +39,6 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
         await picker.render({ force: true });
       });
     }
-
     for (const button of this.element.querySelectorAll("button[data-clear-background]")) {
       button.addEventListener("click", (event) => {
         event.preventDefault();
@@ -49,22 +46,25 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
         if (input) input.value = "";
       });
     }
-
     this.element.querySelector("[data-save-backgrounds]")?.addEventListener("click", async (event) => {
       event.preventDefault();
-      await this._saveBackgrounds();
+      await this._saveAppearance();
     });
   }
 
-  async _saveBackgrounds() {
+  async _saveAppearance() {
     for (const [gameId, settingKey] of Object.entries(BACKGROUND_SETTINGS)) {
       const input = this.element.querySelector(`input[name="${gameId}"]`);
       await game.settings.set(MODULE_ID, settingKey, String(input?.value ?? "").trim());
     }
-
+    for (const [fieldId, settingKey] of Object.entries(CARD_BACK_SETTINGS)) {
+      const input = this.element.querySelector(`input[name="${fieldId}"]`);
+      await game.settings.set(MODULE_ID, settingKey, String(input?.value ?? "").trim());
+    }
+    applyCardBackVariables();
     game.socket.emit(SOCKET_NAME, { type: "backgrounds-updated" });
     Hooks.callAll("cassinoooBackgroundsUpdated");
-    ui.notifications?.info("Fundos das mesas do Cassinooo salvos.");
+    ui.notifications?.info("Aparência das mesas do Cassinooo salva.");
     await this.close();
   }
 }
