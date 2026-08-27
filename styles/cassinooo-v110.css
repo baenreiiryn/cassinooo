@@ -1,0 +1,257 @@
+/* Cassinooo 0.11.0 — Beholdem art-aligned responsive table */
+
+.cassinooo-beholdem-table .window-content {
+  padding: 0;
+  overflow: hidden;
+  min-width: 340px;
+  min-height: 360px;
+  background: #130a09;
+}
+
+.cassinooo-beholdem-shell {
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.cassinooo-beholdem-header {
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+}
+.cassinooo-beholdem-header h2 { font-size: 1.2rem; }
+.cassinooo-beholdem-header p { font-size: .75rem; }
+.cassinooo-beholdem-header .cassinooo-gm-controls button { min-height: 29px; font-size: .72rem; }
+
+.cassinooo-beholdem-turn-banner {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 4px 10px;
+  border: 1px solid rgba(244,190,81,.6);
+  border-radius: 999px;
+  background: rgba(41,12,8,.92);
+  box-shadow: 0 0 14px rgba(238,163,43,.25);
+  color: #e9cb8e;
+}
+.cassinooo-beholdem-turn-banner span { font-size: .6rem; letter-spacing:.14em; font-weight:900; }
+.cassinooo-beholdem-turn-banner strong { color:#fff0bb; }
+.cassinooo-beholdem-turn-banner em { color:#c8ae7a; font-size:.68rem; font-style:normal; }
+.cassinooo-beholdem-turn-banner.passive { opacity:.82; }
+
+.cassinooo-beholdem-viewport {
+  flex: 1 1 auto;
+  min-height: 300px;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.cassinooo-beholdem-stage {
+  --beholdem-scale: 1;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.cassinooo-beholdem-table .cassinooo-beholdem-felt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1100px;
+  min-width: 1100px;
+  height: 700px;
+  margin: 0;
+  transform: scale(var(--beholdem-scale));
+  transform-origin: top left;
+  overflow: hidden;
+  border: 0;
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 2px rgba(205,137,70,.42), 0 12px 30px rgba(0,0,0,.48);
+}
+
+/* Dealer label sits over the torso; the shoe/deck sits on the felt just below her hands. */
+.cassinooo-beholdem-table .cassinooo-beholdem-dealer {
+  left: 50%;
+  top: 28%;
+  width: 260px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-dealer > span,
+.cassinooo-beholdem-table .cassinooo-beholdem-dealer > strong {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: rgba(25,6,5,.66);
+  text-shadow: 0 1px 3px #000;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-dealer > strong { margin-left:4px; }
+.cassinooo-beholdem-table .cassinooo-beholdem-deck {
+  position: absolute;
+  left: 50%;
+  top: 116px;
+  width: 58px;
+  height: 74px;
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-deck > div {
+  width: 44px;
+  height: 62px;
+}
+
+/* Five community cards occupy the clear central lane on the supplied artwork. */
+.cassinooo-beholdem-table .cassinooo-community-cards {
+  left: 50%;
+  top: 61.5%;
+  width: 430px;
+  min-height: 82px;
+  gap: 7px;
+}
+.cassinooo-beholdem-table .cassinooo-community-cards .cassinooo-poker-card {
+  width: 55px;
+  height: 76px;
+}
+.cassinooo-community-placeholder {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(25,6,5,.46);
+  text-shadow: 0 1px 3px #000;
+}
+
+/* Six seats align with the natural betting/cup positions in the reference image. */
+.cassinooo-beholdem-table .cassinooo-beholdem-seat {
+  width: 184px;
+  height: 142px;
+  padding: 6px 7px;
+  border-radius: 11px;
+  background: rgba(24,6,6,.76);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(218,158,83,.55);
+  box-shadow: 0 5px 14px rgba(0,0,0,.38);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-upper-left { left: 6.2%; top: 52.5%; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-upper-right { left: 77.1%; right:auto; top: 52.5%; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-left { left: 7.7%; top: 71.5%; bottom:auto; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-mid-left { left: 29.1%; top: 79.0%; bottom:auto; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-mid-right { left: 55.0%; right:auto; top: 79.0%; bottom:auto; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-right { left: 78.2%; right:auto; top: 71.5%; bottom:auto; }
+
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.active-turn {
+  border-color: #ffd36b;
+  transform: scale(1.035);
+  box-shadow: 0 0 0 2px rgba(255,211,107,.35), 0 0 28px rgba(255,174,55,.95), 0 6px 15px rgba(0,0,0,.45);
+  animation: cassinooo-beholdem-turn-pulse 1.25s ease-in-out infinite;
+}
+@keyframes cassinooo-beholdem-turn-pulse {
+  0%,100% { box-shadow:0 0 0 2px rgba(255,211,107,.28),0 0 17px rgba(255,174,55,.58),0 6px 15px rgba(0,0,0,.45); }
+  50% { box-shadow:0 0 0 3px rgba(255,225,137,.55),0 0 36px rgba(255,174,55,1),0 6px 15px rgba(0,0,0,.45); }
+}
+
+.cassinooo-beholdem-table .cassinooo-seat-number { margin-bottom:2px; font-size:.58rem; }
+.cassinooo-beholdem-table .cassinooo-beholdem-seat select { min-height:24px; height:25px; margin:2px 0; font-size:.68rem; }
+.cassinooo-beholdem-table .cassinooo-player-name { font-size:.76rem; }
+.cassinooo-beholdem-table .cassinooo-status { margin-bottom:1px; font-size:.58rem; }
+
+.cassinooo-beholdem-wager {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0;
+  color: #e4c687;
+  font-size: .59rem;
+  font-weight: 800;
+}
+.cassinooo-beholdem-wager input {
+  min-width: 0;
+  height: 23px;
+  text-align: right;
+  font-size: .68rem;
+}
+
+.cassinooo-beholdem-table .cassinooo-hole-cards {
+  min-height: 58px;
+  gap: 4px;
+}
+.cassinooo-beholdem-table .cassinooo-hole-cards .cassinooo-poker-card {
+  width: 38px;
+  height: 54px;
+  font-size: .75rem;
+}
+.cassinooo-beholdem-best-hand {
+  margin-top:-2px;
+  color:#f1d18c;
+  font-size:.58rem;
+  font-weight:800;
+}
+.cassinooo-beholdem-table .cassinooo-turn-indicator { margin-top:1px; font-size:.55rem; }
+
+/* Flying card originates at dealer deck and moves to a seat/community lane. */
+.cassinooo-beholdem-flying-card {
+  position: absolute;
+  z-index: 30;
+  width: 44px;
+  height: 62px;
+  border: 2px solid #d8b36f;
+  border-radius: 6px;
+  background-image: var(--beholdem-card-back, url("../assets/balor-card-back.svg"));
+  background-position:center;
+  background-size:cover;
+  background-repeat:no-repeat;
+  box-shadow:0 5px 12px rgba(0,0,0,.55);
+  opacity:.98;
+  transform:translate(0,0) rotate(-5deg);
+  transition: transform 460ms cubic-bezier(.18,.75,.18,1), opacity 160ms ease;
+  transform-style: preserve-3d;
+}
+.cassinooo-beholdem-flying-card.flip { transform: rotateY(180deg); opacity:0; }
+.cassinooo-poker-card.revealing { animation:cassinooo-beholdem-flip .42s ease; }
+@keyframes cassinooo-beholdem-flip { 0%{transform:rotateY(90deg) scale(.92)} 100%{transform:rotateY(0deg) scale(1)} }
+
+/* Showdown result floats at center without permanently covering the table. */
+.cassinooo-beholdem-results-overlay {
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  z-index:40;
+  background:rgba(7,2,2,.54);
+  backdrop-filter:blur(2px);
+  animation:cassinooo-results-in .28s ease;
+}
+@keyframes cassinooo-results-in { from{opacity:0} to{opacity:1} }
+.cassinooo-beholdem-results-card {
+  width: 570px;
+  max-height: 390px;
+  overflow:auto;
+  padding:16px;
+  border:2px solid #d4a65b;
+  border-radius:14px;
+  background:rgba(28,7,6,.96);
+  box-shadow:0 0 34px rgba(219,142,45,.42),0 15px 35px rgba(0,0,0,.55);
+}
+.cassinooo-beholdem-results-card h3 { margin:0 0 5px; text-align:center; color:#f1d08e; }
+.cassinooo-beholdem-results-pot { margin-bottom:9px; text-align:center; color:#c9ae7a; }
+.cassinooo-beholdem-results-card table { width:100%; border-collapse:collapse; font-size:.73rem; }
+.cassinooo-beholdem-results-card th,.cassinooo-beholdem-results-card td { padding:5px 7px; border-bottom:1px solid rgba(222,179,98,.2); }
+.cassinooo-beholdem-results-card tr.winner { background:rgba(182,119,33,.15); }
+.cassinooo-beholdem-results-card .positive { color:#9fe0a4; font-weight:900; }
+.cassinooo-beholdem-results-card .negative { color:#ef9b91; font-weight:900; }
+
+.cassinooo-beholdem-table .cassinooo-table-footer { flex:0 0 auto; margin-top:5px; font-size:.68rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-beholdem-table .cassinooo-beholdem-seat.active-turn,
+  .cassinooo-poker-card.revealing { animation:none; }
+  .cassinooo-beholdem-flying-card { transition-duration:1ms; }
+}
