@@ -9,6 +9,8 @@ import {
   getBeholdemSeats,
   getBeholdemState,
   getBeholdemWagers,
+  requestBeholdemFold,
+  requestBeholdemRaise,
   requestBeholdemWagerChange,
   resetBeholdem,
   revealShowdown,
@@ -55,10 +57,10 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
       const hand = userId ? state.hands?.[userId] : null;
-      // Hole cards are private: only the user seated here can see them.
-      // The GM and all other players always see the configured card back.
       const maySee = Boolean(userId && game.user?.id === userId);
       const bet = hand?.bet ?? wagers[userId] ?? 0;
+      const isActive = state.activeSeatIndex === index && ["preflop", "flop", "turn", "river"].includes(state.phase) && !state.roundComplete;
+      const isOwnSeat = Boolean(userId && game.user?.id === userId);
       return {
         index,
         number: BEHOLDEM_VISUAL_SEAT_ORDER.indexOf(index) + 1,
@@ -70,8 +72,10 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
         cards: (hand?.cards ?? []).map((card) => cardView(card, !maySee)),
         hasCards: Boolean(hand?.cards?.length),
         bet,
-        canEditBet: Boolean(occupant && !locked && (game.user?.isGM || game.user?.id === userId)),
-        isActive: state.activeSeatIndex === index && ["preflop", "flop", "turn", "river"].includes(state.phase) && !state.roundComplete,
+        folded: Boolean(hand?.folded),
+        canEditBet: Boolean(occupant && ((!locked && (game.user?.isGM || isOwnSeat)) || (isActive && isOwnSeat && !hand?.folded))),
+        canFold: Boolean(isActive && isOwnSeat && !hand?.folded),
+        isActive,
         bestHand: hand?.bestHand ?? "",
         options: players.map((player) => ({ ...player, selected: player.id === userId }))
       };
@@ -136,9 +140,17 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const input of this.element.querySelectorAll("input[data-beholdem-wager-user-id]")) {
       input.addEventListener("change", async (event) => {
         const target = event.currentTarget;
+        const userId = target.dataset.beholdemWagerUserId;
         const value = Math.max(0, Math.floor(Number(target.value) || 0));
-        target.value = String(value);
-        await requestBeholdemWagerChange(target.dataset.beholdemWagerUserId, value);
+        const current = getBeholdemState();
+        if (current.phase === "idle") await requestBeholdemWagerChange(userId, value);
+        else await requestBeholdemRaise(userId, value);
+      });
+    }
+
+    for (const button of this.element.querySelectorAll("button[data-beholdem-fold-user-id]")) {
+      button.addEventListener("click", async (event) => {
+        await requestBeholdemFold(event.currentTarget.dataset.beholdemFoldUserId);
       });
     }
 
@@ -189,7 +201,6 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const deck = this.element.querySelector(".cassinooo-beholdem-deck");
     if (!board || !deck) return;
 
-    // Showdown calculates the winner, but private hole cards stay private in the UI.
     if (animation.type === "showdown") return;
     if (!["deal-hole", "deal-community"].includes(animation.type)) return;
 
