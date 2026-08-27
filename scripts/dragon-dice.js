@@ -5,7 +5,7 @@ export const DRAGON_DICE_SEATS_SETTING = "dragonDiceSeats";
 export const DRAGON_DICE_BETS_SETTING = "dragonDiceBets";
 
 const EMPTY_SEATS = { 0:"",1:"",2:"",3:"",4:"",5:"" };
-export const DRAGON_VISUAL_SEAT_ORDER = [5,1,4,3,2,0];
+export const DRAGON_VISUAL_SEAT_ORDER = [1,5,4,3,2,0];
 export const DRAGON_BET_TYPES = [
   { id:"heart", label:"❤️ Coração do Dragão", payout:1 },
   { id:"gold", label:"☀️ Escamas Douradas", payout:6 },
@@ -113,14 +113,54 @@ function restoreDragonRoll(rollJSON){
   }
 }
 
-async function showDiceSoNiceRoll(roll,{hidden=false,synchronize=false}={}){
+function moveDiceSoNiceLayerToDragonTable(){
+  const layer=document.querySelector("#dice-box-canvas");
+  const felt=document.querySelector("#cassinooo-dragon-dice-table .cassinooo-dragon-felt");
+  if(!layer || !felt) return ()=>{};
+
+  const layerRect=layer.getBoundingClientRect();
+  const feltRect=felt.getBoundingClientRect();
+  if(!layerRect.width || !layerRect.height || !feltRect.width || !feltRect.height) return ()=>{};
+
+  const previous={
+    transform:layer.style.transform,
+    transformOrigin:layer.style.transformOrigin,
+    zIndex:layer.style.zIndex,
+    transition:layer.style.transition
+  };
+
+  const layerCenterX=layerRect.left+(layerRect.width/2);
+  const layerCenterY=layerRect.top+(layerRect.height/2);
+  const targetX=feltRect.left+(feltRect.width/2);
+  const targetY=feltRect.top+(feltRect.height*0.54);
+  const dx=targetX-layerCenterX;
+  const dy=targetY-layerCenterY;
+  const tableScale=Math.max(.58,Math.min(1, feltRect.width/1100));
+
+  layer.style.transformOrigin="center center";
+  layer.style.transition="none";
+  layer.style.transform=`translate(${dx}px, ${dy}px) scale(${tableScale})`;
+  layer.style.zIndex="100000";
+
+  return ()=>{
+    layer.style.transform=previous.transform;
+    layer.style.transformOrigin=previous.transformOrigin;
+    layer.style.zIndex=previous.zIndex;
+    layer.style.transition=previous.transition;
+  };
+}
+
+async function showDiceSoNiceRoll(roll,{hidden=false}={}){
   if(!roll || !game.dice3d?.showForRoll) return false;
+  const restoreLayer=moveDiceSoNiceLayerToDragonTable();
   try {
     const whisper=hidden ? [game.user.id] : null;
-    return await game.dice3d.showForRoll(roll,game.user,synchronize,whisper,false);
+    return await game.dice3d.showForRoll(roll,game.user,false,whisper,false);
   } catch(err){
     console.warn(`${MODULE_ID} | Dice So Nice não conseguiu exibir a rolagem`,err);
     return false;
+  } finally {
+    window.setTimeout(restoreLayer,120);
   }
 }
 
@@ -147,10 +187,8 @@ export async function gmRollDragonDice(){
   state.message="O crupiê sacode o copo... os dados permanecem escondidos.";
   await saveState(state);
 
-  // A Roll real do Foundry é enviada ao Dice So Nice. Como synchronize=false,
-  // a animação 3D fica somente no cliente do Mestre enquanto o copo é sacudido.
   await Promise.all([
-    showDiceSoNiceRoll(generated.roll,{hidden:true,synchronize:false}),
+    showDiceSoNiceRoll(generated.roll,{hidden:true}),
     sleep(1500)
   ]);
 
@@ -202,9 +240,15 @@ export async function gmRevealDragonDice(){
   state.message=`Revelado: ${state.dice.d4} — ${state.dice.d6} — ${state.dice.d8}. Soma ${sum}.`;
   await saveState(state);
 
-  // Reconstroi a mesma Roll avaliada para todos verem exatamente os mesmos dados.
+  // Each client replays the same evaluated Roll locally so its own Dice So Nice
+  // layer can be centered on that client's Dragon Dice table window.
+  game.socket.emit(SOCKET_NAME,{
+    type:"dragon-dice-dsn-reveal",
+    rollJSON:state.rollJSON,
+    sourceUserId:game.user.id
+  });
   const roll=restoreDragonRoll(state.rollJSON);
-  await showDiceSoNiceRoll(roll,{hidden:false,synchronize:true});
+  await showDiceSoNiceRoll(roll,{hidden:false});
   return true;
 }
 
@@ -212,4 +256,8 @@ export async function resetDragonDice(){ if(!game.user?.isGM) return false; awai
 export async function handleDragonDiceSocket(message){
   if(!message) return;
   if(message.type==="dragon-dice-bet" && isPrimaryGM()) await applyBet(message.userId,message.betId,message.value);
+  if(message.type==="dragon-dice-dsn-reveal" && message.sourceUserId!==game.user?.id){
+    const roll=restoreDragonRoll(message.rollJSON);
+    await showDiceSoNiceRoll(roll,{hidden:false});
+  }
 }
