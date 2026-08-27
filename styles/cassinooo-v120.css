@@ -1,0 +1,109 @@
+/* Cassinooo 0.12.0 — shared scaling + Dragon Dice */
+
+/* Proportional scaling for Blackjack, Roulette and Dragon Dice. */
+.cassinooo-blackjack-table .window-content,
+.cassinooo-roulette-table .window-content,
+.cassinooo-dragon-dice-table .window-content { padding:0; overflow:hidden; }
+
+.cassinooo-blackjack-table .cassinooo-table-shell,
+.cassinooo-roulette-table .cassinooo-roulette-shell,
+.cassinooo-dragon-dice-table .cassinooo-dragon-shell {
+  height:100%; min-height:100%; display:flex; flex-direction:column; overflow:hidden; box-sizing:border-box;
+}
+.cassinooo-blackjack-table .cassinooo-table-shell,
+.cassinooo-roulette-table .cassinooo-roulette-shell { padding:10px; }
+
+.cassinooo-scaled-viewport {
+  position:relative !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  min-height:260px !important;
+  overflow:hidden !important;
+  padding:0 !important;
+}
+.cassinooo-scaled-board {
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  margin:0 !important;
+  transform:translate(-50%,-50%) scale(var(--cassinooo-table-scale,1)) !important;
+  transform-origin:center center !important;
+}
+
+/* Dragon Dice */
+.cassinooo-dragon-dice-table .window-content { background:#130706; }
+.cassinooo-dragon-shell { padding:10px; color:#f5e7cf; background:radial-gradient(circle at 50% 10%,#421510,#140706 70%); }
+.cassinooo-dragon-header { flex:0 0 auto; margin-bottom:4px; }
+.cassinooo-dragon-header h2 { font-size:1.15rem; }
+.cassinooo-dragon-header p { font-size:.72rem; }
+.cassinooo-dragon-viewport { flex:1 1 auto; min-height:300px; }
+
+.cassinooo-dragon-felt {
+  position:relative;
+  width:1100px; min-width:1100px; height:700px;
+  overflow:hidden; border-radius:28px;
+  background:radial-gradient(ellipse at 50% 52%,#641912 0%,#32100e 60%,#160605 100%);
+  box-shadow:inset 0 0 0 2px rgba(212,145,65,.45),0 12px 32px rgba(0,0,0,.5);
+}
+.cassinooo-dragon-dealer {
+  position:absolute; left:50%; top:26%; transform:translateX(-50%); z-index:5;
+  padding:4px 9px; border-radius:9px; background:rgba(25,5,4,.64); text-align:center;
+}
+.cassinooo-dragon-dealer span { display:block; color:#e5bd73; font-size:.6rem; font-weight:900; letter-spacing:.14em; }
+.cassinooo-dragon-dealer strong { font-size:.78rem; }
+
+.cassinooo-dragon-center {
+  position:absolute; left:50%; top:55%; width:410px; height:235px; transform:translate(-50%,-50%); z-index:6; text-align:center;
+}
+.cassinooo-dragon-cup-wrap { position:absolute; left:50%; top:0; width:150px; height:118px; transform:translateX(-50%); z-index:12; perspective:500px; }
+.cassinooo-dragon-cup { position:absolute; left:50%; top:4px; width:82px; height:94px; transform:translateX(-50%) rotate(0deg); transform-origin:50% 18%; transition:transform .65s ease,opacity .4s ease; }
+.cassinooo-dragon-cup .cup-rim { position:absolute; left:5px; top:0; width:72px; height:19px; border-radius:50%; border:4px solid #d1a25b; background:#2a100c; box-shadow:inset 0 0 8px #000; z-index:2; }
+.cassinooo-dragon-cup .cup-body { position:absolute; left:12px; top:9px; width:58px; height:78px; clip-path:polygon(0 0,100% 0,84% 100%,16% 100%); border-radius:5px 5px 18px 18px; background:linear-gradient(90deg,#2c110e,#7c3b24 42%,#3c160f 75%,#1c0907); border-bottom:5px solid #c8914b; box-shadow:0 10px 15px rgba(0,0,0,.48),inset 0 0 12px rgba(255,181,76,.16); }
+@keyframes dragon-cup-shake { 0%{transform:translateX(-50%) rotate(-12deg) translateY(0)} 15%{transform:translateX(-50%) rotate(16deg) translateY(-10px)} 32%{transform:translateX(-50%) rotate(-18deg) translateY(2px)} 50%{transform:translateX(-50%) rotate(15deg) translateY(-12px)} 68%{transform:translateX(-50%) rotate(-10deg) translateY(0)} 100%{transform:translateX(-50%) rotate(180deg) translateY(-22px)} }
+.cassinooo-dragon-cup.rolling { animation:dragon-cup-shake 1.45s cubic-bezier(.33,.05,.35,1) forwards; }
+.cassinooo-dragon-cup.covered { transform:translateX(-50%) rotate(180deg) translateY(-22px); }
+.cassinooo-dragon-cup.revealing { transform:translateX(-50%) rotate(160deg) translate(105px,-120px); opacity:.35; }
+
+.cassinooo-dragon-dice-cluster { position:absolute; left:50%; top:100px; transform:translateX(-50%); display:flex; gap:15px; align-items:center; z-index:8; }
+.dragon-die { width:72px; height:72px; display:grid; grid-template-rows:16px 35px 14px; place-items:center; border:2px solid rgba(255,226,162,.72); border-radius:13px; color:white; font-weight:900; text-shadow:0 2px 3px #000; box-shadow:0 6px 14px rgba(0,0,0,.5),inset 0 0 18px rgba(255,255,255,.12); }
+.dragon-die.d4 { background:linear-gradient(145deg,#2b9e58,#0e5a2e); clip-path:polygon(50% 2%,98% 92%,2% 92%); padding-top:13px; }
+.dragon-die.d6 { background:linear-gradient(145deg,#3477cc,#143d88); }
+.dragon-die.d8 { background:linear-gradient(145deg,#c63f39,#7c1616); clip-path:polygon(50% 0,96% 50%,50% 100%,4% 50%); }
+.dragon-die span,.dragon-die small { font-size:.55rem; opacity:.9; }
+.dragon-die strong { font-size:1.55rem; }
+.cassinooo-dragon-dice-cluster:not(.is-revealed) .dragon-die strong { color:transparent; text-shadow:none; }
+.cassinooo-dragon-dice-cluster.revealed-burst { animation:dragon-dice-burst .85s ease; }
+@keyframes dragon-dice-burst { 0%{filter:brightness(1);transform:translateX(-50%) scale(.8)} 45%{filter:brightness(2.1) drop-shadow(0 0 18px #ffb53d);transform:translateX(-50%) scale(1.18)} 100%{filter:brightness(1);transform:translateX(-50%) scale(1)} }
+.cassinooo-dragon-sum { position:absolute; left:50%; top:190px; transform:translateX(-50%); padding:5px 12px; border:1px solid rgba(225,177,93,.55); border-radius:999px; background:rgba(30,7,5,.8); color:#e9cb8e; }
+.cassinooo-dragon-sum strong { margin-left:5px; color:#fff1be; }
+
+.cassinooo-dragon-paytable { position:absolute; left:39%; top:31%; width:245px; padding:8px 10px; z-index:4; border:1px solid rgba(211,153,75,.45); border-radius:10px; background:rgba(24,6,5,.62); font-size:.59rem; }
+.cassinooo-dragon-paytable h3 { margin:0 0 4px; text-align:center; color:#edca83; font-size:.72rem; }
+.cassinooo-dragon-paytable div { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+.cassinooo-dragon-paytable b { color:#f0d497; white-space:nowrap; }
+
+.cassinooo-dragon-seat { position:absolute; width:188px; height:178px; padding:6px 7px; z-index:10; border:1px solid rgba(218,158,83,.55); border-radius:11px; background:rgba(24,6,6,.78); box-shadow:0 5px 14px rgba(0,0,0,.4); text-align:center; box-sizing:border-box; }
+.cassinooo-dragon-seat.seat-upper-left { left:6.2%; top:49.5%; }
+.cassinooo-dragon-seat.seat-upper-right { left:77.1%; top:49.5%; }
+.cassinooo-dragon-seat.seat-lower-left { left:7.7%; top:70.5%; }
+.cassinooo-dragon-seat.seat-lower-mid-left { left:29.1%; top:74.5%; }
+.cassinooo-dragon-seat.seat-lower-mid-right { left:55.0%; top:74.5%; }
+.cassinooo-dragon-seat.seat-lower-right { left:78.2%; top:70.5%; }
+.cassinooo-dragon-seat select { width:100%; min-height:23px; height:24px; margin:2px 0 3px; font-size:.65rem; }
+.cassinooo-dragon-seat .cassinooo-seat-number { font-size:.57rem; }
+.cassinooo-dragon-seat .cassinooo-player-name { font-size:.72rem; }
+.cassinooo-dragon-bets { display:grid; gap:2px; margin-top:3px; }
+.cassinooo-dragon-bets label { display:grid; grid-template-columns:1fr 48px; align-items:center; gap:3px; font-size:.54rem; color:#e6c582; text-align:left; }
+.cassinooo-dragon-bets input { width:48px; height:21px; padding:1px 4px; font-size:.62rem; text-align:right; }
+
+.cassinooo-dragon-results-overlay { position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:rgba(7,2,2,.58); backdrop-filter:blur(2px); }
+.cassinooo-dragon-results-card { width:690px; max-height:400px; overflow:auto; padding:16px; border:2px solid #d4a65b; border-radius:14px; background:rgba(28,7,6,.97); box-shadow:0 0 38px rgba(219,142,45,.46),0 15px 35px rgba(0,0,0,.55); }
+.cassinooo-dragon-results-card h3 { margin:0 0 5px; text-align:center; color:#f1d08e; }
+.cassinooo-dragon-result-roll { margin-bottom:10px; text-align:center; color:#e3bb70; font-size:1rem; }
+.cassinooo-dragon-result-roll strong { margin-left:12px; color:#fff2bc; }
+.cassinooo-dragon-results-card table { width:100%; border-collapse:collapse; font-size:.7rem; }
+.cassinooo-dragon-results-card th,.cassinooo-dragon-results-card td { padding:5px 6px; border-bottom:1px solid rgba(222,179,98,.2); vertical-align:top; }
+.cassinooo-dragon-results-card .positive { color:#9fe0a4; font-weight:900; }
+.cassinooo-dragon-results-card .negative { color:#ef9b91; font-weight:900; }
+
+@media (prefers-reduced-motion:reduce){ .cassinooo-dragon-cup.rolling,.cassinooo-dragon-dice-cluster.revealed-burst{animation-duration:1ms} }
