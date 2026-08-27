@@ -6,6 +6,10 @@ export const BEHOLDEM_WAGERS_SETTING = "beholdemWagers";
 const EMPTY_SEATS = { 0: "", 1: "", 2: "", 3: "", 4: "", 5: "" };
 const DEAL_DELAY = 520;
 
+// Physical seat indices ordered visually from right to left.
+// This same order drives labels Lugar 1..6 and the turn carousel.
+export const BEHOLDEM_VISUAL_SEAT_ORDER = [5, 1, 4, 3, 2, 0];
+
 function sleep(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
 
 function emptyState() {
@@ -145,7 +149,11 @@ export async function advanceBeholdemTurn() {
 
 export async function startBeholdemHand() {
   if (!game.user?.isGM) return false;
-  const occupied = getBeholdemSeats().map((userId, seatIndex) => ({ userId, seatIndex })).filter(({ userId }) => Boolean(userId && game.users.get(userId)));
+  const seats = getBeholdemSeats();
+  const occupied = BEHOLDEM_VISUAL_SEAT_ORDER
+    .map((seatIndex) => ({ userId: seats[seatIndex], seatIndex }))
+    .filter(({ userId }) => Boolean(userId && game.users.get(userId)));
+
   if (occupied.length < 2) {
     ui.notifications?.warn("Defina pelo menos dois jogadores para iniciar o Beholdem.");
     return false;
