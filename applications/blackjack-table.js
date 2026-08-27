@@ -50,7 +50,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       const hand = userId ? state.hands?.[userId] : null;
       const bet = hand?.bet ?? wagers[userId] ?? 0;
       return {
-        index, number: index + 1, positionClass: positionClasses[index], userId,
+        index, number: 6 - index, positionClass: positionClasses[index], userId,
         occupied: Boolean(occupant), occupantName: occupant?.name ?? "Lugar vazio", occupantActive: occupant?.active ?? false,
         cards: (hand?.cards ?? []).map((card) => cardView(card)), score: hand?.score ?? null, hasHand: Boolean(hand), result: hand?.result ?? "",
         isActive: state.phase === "players" && state.activeSeatIndex === index,
