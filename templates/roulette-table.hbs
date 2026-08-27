@@ -8,7 +8,7 @@
       <div class="cassinooo-gm-controls">
         <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
         <button type="button" data-spin-roulette {{#if spinning}}disabled{{/if}}><i class="fa-solid fa-rotate"></i> Girar roleta</button>
-        <button type="button" data-reset-roulette {{#if spinning}}disabled{{/if}}><i class="fa-solid fa-broom"></i> Limpar resultado</button>
+        <button type="button" data-reset-roulette><i class="fa-solid fa-broom"></i> Reiniciar mesa</button>
       </div>
     {{/if}}
   </header>
@@ -20,38 +20,21 @@
       <section class="cassinooo-wheel-zone">
         <div class="cassinooo-roulette-wheel">
           <div class="cassinooo-roulette-wheel-inner">
-            {{#each wheelNumbers}}
-              <div class="cassinooo-wheel-pocket {{color}}" style="{{style}}"><span>{{number}}</span></div>
-            {{/each}}
+            {{#each wheelNumbers}}<div class="cassinooo-wheel-pocket {{color}}" style="{{style}}"><span>{{number}}</span></div>{{/each}}
             <div class="cassinooo-wheel-hub"></div>
           </div>
           <div class="cassinooo-roulette-ball-orbit"><div class="cassinooo-roulette-ball"></div></div>
         </div>
-        {{#if hasResult}}
-          <div class="cassinooo-roulette-result {{#if settled}}settled{{/if}}">
-            <span>RESULTADO</span>
-            <strong>{{result}}</strong>
-          </div>
-        {{/if}}
+        {{#if hasResult}}<div class="cassinooo-roulette-result {{#if settled}}settled{{/if}}"><span>RESULTADO</span><strong>{{result}}</strong></div>{{/if}}
       </section>
 
       <section class="cassinooo-betting-layout">
         <div class="cassinooo-zero-cell {{#if zeroWinner}}winner{{/if}}" data-number="0">0</div>
         <div class="cassinooo-number-grid">
-          {{#each gridNumbers}}
-            <div class="cassinooo-number-row">
-              {{#each this}}
-                <div class="cassinooo-number-cell {{color}} {{#if winner}}winner{{/if}}" data-number="{{number}}">{{number}}</div>
-              {{/each}}
-            </div>
-          {{/each}}
+          {{#each gridNumbers}}<div class="cassinooo-number-row">{{#each this}}<div class="cassinooo-number-cell {{color}} {{#if winner}}winner{{/if}}" data-number="{{number}}">{{number}}</div>{{/each}}</div>{{/each}}
         </div>
-        <div class="cassinooo-dozens-row">
-          <div>1st 12</div><div>2nd 12</div><div>3rd 12</div>
-        </div>
-        <div class="cassinooo-outside-row">
-          <div>1–18</div><div>PAR</div><div class="red-diamond">◆</div><div class="black-diamond">◆</div><div>ÍMPAR</div><div>19–36</div>
-        </div>
+        <div class="cassinooo-dozens-row"><div>1st 12</div><div>2nd 12</div><div>3rd 12</div></div>
+        <div class="cassinooo-outside-row"><div>1–18</div><div>PAR</div><div class="red-diamond">◆</div><div class="black-diamond">◆</div><div>ÍMPAR</div><div>19–36</div></div>
       </section>
 
       {{#each seats}}
@@ -60,32 +43,16 @@
           {{#if ../isGM}}
             <select data-roulette-seat-index="{{index}}" aria-label="Jogador do lugar {{number}}">
               <option value="">— Lugar vazio —</option>
-              {{#each options}}
-                <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>
-              {{/each}}
+              {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
             </select>
           {{else}}
             <strong class="cassinooo-player-name">{{occupantName}}</strong>
-            {{#if occupied}}
-              <small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>
-            {{/if}}
+            {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
           {{/if}}
-
           {{#if occupied}}
             <div class="cassinooo-roulette-bet-fields">
-              <label>
-                <span>Apostar em</span>
-                <select data-roulette-bet-type {{#unless canEditBet}}disabled{{/unless}}>
-                  <option value="">— Escolha —</option>
-                  {{#each betOptions}}
-                    <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
-                  {{/each}}
-                </select>
-              </label>
-              <label>
-                <span>Aposta (PO)</span>
-                <input type="number" min="0" step="1" value="{{betAmount}}" data-roulette-bet-amount {{#unless canEditBet}}disabled{{/unless}}>
-              </label>
+              <label><span>Apostar em</span><select data-roulette-bet-type {{#unless canEditBet}}disabled{{/unless}}><option value="">— Escolha —</option>{{#each betOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+              <label><span>Aposta (PO)</span><input type="number" min="0" step="1" value="{{betAmount}}" data-roulette-bet-amount {{#unless canEditBet}}disabled{{/unless}}></label>
             </div>
           {{/if}}
         </article>
@@ -94,27 +61,11 @@
       {{#if showResults}}
         <aside class="cassinooo-roulette-payout-board">
           <h3>Resultado — {{result}}</h3>
-          <table>
-            <thead>
-              <tr><th>Jogador</th><th>Aposta</th><th>PO</th><th>Saldo</th></tr>
-            </thead>
-            <tbody>
-              {{#each roundResults}}
-                <tr>
-                  <td>{{name}}</td>
-                  <td title="{{betLabel}}">{{betLabel}}</td>
-                  <td>{{amount}}</td>
-                  <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
+          <table><thead><tr><th>Jogador</th><th>Aposta</th><th>PO</th><th>Saldo</th></tr></thead><tbody>{{#each roundResults}}<tr><td>{{name}}</td><td title="{{betLabel}}">{{betLabel}}</td><td>{{amount}}</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td></tr>{{/each}}</tbody></table>
         </aside>
       {{/if}}
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">
-    Número exato paga 35:1; dúzia paga 2:1; vermelho/preto, par/ímpar e baixo/alto pagam 1:1. O quadro mostra o saldo líquido da rodada.
-  </footer>
+  <footer class="cassinooo-table-footer">Número exato paga 35:1; dúzia paga 2:1; vermelho/preto, par/ímpar e baixo/alto pagam 1:1. O quadro mostra o saldo líquido da rodada.</footer>
 </section>
