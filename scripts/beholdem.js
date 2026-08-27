@@ -6,9 +6,9 @@ export const BEHOLDEM_WAGERS_SETTING = "beholdemWagers";
 const EMPTY_SEATS = { 0: "", 1: "", 2: "", 3: "", 4: "", 5: "" };
 const DEAL_DELAY = 520;
 
-// Physical seat indices ordered visually from right to left.
-// This same order drives labels Lugar 1..6 and the turn carousel.
-export const BEHOLDEM_VISUAL_SEAT_ORDER = [5, 1, 4, 3, 2, 0];
+// Physical seat indices ordered from the far right to the far left.
+// The Beholdem CSS mirrors Blackjack's six physical seat positions.
+export const BEHOLDEM_VISUAL_SEAT_ORDER = [5, 4, 3, 2, 1, 0];
 
 function sleep(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
 
@@ -105,96 +105,87 @@ export async function requestBeholdemWagerChange(userId, value) {
   return true;
 }
 
-function currentHand(state) {
-  const userId = state.activeTurn >= 0 ? state.turnOrder[state.activeTurn] : null;
-  return userId ? state.hands[userId] : null;
-}
-function activeHands(state) {
-  return state.turnOrder.map((id) => state.hands[id]).filter((hand) => hand && !hand.folded);
-}
-function nextActiveTurnIndex(state, startIndex) {
-  for (let i = Math.max(0, startIndex); i < state.turnOrder.length; i++) {
-    const hand = state.hands[state.turnOrder[i]];
-    if (hand && !hand.folded) return i;
-  }
-  return -1;
-}
-
 async function applyRaise(userId, value) {
   const state = getBeholdemState();
   if (!["preflop", "flop", "turn", "river"].includes(state.phase) || state.roundComplete) return false;
-  const hand = currentHand(state);
-  if (!hand || hand.userId !== userId || hand.folded) return false;
-  const total = sanitizeBet(value);
-  if (total <= hand.bet) return false;
-  const increase = total - hand.bet;
-  hand.bet = total;
+  const activeUserId = state.turnOrder?.[state.activeTurn];
+  const hand = state.hands?.[userId];
+  if (!hand || hand.folded || activeUserId !== userId) return false;
+  const nextBet = sanitizeBet(value);
+  if (nextBet <= hand.bet) return false;
+  const increase = nextBet - hand.bet;
+  hand.bet = nextBet;
   state.pot += increase;
   state.message = `${game.users.get(userId)?.name ?? "Jogador"} aumentou a aposta em ${increase} PO. Pote: ${state.pot} PO.`;
   await saveState(state);
   return true;
 }
-
 export async function requestBeholdemRaise(userId, value) {
   if (!userId || game.user?.id !== userId) return false;
+  if (game.user?.isGM) return applyRaise(userId, value);
   game.socket.emit(SOCKET_NAME, { type: "beholdem-raise", userId, value: sanitizeBet(value) });
   return true;
 }
 
-async function settleLastPlayer(state, winnerId) {
-  const winner = state.hands[winnerId];
-  if (!winner) return false;
-  state.roundResults = Object.values(state.hands).map((hand) => {
+function activeHandIds(state) { return state.turnOrder.filter((id) => !state.hands?.[id]?.folded); }
+function nextActiveIndex(state, start) {
+  for (let i = Math.max(0, start); i < state.turnOrder.length; i++) if (!state.hands?.[state.turnOrder[i]]?.folded) return i;
+  return -1;
+}
+
+async function finishByFold(state) {
+  const remaining = activeHandIds(state);
+  if (remaining.length !== 1) return false;
+  const winnerId = remaining[0];
+  for (const hand of Object.values(state.hands)) {
     const won = hand.userId === winnerId;
-    hand.bestHand = won ? "Venceu por desistência" : "Desistiu";
+    hand.bestHand = won ? "Último jogador ativo" : "Desistiu";
     hand.roundDelta = won ? state.pot - hand.bet : -hand.bet;
-    return {
-      userId: hand.userId,
-      name: game.users.get(hand.userId)?.name ?? "Jogador",
-      bet: hand.bet,
-      handName: hand.bestHand,
-      delta: hand.roundDelta,
-      winner: won
-    };
-  });
+  }
+  state.roundResults = Object.values(state.hands).map((hand) => ({
+    userId: hand.userId,
+    name: game.users.get(hand.userId)?.name ?? "Jogador",
+    bet: hand.bet,
+    handName: hand.bestHand,
+    delta: hand.roundDelta,
+    winner: hand.userId === winnerId
+  }));
   state.phase = "showdown";
   state.activeTurn = -1;
   state.activeSeatIndex = null;
   state.roundComplete = true;
   state.lastAnimation = null;
-  state.message = `${game.users.get(winnerId)?.name ?? "Jogador"} venceu o pote de ${state.pot} PO porque todos os outros desistiram.`;
-  return saveState(state);
-}
-
-async function applyFold(userId) {
-  const state = getBeholdemState();
-  if (!["preflop", "flop", "turn", "river"].includes(state.phase) || state.roundComplete) return false;
-  const hand = currentHand(state);
-  if (!hand || hand.userId !== userId || hand.folded) return false;
-  hand.folded = true;
-  hand.bestHand = "Desistiu";
-
-  const remaining = activeHands(state);
-  if (remaining.length === 1) return settleLastPlayer(state, remaining[0].userId);
-
-  const next = nextActiveTurnIndex(state, state.activeTurn + 1);
-  if (next >= 0) {
-    setActiveTurn(state, next);
-    state.message = `${game.users.get(userId)?.name ?? "Jogador"} desistiu. Turno de ${game.users.get(state.turnOrder[next])?.name ?? "Jogador"}.`;
-    return saveState(state);
-  }
-
-  state.activeTurn = -1;
-  state.activeSeatIndex = null;
-  state.roundComplete = true;
-  const nextLabel = state.phase === "preflop" ? "Flop" : state.phase === "flop" ? "Turn" : state.phase === "turn" ? "River" : "Showdown";
-  state.message = `${game.users.get(userId)?.name ?? "Jogador"} desistiu. Rodada de ação concluída; o Mestre pode abrir o ${nextLabel}.`;
-  return saveState(state);
+  state.message = `${game.users.get(winnerId)?.name ?? "Jogador"} venceu o pote de ${state.pot} PO — todos os outros desistiram.`;
+  await saveState(state);
+  return true;
 }
 
 export async function requestBeholdemFold(userId) {
   if (!userId || game.user?.id !== userId) return false;
+  if (game.user?.isGM) return applyFold(userId);
   game.socket.emit(SOCKET_NAME, { type: "beholdem-fold", userId });
+  return true;
+}
+async function applyFold(userId) {
+  const state = getBeholdemState();
+  if (!["preflop", "flop", "turn", "river"].includes(state.phase) || state.roundComplete) return false;
+  const activeUserId = state.turnOrder?.[state.activeTurn];
+  const hand = state.hands?.[userId];
+  if (!hand || hand.folded || activeUserId !== userId) return false;
+  hand.folded = true;
+  hand.bestHand = "Desistiu";
+  state.message = `${game.users.get(userId)?.name ?? "Jogador"} desistiu da mão.`;
+  if (await finishByFold(state)) return true;
+  const next = nextActiveIndex(state, state.activeTurn + 1);
+  if (next >= 0) {
+    setActiveTurn(state, next);
+    await saveState(state);
+    return true;
+  }
+  state.activeTurn = -1;
+  state.activeSeatIndex = null;
+  state.roundComplete = true;
+  await saveState(state);
   return true;
 }
 
@@ -218,7 +209,7 @@ function beginBettingRound(state, message) {
   state.activeSeatIndex = null;
   state.roundComplete = false;
   state.lastAnimation = null;
-  const first = nextActiveTurnIndex(state, 0);
+  const first = nextActiveIndex(state, 0);
   if (first < 0) return;
   setActiveTurn(state, first);
   state.message = message || state.message;
@@ -228,7 +219,8 @@ export async function advanceBeholdemTurn() {
   if (!game.user?.isGM) return false;
   const state = getBeholdemState();
   if (!["preflop", "flop", "turn", "river"].includes(state.phase) || state.roundComplete) return false;
-  const next = nextActiveTurnIndex(state, state.activeTurn + 1);
+  if (await finishByFold(state)) return true;
+  const next = nextActiveIndex(state, state.activeTurn + 1);
   if (next >= 0) {
     setActiveTurn(state, next);
     return saveState(state);
@@ -286,7 +278,7 @@ async function dealCommunityCards(state, count, phase, label) {
     await animateState(state, { type: "deal-community", communityIndex: state.community.length - 1, card }, `${label}: abrindo ${card.rank}${card.suit}...`);
   }
   state.phase = phase;
-  beginBettingRound(state, `${label} aberto.`);
+  beginBettingRound(state, `${label} aberto. Turno de ${game.users.get(state.turnOrder[nextActiveIndex(state,0)])?.name ?? "Jogador"}.`);
   return saveState(state);
 }
 
@@ -370,7 +362,8 @@ export async function revealShowdown() {
 
   let bestScore = null;
   let winners = [];
-  for (const hand of Object.values(state.hands).filter((hand) => !hand.folded)) {
+  for (const hand of Object.values(state.hands)) {
+    if (hand.folded) { hand.bestHand = "Desistiu"; continue; }
     const best = bestOfSeven([...hand.cards, ...state.community]);
     hand.bestHand = best.name;
     hand.bestScore = best.score;
@@ -381,13 +374,12 @@ export async function revealShowdown() {
   const share = winners.length ? state.pot / winners.length : 0;
   state.roundResults = Object.values(state.hands).map((hand) => {
     const won = winners.includes(hand.userId);
-    if (hand.folded) hand.bestHand = "Desistiu";
     hand.roundDelta = won ? share - hand.bet : -hand.bet;
     return {
       userId: hand.userId,
       name: game.users.get(hand.userId)?.name ?? "Jogador",
       bet: hand.bet,
-      handName: hand.bestHand || "Desistiu",
+      handName: hand.bestHand,
       delta: hand.roundDelta,
       winner: won
     };
