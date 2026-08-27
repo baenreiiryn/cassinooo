@@ -1,11 +1,14 @@
 import { getTableBackground, getCardBack } from "../scripts/backgrounds.js";
 import {
+  advanceBeholdemTurn,
   assignBeholdemSeat,
   dealFlop,
   dealRiver,
   dealTurn,
   getBeholdemSeats,
   getBeholdemState,
+  getBeholdemWagers,
+  requestBeholdemWagerChange,
   resetBeholdem,
   revealShowdown,
   startBeholdemHand
@@ -18,13 +21,23 @@ function cardView(card, hidden = false) {
   if (hidden) return { hidden: true, label: "?", red: false };
   return { hidden: false, label: `${card.rank}${card.suit}`, red: card.suit === "♥" || card.suit === "♦" };
 }
+function formatDelta(value) {
+  const n = Number(value) || 0;
+  const text = Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.00$/, "");
+  if (n > 0) return `+${text} PO`;
+  if (n < 0) return `${text} PO`;
+  return "0 PO";
+}
 
 export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
+  _lastAnimationNonce = null;
+  _resizeObserver = null;
+
   static DEFAULT_OPTIONS = {
     id: "cassinooo-beholdem-table",
     classes: ["cassinooo", "cassinooo-beholdem-table"],
-    position: { width: 1160, height: 860 },
-    window: { title: "Cassinooo — Beholdem", icon: "fa-solid fa-spade" }
+    position: { width: 1180, height: 900 },
+    window: { title: "Cassinooo — Beholdem", icon: "fa-solid fa-spade", resizable: true }
   };
 
   static PARTS = { table: { template: "modules/cassinooo/templates/beholdem-table.hbs" } };
@@ -32,15 +45,18 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const state = getBeholdemState();
+    const wagers = getBeholdemWagers();
     const seatIds = getBeholdemSeats();
     const players = game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, active: u.active }));
     const seatClasses = ["seat-upper-left", "seat-upper-right", "seat-lower-left", "seat-lower-mid-left", "seat-lower-mid-right", "seat-lower-right"];
     const revealAll = state.phase === "showdown";
+    const locked = state.phase !== "idle";
 
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
       const hand = userId ? state.hands?.[userId] : null;
       const maySee = Boolean(game.user?.isGM || game.user?.id === userId || revealAll);
+      const bet = hand?.bet ?? wagers[userId] ?? 0;
       return {
         index,
         number: index + 1,
@@ -51,11 +67,24 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
         occupantActive: occupant?.active ?? false,
         cards: (hand?.cards ?? []).map((card) => cardView(card, !maySee)),
         hasCards: Boolean(hand?.cards?.length),
+        bet,
+        canEditBet: Boolean(occupant && !locked && (game.user?.isGM || game.user?.id === userId)),
+        isActive: state.activeSeatIndex === index && ["preflop", "flop", "turn", "river"].includes(state.phase) && !state.roundComplete,
+        bestHand: hand?.bestHand ?? "",
         options: players.map((player) => ({ ...player, selected: player.id === userId }))
       };
     });
 
     const activeGM = game.users.find((u) => u.isGM && u.active) ?? game.users.find((u) => u.isGM);
+    const activeUserId = state.activeTurn >= 0 ? state.turnOrder?.[state.activeTurn] : null;
+    const activeUser = activeUserId ? game.users.get(activeUserId) : null;
+    const roundResults = (state.roundResults ?? []).map((result) => ({
+      ...result,
+      deltaText: formatDelta(result.delta),
+      positive: result.delta > 0,
+      negative: result.delta < 0
+    }));
+
     return foundry.utils.mergeObject(context, {
       isGM: game.user?.isGM ?? false,
       dealerName: activeGM?.name ?? "Mestre",
@@ -64,11 +93,16 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       phase: state.phase,
       message: state.message,
       canStart: state.phase === "idle",
-      canFlop: state.phase === "preflop",
-      canTurn: state.phase === "flop",
-      canRiver: state.phase === "turn",
-      canShowdown: state.phase === "river",
-      hasHand: state.phase !== "idle"
+      canFlop: state.phase === "preflop" && state.roundComplete,
+      canTurn: state.phase === "flop" && state.roundComplete,
+      canRiver: state.phase === "turn" && state.roundComplete,
+      canShowdown: state.phase === "river" && state.roundComplete,
+      hasHand: state.phase !== "idle",
+      turnActive: ["preflop", "flop", "turn", "river"].includes(state.phase) && !state.roundComplete && state.activeTurn >= 0,
+      activePlayerName: activeUser?.name ?? "",
+      pot: state.pot ?? 0,
+      showResults: state.phase === "showdown" && roundResults.length > 0,
+      roundResults
     });
   }
 
@@ -78,7 +112,7 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const background = getTableBackground("beholdem");
     if (board) {
       board.style.backgroundImage = background
-        ? `linear-gradient(rgba(30,5,4,.06), rgba(30,5,4,.14)), url(${JSON.stringify(background)})`
+        ? `linear-gradient(rgba(30,5,4,.03), rgba(30,5,4,.08)), url(${JSON.stringify(background)})`
         : "radial-gradient(ellipse at 50% 50%, #5b1816 0%, #32100f 62%, #170706 100%)";
       board.style.backgroundPosition = "center center";
       board.style.backgroundSize = background ? "cover" : "auto";
@@ -88,8 +122,27 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       else board.style.removeProperty("--beholdem-card-back");
     }
 
+    this._setupScaleObserver();
+
+    const state = getBeholdemState();
+    const animation = state.lastAnimation;
+    if (animation?.nonce && animation.nonce !== this._lastAnimationNonce) {
+      this._lastAnimationNonce = animation.nonce;
+      requestAnimationFrame(() => this._animateDeal(animation));
+    }
+
+    for (const input of this.element.querySelectorAll("input[data-beholdem-wager-user-id]")) {
+      input.addEventListener("change", async (event) => {
+        const target = event.currentTarget;
+        const value = Math.max(0, Math.floor(Number(target.value) || 0));
+        target.value = String(value);
+        await requestBeholdemWagerChange(target.dataset.beholdemWagerUserId, value);
+      });
+    }
+
     if (!game.user?.isGM) return;
     this.element.querySelector("[data-beholdem-start]")?.addEventListener("click", () => void startBeholdemHand());
+    this.element.querySelector("[data-beholdem-next-turn]")?.addEventListener("click", () => void advanceBeholdemTurn());
     this.element.querySelector("[data-beholdem-flop]")?.addEventListener("click", () => void dealFlop());
     this.element.querySelector("[data-beholdem-turn]")?.addEventListener("click", () => void dealTurn());
     this.element.querySelector("[data-beholdem-river]")?.addEventListener("click", () => void dealRiver());
@@ -108,5 +161,59 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
         await this.render({ force: true });
       });
     }
+  }
+
+  _setupScaleObserver() {
+    this._resizeObserver?.disconnect();
+    const viewport = this.element.querySelector(".cassinooo-beholdem-viewport");
+    const stage = this.element.querySelector(".cassinooo-beholdem-stage");
+    if (!viewport || !stage) return;
+    const applyScale = () => {
+      const availableWidth = Math.max(320, viewport.clientWidth);
+      const availableHeight = Math.max(320, viewport.clientHeight);
+      const scale = Math.min(1, availableWidth / 1100, availableHeight / 700);
+      stage.style.setProperty("--beholdem-scale", String(scale));
+      stage.style.width = `${1100 * scale}px`;
+      stage.style.height = `${700 * scale}px`;
+    };
+    applyScale();
+    this._resizeObserver = new ResizeObserver(applyScale);
+    this._resizeObserver.observe(viewport);
+  }
+
+  _animateDeal(animation) {
+    const board = this.element.querySelector(".cassinooo-beholdem-felt");
+    const deck = this.element.querySelector(".cassinooo-beholdem-deck");
+    if (!board || !deck) return;
+
+    if (animation.type === "showdown") {
+      for (const card of this.element.querySelectorAll(".cassinooo-hole-cards .cassinooo-poker-card")) card.classList.add("revealing");
+      return;
+    }
+    if (!["deal-hole", "deal-community"].includes(animation.type)) return;
+
+    const target = animation.type === "deal-hole"
+      ? this.element.querySelector(`.cassinooo-beholdem-seat[data-seat-index="${animation.seatIndex}"] .cassinooo-hole-cards`)
+      : this.element.querySelector(".cassinooo-community-cards");
+    if (!target) return;
+
+    const boardRect = board.getBoundingClientRect();
+    const from = deck.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+    const flying = document.createElement("div");
+    flying.className = "cassinooo-beholdem-flying-card";
+    flying.style.left = `${from.left - boardRect.left + from.width / 2 - 22}px`;
+    flying.style.top = `${from.top - boardRect.top + from.height / 2 - 31}px`;
+    board.append(flying);
+    const dx = to.left - boardRect.left + to.width / 2 - (from.left - boardRect.left + from.width / 2);
+    const dy = to.top - boardRect.top + to.height / 2 - (from.top - boardRect.top + from.height / 2);
+    requestAnimationFrame(() => {
+      flying.style.transform = `translate(${dx}px, ${dy}px) rotate(10deg)`;
+      flying.style.opacity = "1";
+    });
+    window.setTimeout(() => {
+      if (animation.type === "deal-community") flying.classList.add("flip");
+      window.setTimeout(() => flying.remove(), 180);
+    }, 470);
   }
 }
