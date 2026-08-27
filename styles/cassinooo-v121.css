@@ -1,0 +1,108 @@
+/* Cassinooo 0.12.1 — Dragon Dice DSN + layout fixes */
+
+/* Keep labels outside the polygon clipping area. */
+.cassinooo-dragon-dice-table .dragon-die {
+  position: relative;
+  width: 76px;
+  height: 86px;
+  display: grid;
+  grid-template-rows: 16px 38px 18px;
+  place-items: center;
+  padding: 5px 4px 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
+  isolation: isolate;
+  box-sizing: border-box;
+}
+
+.cassinooo-dragon-dice-table .dragon-die::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 0;
+  height: 72px;
+  z-index: -1;
+  border: 2px solid rgba(255,226,162,.72);
+  box-shadow: 0 6px 14px rgba(0,0,0,.5), inset 0 0 18px rgba(255,255,255,.12);
+}
+
+.cassinooo-dragon-dice-table .dragon-die.d4 {
+  clip-path: none;
+  padding-top: 7px;
+}
+.cassinooo-dragon-dice-table .dragon-die.d4::before {
+  background: linear-gradient(145deg,#2b9e58,#0e5a2e);
+  clip-path: polygon(50% 1%,98% 94%,2% 94%);
+}
+
+.cassinooo-dragon-dice-table .dragon-die.d6::before {
+  border-radius: 13px;
+  background: linear-gradient(145deg,#3477cc,#143d88);
+}
+
+.cassinooo-dragon-dice-table .dragon-die.d8 {
+  clip-path: none;
+}
+.cassinooo-dragon-dice-table .dragon-die.d8::before {
+  background: linear-gradient(145deg,#c63f39,#7c1616);
+  clip-path: polygon(50% 0,96% 50%,50% 100%,4% 50%);
+}
+
+.cassinooo-dragon-dice-table .dragon-die span {
+  align-self: end;
+  font-size: .54rem;
+  line-height: 1;
+  opacity: .92;
+}
+.cassinooo-dragon-dice-table .dragon-die strong {
+  align-self: center;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+.cassinooo-dragon-dice-table .dragon-die small {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 86px;
+  transform: translateX(-50%);
+  color: #f5e4bd;
+  font-size: .58rem;
+  line-height: 1.05;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 1;
+  text-shadow: 0 2px 3px #000;
+  pointer-events: none;
+}
+
+/* Give the dice labels enough vertical room. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-dice-cluster {
+  top: 94px;
+  gap: 18px;
+  align-items: flex-start;
+  overflow: visible;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-sum {
+  top: 196px;
+}
+
+/* Lugar 2 = upper-right, Lugar 6 = upper-left. Move both upward to avoid overlap. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-left,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-right {
+  top: 43.5%;
+}
+
+/* Explicit visual numbering direction: 1 on the far right, 6 on the far left. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-right .cassinooo-seat-number::after,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-right .cassinooo-seat-number::after,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-mid-right .cassinooo-seat-number::after,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-mid-left .cassinooo-seat-number::after,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-left .cassinooo-seat-number::after,
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-left .cassinooo-seat-number::after {
+  content: "";
+}
