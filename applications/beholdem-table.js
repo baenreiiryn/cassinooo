@@ -170,8 +170,9 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!viewport || !stage) return;
     const applyScale = () => {
       const availableWidth = Math.max(320, viewport.clientWidth);
-      const availableHeight = Math.max(320, viewport.clientHeight);
-      const scale = Math.min(1, availableWidth / 1100, availableHeight / 700);
+      const availableHeight = Math.max(260, viewport.clientHeight);
+      const naturalScale = Math.min(availableWidth / 1100, availableHeight / 700);
+      const scale = Math.max(0.38, Math.min(1.6, naturalScale));
       stage.style.setProperty("--beholdem-scale", String(scale));
       stage.style.width = `${1100 * scale}px`;
       stage.style.height = `${700 * scale}px`;
@@ -202,13 +203,18 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const to = target.getBoundingClientRect();
     const flying = document.createElement("div");
     flying.className = "cassinooo-beholdem-flying-card";
-    flying.style.left = `${from.left - boardRect.left + from.width / 2 - 22}px`;
-    flying.style.top = `${from.top - boardRect.top + from.height / 2 - 31}px`;
+    flying.style.left = `${(from.left - boardRect.left) / (boardRect.width / 1100) + from.width / 2 / (boardRect.width / 1100) - 22}px`;
+    flying.style.top = `${(from.top - boardRect.top) / (boardRect.height / 700) + from.height / 2 / (boardRect.height / 700) - 31}px`;
     board.append(flying);
-    const dx = to.left - boardRect.left + to.width / 2 - (from.left - boardRect.left + from.width / 2);
-    const dy = to.top - boardRect.top + to.height / 2 - (from.top - boardRect.top + from.height / 2);
+
+    const scaleX = boardRect.width / 1100;
+    const scaleY = boardRect.height / 700;
+    const fromCx = (from.left - boardRect.left + from.width / 2) / scaleX;
+    const fromCy = (from.top - boardRect.top + from.height / 2) / scaleY;
+    const toCx = (to.left - boardRect.left + to.width / 2) / scaleX;
+    const toCy = (to.top - boardRect.top + to.height / 2) / scaleY;
     requestAnimationFrame(() => {
-      flying.style.transform = `translate(${dx}px, ${dy}px) rotate(10deg)`;
+      flying.style.transform = `translate(${toCx - fromCx}px, ${toCy - fromCy}px) rotate(10deg)`;
       flying.style.opacity = "1";
     });
     window.setTimeout(() => {
