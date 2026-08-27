@@ -1,5 +1,5 @@
 <section class="cassinooo-beholdem-shell">
-  <header class="cassinooo-table-header">
+  <header class="cassinooo-table-header cassinooo-beholdem-header">
     <div>
       <h2>Beholdem</h2>
       <p>Texas Hold'em compartilhado para até 6 jogadores.</p>
@@ -8,6 +8,7 @@
       <div class="cassinooo-gm-controls">
         <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
         {{#if canStart}}<button type="button" data-beholdem-start><i class="fa-solid fa-play"></i> Nova mão</button>{{/if}}
+        {{#if turnActive}}<button type="button" data-beholdem-next-turn><i class="fa-solid fa-forward-step"></i> Próximo turno</button>{{/if}}
         {{#if canFlop}}<button type="button" data-beholdem-flop>Flop</button>{{/if}}
         {{#if canTurn}}<button type="button" data-beholdem-turn>Turn</button>{{/if}}
         {{#if canRiver}}<button type="button" data-beholdem-river>River</button>{{/if}}
@@ -19,50 +20,95 @@
 
   <div class="cassinooo-message" aria-live="polite">{{message}}</div>
 
-  <div class="cassinooo-board">
-    <div class="cassinooo-beholdem-felt">
-      <section class="cassinooo-beholdem-dealer">
-        <span>DEALER / MESTRE</span>
-        <strong>{{dealerName}}</strong>
-        <div class="cassinooo-beholdem-deck">
-          <div></div><div></div><div></div>
-        </div>
-      </section>
+  {{#if turnActive}}
+    <div class="cassinooo-beholdem-turn-banner">
+      <span>VEZ DE</span>
+      <strong>{{activePlayerName}}</strong>
+      <em>Pote: {{pot}} PO</em>
+    </div>
+  {{else if hasHand}}
+    <div class="cassinooo-beholdem-turn-banner passive">
+      <span>POTE</span><strong>{{pot}} PO</strong>
+    </div>
+  {{/if}}
 
-      <section class="cassinooo-community-cards">
-        {{#each community}}
-          <div class="cassinooo-poker-card {{#if red}}red{{/if}}">{{label}}</div>
-        {{/each}}
-        {{#unless community.length}}
-          <span class="cassinooo-community-placeholder">CARTAS COMUNITÁRIAS</span>
-        {{/unless}}
-      </section>
-
-      {{#each seats}}
-        <article class="cassinooo-beholdem-seat {{positionClass}}" data-seat-index="{{index}}">
-          <span class="cassinooo-seat-number">Lugar {{number}}</span>
-          {{#if ../isGM}}
-            <select data-beholdem-seat-index="{{index}}">
-              <option value="">— Lugar vazio —</option>
-              {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
-            </select>
-          {{else}}
-            <strong class="cassinooo-player-name">{{occupantName}}</strong>
-            {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
-          {{/if}}
-
-          <div class="cassinooo-hole-cards">
-            {{#each cards}}
-              <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
-            {{/each}}
-            {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
+  <div class="cassinooo-beholdem-viewport">
+    <div class="cassinooo-beholdem-stage">
+      <div class="cassinooo-beholdem-felt">
+        <section class="cassinooo-beholdem-dealer">
+          <span>DEALER / MESTRE</span>
+          <strong>{{dealerName}}</strong>
+          <div class="cassinooo-beholdem-deck" aria-label="Baralho do dealer">
+            <div></div><div></div><div></div>
           </div>
-        </article>
-      {{/each}}
+        </section>
+
+        <section class="cassinooo-community-cards">
+          {{#each community}}
+            <div class="cassinooo-poker-card community-card {{#if red}}red{{/if}}">{{label}}</div>
+          {{/each}}
+          {{#unless community.length}}
+            <span class="cassinooo-community-placeholder">CARTAS COMUNITÁRIAS</span>
+          {{/unless}}
+        </section>
+
+        {{#each seats}}
+          <article class="cassinooo-beholdem-seat {{positionClass}} {{#if isActive}}active-turn{{/if}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
+            <span class="cassinooo-seat-number">Lugar {{number}}</span>
+            {{#if ../isGM}}
+              <select data-beholdem-seat-index="{{index}}">
+                <option value="">— Lugar vazio —</option>
+                {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
+              </select>
+            {{else}}
+              <strong class="cassinooo-player-name">{{occupantName}}</strong>
+              {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
+            {{/if}}
+
+            {{#if occupied}}
+              <label class="cassinooo-beholdem-wager">
+                <span>Aposta (PO)</span>
+                <input type="number" min="0" step="1" value="{{bet}}" data-beholdem-wager-user-id="{{userId}}" {{#unless canEditBet}}disabled{{/unless}}>
+              </label>
+            {{/if}}
+
+            <div class="cassinooo-hole-cards">
+              {{#each cards}}
+                <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
+              {{/each}}
+              {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
+            </div>
+            {{#if bestHand}}<div class="cassinooo-beholdem-best-hand">{{bestHand}}</div>{{/if}}
+            {{#if isActive}}<div class="cassinooo-turn-indicator">◆ TURNO ATUAL</div>{{/if}}
+          </article>
+        {{/each}}
+
+        {{#if showResults}}
+          <aside class="cassinooo-beholdem-results-overlay">
+            <div class="cassinooo-beholdem-results-card">
+              <h3><i class="fa-solid fa-trophy"></i> Resultado da mão</h3>
+              <div class="cassinooo-beholdem-results-pot">Pote total: <strong>{{pot}} PO</strong></div>
+              <table>
+                <thead><tr><th>Jogador</th><th>Mão</th><th>Aposta</th><th>Saldo</th></tr></thead>
+                <tbody>
+                  {{#each roundResults}}
+                    <tr class="{{#if winner}}winner{{/if}}">
+                      <td>{{name}}</td>
+                      <td>{{handName}}</td>
+                      <td>{{bet}} PO</td>
+                      <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td>
+                    </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+          </aside>
+        {{/if}}
+      </div>
     </div>
   </div>
 
   <footer class="cassinooo-table-footer">
-    O Mestre controla a distribuição. As cartas privadas são visíveis apenas para o dono, para o Mestre e durante o Showdown.
+    O conteúdo escala proporcionalmente ao redimensionar a janela. O Mestre controla o carrossel; cada jogador vê apenas as próprias cartas até o Showdown.
   </footer>
 </section>
