@@ -23,3 +23,12 @@ export function getCardBack(gameId) {
   if (!key) return "";
   return game.settings.get(MODULE_ID, key) ?? "";
 }
+
+export function applyCardBackVariables() {
+  const root = document.documentElement;
+  if (!root) return;
+  const blackjack = getCardBack("blackjack");
+  const beholdem = getCardBack("beholdem");
+  root.style.setProperty("--blackjack-card-back", blackjack ? `url(${JSON.stringify(blackjack)})` : "url('modules/cassinooo/assets/balor-card-back.svg')");
+  root.style.setProperty("--beholdem-card-back", beholdem ? `url(${JSON.stringify(beholdem)})` : "url('modules/cassinooo/assets/balor-card-back.svg')");
+}
