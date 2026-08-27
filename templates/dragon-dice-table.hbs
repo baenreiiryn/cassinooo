@@ -1,0 +1,94 @@
+<section class="cassinooo-dragon-shell">
+  <header class="cassinooo-table-header cassinooo-dragon-header">
+    <div>
+      <h2>Dados do Dragão</h2>
+      <p>O crupiê rola d4, d6 e d8 sob o copo. Aposte antes da revelação.</p>
+    </div>
+    {{#if isGM}}
+      <div class="cassinooo-gm-controls">
+        <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
+        {{#if canRoll}}<button type="button" data-dragon-roll><i class="fa-solid fa-dice"></i> Rolar escondido</button>{{/if}}
+        {{#if canReveal}}<button type="button" data-dragon-reveal><i class="fa-solid fa-hand"></i> Erguer o copo</button>{{/if}}
+        {{#if hasRound}}<button type="button" data-dragon-reset><i class="fa-solid fa-broom"></i> Reiniciar mesa</button>{{/if}}
+      </div>
+    {{/if}}
+  </header>
+
+  <div class="cassinooo-message" aria-live="polite">{{message}}</div>
+
+  <div class="cassinooo-dragon-viewport">
+    <div class="cassinooo-dragon-felt">
+      <section class="cassinooo-dragon-dealer">
+        <span>CRUPIÊ / MESTRE</span><strong>{{dealerName}}</strong>
+      </section>
+
+      <section class="cassinooo-dragon-center">
+        <div class="cassinooo-dragon-cup-wrap">
+          <div class="cassinooo-dragon-cup" aria-label="Copo do crupiê">
+            <div class="cup-rim"></div><div class="cup-body"></div>
+          </div>
+        </div>
+        <div class="cassinooo-dragon-dice-cluster {{#if revealed}}is-revealed{{/if}}">
+          <div class="dragon-die d4"><span>d4</span><strong>{{d4}}</strong><small>Garra</small></div>
+          <div class="dragon-die d6"><span>d6</span><strong>{{d6}}</strong><small>Presa</small></div>
+          <div class="dragon-die d8"><span>d8</span><strong>{{d8}}</strong><small>Cauda</small></div>
+        </div>
+        <div class="cassinooo-dragon-sum">Soma <strong>{{sum}}</strong></div>
+      </section>
+
+      <aside class="cassinooo-dragon-paytable">
+        <h3>Pagamentos</h3>
+        <div><span>❤️ Coração</span><b>9–12 · 1:1</b></div>
+        <div><span>☀️ Douradas</span><b>todos pares · 6:1</b></div>
+        <div><span>🌑 Negras</span><b>todos ímpares · 6:1</b></div>
+        <div><span>🐲 Três Cabeças</span><b>trinca · 40:1</b></div>
+        <div><span>👑 Perfeito</span><b>4–6–8 · 175:1</b></div>
+      </aside>
+
+      {{#each seats}}
+        <article class="cassinooo-dragon-seat {{positionClass}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
+          <span class="cassinooo-seat-number">Lugar {{number}}</span>
+          {{#if ../isGM}}
+            <select data-dragon-seat-index="{{index}}">
+              <option value="">— Lugar vazio —</option>
+              {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
+            </select>
+          {{else}}
+            <strong class="cassinooo-player-name">{{occupantName}}</strong>
+            {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
+          {{/if}}
+
+          {{#if occupied}}
+            <div class="cassinooo-dragon-bets">
+              {{#each betFields}}
+                <label title="Pagamento {{payout}}:1">
+                  <span>{{label}}</span>
+                  <input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}>
+                </label>
+              {{/each}}
+            </div>
+          {{/if}}
+        </article>
+      {{/each}}
+
+      {{#if showResults}}
+        <aside class="cassinooo-dragon-results-overlay">
+          <div class="cassinooo-dragon-results-card">
+            <h3>🐉 Resultado dos Dados do Dragão</h3>
+            <div class="cassinooo-dragon-result-roll">{{d4}} — {{d6}} — {{d8}} <strong>Soma {{sum}}</strong></div>
+            <table>
+              <thead><tr><th>Jogador</th><th>Apostado</th><th>Saldo</th><th>Detalhes</th></tr></thead>
+              <tbody>
+                {{#each roundResults}}
+                  <tr><td>{{name}}</td><td>{{totalBet}} PO</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td><td>{{breakdown}}</td></tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        </aside>
+      {{/if}}
+    </div>
+  </div>
+
+  <footer class="cassinooo-table-footer">As apostas são independentes. O Dice So Nice é usado quando estiver ativo; sem ele, o jogo continua normalmente com a animação do copo.</footer>
+</section>
