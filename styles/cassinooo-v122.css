@@ -1,0 +1,61 @@
+/* Cassinooo 0.12.2 — unified right-to-left seating */
+
+/* Beholdem: reuse the exact Blackjack arc coordinates. */
+.cassinooo-beholdem-table .cassinooo-beholdem-seat {
+  transform: translate(-50%, -50%);
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-upper-left {
+  left: 9.5%;
+  top: 69%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-upper-right {
+  left: 25.7%;
+  top: 75.5%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-left {
+  left: 41.9%;
+  top: 80.3%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-mid-left {
+  left: 58.1%;
+  top: 80.3%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-mid-right {
+  left: 74.3%;
+  top: 75.5%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.seat-lower-right {
+  left: 90.5%;
+  top: 69%;
+  right: auto;
+  bottom: auto;
+}
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.active-turn {
+  transform: translate(-50%, -50%) scale(1.035);
+}
+
+/* Dragon Dice: Lugar 1 is the upper-right post, Lugar 2 is lower-right. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-right {
+  top: 42.5%;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-right {
+  top: 69.5%;
+}
+
+/* Keep the two left-side Dragon posts separated in the same fashion. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-upper-left {
+  top: 42.5%;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-seat.seat-lower-left {
+  top: 69.5%;
+}
