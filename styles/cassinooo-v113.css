@@ -1,0 +1,60 @@
+/* Cassinooo 0.11.3 — Beholdem raise + fold */
+.cassinooo-beholdem-table .cassinooo-hole-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.cassinooo-beholdem-table .cassinooo-hole-row .cassinooo-hole-cards {
+  flex: 0 1 auto;
+}
+
+.cassinooo-beholdem-table .cassinooo-fold-button {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 4px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(242,180,110,.72);
+  border-radius: 50%;
+  background: rgba(72,16,12,.92);
+  color: #f1c184;
+  box-shadow: 0 0 11px rgba(204,89,42,.34);
+  cursor: pointer;
+}
+
+.cassinooo-beholdem-table .cassinooo-fold-button:hover {
+  color: #fff0c2;
+  border-color: #ffd58c;
+  box-shadow: 0 0 16px rgba(244,146,66,.72);
+}
+
+.cassinooo-beholdem-table .cassinooo-fold-button svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.cassinooo-beholdem-table .cassinooo-beholdem-wager.active-wager {
+  color: #ffd883;
+}
+
+.cassinooo-beholdem-table .cassinooo-beholdem-wager.active-wager input {
+  border-color: #e4b653;
+  box-shadow: 0 0 9px rgba(255,197,73,.35);
+}
+
+.cassinooo-beholdem-table .cassinooo-beholdem-seat.folded {
+  opacity: .58;
+  filter: grayscale(.45);
+}
+
+.cassinooo-beholdem-table .cassinooo-folded-label {
+  margin-top: -2px;
+  color: #e49783;
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
