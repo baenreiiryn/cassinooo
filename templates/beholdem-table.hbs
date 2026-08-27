@@ -53,7 +53,7 @@
         </section>
 
         {{#each seats}}
-          <article class="cassinooo-beholdem-seat {{positionClass}} {{#if isActive}}active-turn{{/if}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
+          <article class="cassinooo-beholdem-seat {{positionClass}} {{#if isActive}}active-turn{{/if}} {{#if folded}}folded{{/if}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
             <span class="cassinooo-seat-number">Lugar {{number}}</span>
             {{#if ../isGM}}
               <select data-beholdem-seat-index="{{index}}">
@@ -66,18 +66,28 @@
             {{/if}}
 
             {{#if occupied}}
-              <label class="cassinooo-beholdem-wager">
-                <span>Aposta (PO)</span>
+              <label class="cassinooo-beholdem-wager {{#if isActive}}active-wager{{/if}}">
+                <span>{{#if isActive}}Aposta total{{else}}Aposta (PO){{/if}}</span>
                 <input type="number" min="0" step="1" value="{{bet}}" data-beholdem-wager-user-id="{{userId}}" {{#unless canEditBet}}disabled{{/unless}}>
               </label>
             {{/if}}
 
-            <div class="cassinooo-hole-cards">
-              {{#each cards}}
-                <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
-              {{/each}}
-              {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
+            <div class="cassinooo-hole-row">
+              <div class="cassinooo-hole-cards">
+                {{#each cards}}
+                  <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
+                {{/each}}
+                {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
+              </div>
+              {{#if canFold}}
+                <button type="button" class="cassinooo-fold-button" data-beholdem-fold-user-id="{{userId}}" title="Desistir desta mão" aria-label="Desistir desta mão">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M20 28V12c0-4 6-4 6 0v12-14c0-4 6-4 6 0v14-12c0-4 6-4 6 0v13-9c0-4 6-4 6 0v19l5-6c3-4 8 0 5 4L42 49c-3 4-7 6-12 6h-5c-7 0-12-4-15-10L5 34c-2-4 4-7 6-3l5 8V28c0-4 4-5 6-2" fill="currentColor"/>
+                  </svg>
+                </button>
+              {{/if}}
             </div>
+            {{#if folded}}<div class="cassinooo-folded-label">DESISTIU</div>{{/if}}
             {{#if bestHand}}<div class="cassinooo-beholdem-best-hand">{{bestHand}}</div>{{/if}}
             {{#if isActive}}<div class="cassinooo-turn-indicator">◆ TURNO ATUAL</div>{{/if}}
           </article>
@@ -109,6 +119,6 @@
   </div>
 
   <footer class="cassinooo-table-footer">
-    O conteúdo escala proporcionalmente ao redimensionar a janela. O Mestre controla o carrossel; cada jogador vê apenas as próprias cartas até o Showdown.
+    No próprio turno, o jogador pode aumentar sua aposta total ou desistir. Jogadores que desistiram saem do carrossel e não concorrem ao pote.
   </footer>
 </section>
