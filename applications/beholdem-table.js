@@ -84,7 +84,8 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       board.style.backgroundSize = background ? "cover" : "auto";
       board.style.backgroundRepeat = "no-repeat";
       const customBack = getCardBack("beholdem");
-      board.style.setProperty("--beholdem-card-back", customBack ? `url(${JSON.stringify(customBack)})` : "url('../assets/balor-card-back.svg')");
+      if (customBack) board.style.setProperty("--beholdem-card-back", `url(${JSON.stringify(customBack)})`);
+      else board.style.removeProperty("--beholdem-card-back");
     }
 
     if (!game.user?.isGM) return;
