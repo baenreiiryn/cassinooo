@@ -14,7 +14,8 @@ import {
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const SEAT_CLASSES=["seat-upper-left","seat-upper-right","seat-lower-left","seat-lower-mid-left","seat-lower-mid-right","seat-lower-right"];
-const VISUAL_ORDER=[5,1,4,3,2,0];
+// Right side begins with the upper station as Lugar 1, then the lower-right station as Lugar 2.
+const VISUAL_ORDER=[1,5,4,3,2,0];
 
 function deltaText(value){ const n=Number(value)||0; return n>0?`+${n} PO`:n<0?`${n} PO`:"0 PO"; }
 
