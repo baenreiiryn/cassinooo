@@ -2,6 +2,7 @@ import { getTableBackground, getCardBack } from "../scripts/backgrounds.js";
 import {
   advanceBeholdemTurn,
   assignBeholdemSeat,
+  BEHOLDEM_VISUAL_SEAT_ORDER,
   dealFlop,
   dealRiver,
   dealTurn,
@@ -49,17 +50,18 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const seatIds = getBeholdemSeats();
     const players = game.users.filter((u) => !u.isGM).map((u) => ({ id: u.id, name: u.name, active: u.active }));
     const seatClasses = ["seat-upper-left", "seat-upper-right", "seat-lower-left", "seat-lower-mid-left", "seat-lower-mid-right", "seat-lower-right"];
-    const revealAll = state.phase === "showdown";
     const locked = state.phase !== "idle";
 
     const seats = seatIds.map((userId, index) => {
       const occupant = userId ? game.users.get(userId) : null;
       const hand = userId ? state.hands?.[userId] : null;
-      const maySee = Boolean(game.user?.isGM || game.user?.id === userId || revealAll);
+      // Hole cards are private: only the user seated here can see them.
+      // The GM and all other players always see the configured card back.
+      const maySee = Boolean(userId && game.user?.id === userId);
       const bet = hand?.bet ?? wagers[userId] ?? 0;
       return {
         index,
-        number: index + 1,
+        number: BEHOLDEM_VISUAL_SEAT_ORDER.indexOf(index) + 1,
         userId,
         positionClass: seatClasses[index],
         occupied: Boolean(occupant),
@@ -187,10 +189,8 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const deck = this.element.querySelector(".cassinooo-beholdem-deck");
     if (!board || !deck) return;
 
-    if (animation.type === "showdown") {
-      for (const card of this.element.querySelectorAll(".cassinooo-hole-cards .cassinooo-poker-card")) card.classList.add("revealing");
-      return;
-    }
+    // Showdown calculates the winner, but private hole cards stay private in the UI.
+    if (animation.type === "showdown") return;
     if (!["deal-hole", "deal-community"].includes(animation.type)) return;
 
     const target = animation.type === "deal-hole"
