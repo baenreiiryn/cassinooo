@@ -1,0 +1,72 @@
+/* Cassinooo 0.14.0 — textured 3D models for cards and Dragon Dice */
+
+/* One transparent WebGL surface per card table. It never intercepts Foundry UI. */
+.cassinooo-card-model-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 12;
+  background: transparent;
+}
+
+/* Keep the HTML cards in layout as anchors for the 3D renderer. Hide them only
+   after WebGL has initialized successfully; otherwise they remain the fallback. */
+.cassinooo-model3d-active .cassinooo-playing-card[data-card-key],
+.cassinooo-model3d-active .cassinooo-poker-card[data-card-key],
+.cassinooo-model3d-active .cassinooo-deck-card,
+.cassinooo-model3d-active .cassinooo-beholdem-deck > div {
+  opacity: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.cassinooo-model3d-active .cassinooo-card-fallback-label {
+  visibility: hidden;
+}
+
+/* Distribution is still the existing lightweight transition in 0.14.0.
+   Do not hide it together with the stationary 3D cards. */
+.cassinooo-model3d-active .cassinooo-card-fallback-flying {
+  opacity: .98 !important;
+  visibility: visible !important;
+}
+
+/* The 3D layer must sit above felt/cards but below modal result overlays. */
+.cassinooo-blackjack-table .cassinooo-payout-board,
+.cassinooo-beholdem-table .cassinooo-beholdem-results-overlay {
+  z-index: 40;
+}
+
+/* Preserve readable controls even where the transparent WebGL canvas overlaps. */
+.cassinooo-blackjack-table .cassinooo-seat,
+.cassinooo-blackjack-table .cassinooo-dealer-zone,
+.cassinooo-beholdem-table .cassinooo-beholdem-seat,
+.cassinooo-beholdem-table .cassinooo-beholdem-dealer,
+.cassinooo-beholdem-table .cassinooo-community-cards {
+  isolation: isolate;
+}
+
+/* Dragon Dice canvas uses the GLB-derived cup/dice textures and stays attached
+   to the scalable felt rather than to the Foundry screen. */
+.cassinooo-dragon-dice-table canvas[data-dragon-webgl] {
+  display: block;
+  image-rendering: auto;
+  background: transparent;
+}
+
+.cassinooo-model-info {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(210,168,91,.32);
+  border-radius: 10px;
+  background: rgba(24,12,8,.28);
+}
+.cassinooo-model-info h3 { margin: 0 0 5px; color: #e7ca91; }
+.cassinooo-model-info p { margin: 0; color: #c7b79e; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-card-fallback-flying { transition-duration: 1ms !important; }
+}
