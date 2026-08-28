@@ -5,17 +5,13 @@ import { DragonDiceTable } from "../applications/dragon-dice-table.js";
 import { GamePlaceholder } from "../applications/game-placeholder.js";
 import { MODULE_ID, SOCKET_NAME, registerSettings } from "./state.js";
 import { registerModuleSettings } from "./module-settings.js";
-import { applyCardBackVariables } from "./backgrounds.js";
-import { installCasinoAppearanceObserver, applyCasinoCardBacks } from "./cardback-runtime.js";
 import { setupScaledBoard } from "./scaled-board.js";
 import { handleBlackjackSocket, registerBlackjackSetting } from "./blackjack.js";
 import { handleRouletteSocket, recoverRouletteSpin, registerRouletteSettings } from "./roulette.js";
 import { handleBeholdemSocket, registerBeholdemSettings } from "./beholdem.js";
 import { handleDragonDiceSocket, registerDragonDiceSettings } from "./dragon-dice.js";
 
-BlackjackTable.DEFAULT_OPTIONS.window.resizable = true;
 RouletteTable.DEFAULT_OPTIONS.window.resizable = true;
-DragonDiceTable.DEFAULT_OPTIONS.window.resizable = true;
 
 let blackjackTable = null;
 let rouletteTable = null;
@@ -76,8 +72,6 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  applyCardBackVariables();
-  installCasinoAppearanceObserver();
   void recoverRouletteSpin();
   game.socket.on(SOCKET_NAME, async (message) => {
     await handleBlackjackSocket(message);
@@ -88,7 +82,7 @@ Hooks.once("ready", () => {
     if (["roulette-seats-updated", "roulette-updated"].includes(message?.type)) await refreshOpenRoulette();
     if (["beholdem-seats-updated", "beholdem-updated"].includes(message?.type)) await refreshOpenBeholdem();
     if (["dragon-dice-seats-updated", "dragon-dice-updated"].includes(message?.type)) await refreshOpenDragonDice();
-    if (message?.type === "backgrounds-updated") { applyCardBackVariables(); applyCasinoCardBacks(document); await refreshOpenCasinoTables(); }
+    if (message?.type === "backgrounds-updated") await refreshOpenCasinoTables();
   });
 });
 
@@ -96,7 +90,7 @@ Hooks.on("cassinoooBlackjackUpdated", refreshOpenBlackjack);
 Hooks.on("cassinoooRouletteUpdated", refreshOpenRoulette);
 Hooks.on("cassinoooBeholdemUpdated", refreshOpenBeholdem);
 Hooks.on("cassinoooDragonDiceUpdated", refreshOpenDragonDice);
-Hooks.on("cassinoooBackgroundsUpdated", async () => { applyCardBackVariables(); applyCasinoCardBacks(document); await refreshOpenCasinoTables(); });
+Hooks.on("cassinoooBackgroundsUpdated", refreshOpenCasinoTables);
 Hooks.on("renderJournalDirectory", injectJournalButtons);
 Hooks.on("renderApplicationV2", (app, element) => {
   if (app?.constructor?.name === "JournalDirectory") injectJournalButtons(app, element);
