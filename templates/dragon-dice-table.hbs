@@ -24,21 +24,35 @@
         <span>CRUPIÊ / MESTRE</span><strong>{{dealerName}}</strong>
       </section>
 
-      <section class="cassinooo-dragon-center cassinooo-dragon-webgl-center">
-        <div class="cassinooo-dragon-webgl-frame">
-          <canvas class="cassinooo-dragon-webgl" data-dragon-webgl aria-label="Cena 3D dos Dados do Dragão"></canvas>
-          <div class="cassinooo-dragon-webgl-fallback hidden" data-dragon-webgl-fallback>
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span data-dragon-webgl-error>Renderizador 3D indisponível</span>
+      <section class="cassinooo-dragon-center cassinooo-dragon-25d-center">
+        <div class="cassinooo-dragon-25d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}">
+          <div class="cassinooo-dragon-floor-glow"></div>
+          <div class="cassinooo-dragon-floor-shadow"></div>
+
+          <div class="cassinooo-dragon-dice-layer" aria-label="Dados do Dragão">
+            <div class="cassinooo-dragon-die die-d4"><span>{{#if revealed}}{{d4}}{{else}}4{{/if}}</span></div>
+            <div class="cassinooo-dragon-die die-d6"><span>{{#if revealed}}{{d6}}{{else}}6{{/if}}</span></div>
+            <div class="cassinooo-dragon-die die-d8"><span>{{#if revealed}}{{d8}}{{else}}8{{/if}}</span></div>
           </div>
-          {{#if revealed}}
-            <div class="cassinooo-dragon-webgl-values" aria-label="Resultado dos dados">
-              <div><strong>{{d4}}</strong><span>Garra · d4</span></div>
-              <div><strong>{{d6}}</strong><span>Presa · d6</span></div>
-              <div><strong>{{d8}}</strong><span>Cauda · d8</span></div>
+
+          <div class="cassinooo-dragon-cup-wrap" aria-hidden="true">
+            <div class="cassinooo-dragon-cup-shadow"></div>
+            <div class="cassinooo-dragon-cup">
+              <div class="cassinooo-dragon-cup-rim"></div>
+              <div class="cassinooo-dragon-cup-body"></div>
+              <div class="cassinooo-dragon-cup-highlight"></div>
+              <div class="cassinooo-dragon-cup-base"></div>
             </div>
-          {{/if}}
+          </div>
         </div>
+
+        {{#if revealed}}
+          <div class="cassinooo-dragon-25d-values" aria-label="Resultado dos dados">
+            <div><strong>{{d4}}</strong><span>Garra · d4</span></div>
+            <div><strong>{{d6}}</strong><span>Presa · d6</span></div>
+            <div><strong>{{d8}}</strong><span>Cauda · d8</span></div>
+          </div>
+        {{/if}}
         <div class="cassinooo-dragon-sum {{#unless revealed}}hidden-sum{{/unless}}">Soma <strong>{{sum}}</strong></div>
       </section>
 
@@ -67,10 +81,7 @@
           {{#if occupied}}
             <div class="cassinooo-dragon-bets">
               {{#each betFields}}
-                <label title="Pagamento {{payout}}:1">
-                  <span>{{label}}</span>
-                  <input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}>
-                </label>
+                <label title="Pagamento {{payout}}:1"><span>{{label}}</span><input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}></label>
               {{/each}}
             </div>
           {{/if}}
@@ -84,11 +95,7 @@
             <div class="cassinooo-dragon-result-roll">{{d4}} — {{d6}} — {{d8}} <strong>Soma {{sum}}</strong></div>
             <table>
               <thead><tr><th>Jogador</th><th>Apostado</th><th>Saldo</th><th>Detalhes</th></tr></thead>
-              <tbody>
-                {{#each roundResults}}
-                  <tr><td>{{name}}</td><td>{{totalBet}} PO</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td><td>{{breakdown}}</td></tr>
-                {{/each}}
-              </tbody>
+              <tbody>{{#each roundResults}}<tr><td>{{name}}</td><td>{{totalBet}} PO</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td><td>{{breakdown}}</td></tr>{{/each}}</tbody>
             </table>
             {{#if isGM}}<button type="button" class="cassinooo-dragon-overlay-close" data-dragon-hide-scoreboard><i class="fa-solid fa-eye-slash"></i> Ocultar placar</button>{{/if}}
           </div>
@@ -97,5 +104,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Cena 3D própria do Cassinooo. Os modelos ficam dentro da mesa e o Mestre decide quando mostrar o placar.</footer>
+  <footer class="cassinooo-table-footer">Animação 2.5D do Cassinooo: profundidade simulada por perspectiva, luz, sombra e camadas.</footer>
 </section>
