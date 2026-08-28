@@ -24,29 +24,20 @@
         <span>CRUPIÊ / MESTRE</span><strong>{{dealerName}}</strong>
       </section>
 
-      <section class="cassinooo-dragon-center">
-        <div class="cassinooo-dragon-3d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}">
-          <div class="cassinooo-dragon-table-shadow"></div>
-
-          <div class="cassinooo-dragon-model-die dragon-model-d4" aria-label="d4 Garra">
-            <div class="die-polyhedron"><span class="die-value">{{d4}}</span></div>
-            <small>Garra · d4</small>
+      <section class="cassinooo-dragon-center cassinooo-dragon-webgl-center">
+        <div class="cassinooo-dragon-webgl-frame">
+          <canvas class="cassinooo-dragon-webgl" data-dragon-webgl aria-label="Cena 3D dos Dados do Dragão"></canvas>
+          <div class="cassinooo-dragon-webgl-fallback hidden" data-dragon-webgl-fallback>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>WebGL2 indisponível</span>
           </div>
-          <div class="cassinooo-dragon-model-die dragon-model-d6" aria-label="d6 Presa">
-            <div class="die-polyhedron cube">
-              <span class="cube-face front die-value">{{d6}}</span><span class="cube-face back"></span><span class="cube-face right"></span><span class="cube-face left"></span><span class="cube-face top"></span><span class="cube-face bottom"></span>
+          {{#if revealed}}
+            <div class="cassinooo-dragon-webgl-values" aria-label="Resultado dos dados">
+              <div><strong>{{d4}}</strong><span>Garra · d4</span></div>
+              <div><strong>{{d6}}</strong><span>Presa · d6</span></div>
+              <div><strong>{{d8}}</strong><span>Cauda · d8</span></div>
             </div>
-            <small>Presa · d6</small>
-          </div>
-          <div class="cassinooo-dragon-model-die dragon-model-d8" aria-label="d8 Cauda">
-            <div class="die-polyhedron"><span class="die-value">{{d8}}</span></div>
-            <small>Cauda · d8</small>
-          </div>
-
-          <div class="cassinooo-dragon-cup3d" aria-label="Copo de dados">
-            <div class="cup3d-mouth"></div>
-            <div class="cup3d-body"><span class="cup3d-highlight"></span><span class="cup3d-band"></span></div>
-          </div>
+          {{/if}}
         </div>
         <div class="cassinooo-dragon-sum {{#unless revealed}}hidden-sum{{/unless}}">Soma <strong>{{sum}}</strong></div>
       </section>
@@ -106,5 +97,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Animação própria do Cassinooo, sem Dice So Nice. Depois da revelação, o Mestre decide quando mostrar o placar de ganhos e perdas.</footer>
+  <footer class="cassinooo-table-footer">Cena WebGL2 própria do Cassinooo. Os modelos 3D ficam dentro da mesa e o Mestre decide quando mostrar o placar.</footer>
 </section>
