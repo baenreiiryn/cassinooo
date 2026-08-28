@@ -9,12 +9,12 @@ import {
   gmRevealDragonDice,
   gmRollDragonDice,
   requestDragonBetChange,
-  resetDragonDice
+  resetDragonDice,
+  setDragonScoreboardVisible
 } from "../scripts/dragon-dice.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const SEAT_CLASSES=["seat-upper-left","seat-upper-right","seat-lower-left","seat-lower-mid-left","seat-lower-mid-right","seat-lower-right"];
-// Right side begins with the upper station as Lugar 1, then the lower-right station as Lugar 2.
 const VISUAL_ORDER=[1,5,4,3,2,0];
 
 function deltaText(value){ const n=Number(value)||0; return n>0?`+${n} PO`:n<0?`${n} PO`:"0 PO"; }
@@ -67,10 +67,12 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       revealed,
       canRoll:["idle","revealed"].includes(state.phase),
       canReveal:betting,
+      canShowScoreboard:revealed&&roundResults.length>0&&!state.scoreboardVisible,
+      canHideScoreboard:revealed&&roundResults.length>0&&state.scoreboardVisible,
       hasRound:state.phase!=="idle",
       d4:revealed?dice.d4:"?", d6:revealed?dice.d6:"?", d8:revealed?dice.d8:"?",
       sum:revealed?(dice.d4+dice.d6+dice.d8):"?",
-      showResults:revealed&&roundResults.length>0,
+      showResults:revealed&&state.scoreboardVisible&&roundResults.length>0,
       roundResults
     });
   }
@@ -93,7 +95,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     const animation=state.lastAnimation;
     if(animation?.nonce&&animation.nonce!==this._lastAnimationNonce){
       this._lastAnimationNonce=animation.nonce;
-      requestAnimationFrame(()=>this._animateCup(animation.type));
+      requestAnimationFrame(()=>this._animateTable(animation.type));
     }
 
     for(const input of this.element.querySelectorAll("input[data-dragon-bet]")){
@@ -108,6 +110,8 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     if(!game.user?.isGM) return;
     this.element.querySelector("[data-dragon-roll]")?.addEventListener("click",()=>void gmRollDragonDice());
     this.element.querySelector("[data-dragon-reveal]")?.addEventListener("click",()=>void gmRevealDragonDice());
+    this.element.querySelector("[data-dragon-show-scoreboard]")?.addEventListener("click",()=>void setDragonScoreboardVisible(true));
+    this.element.querySelector("[data-dragon-hide-scoreboard]")?.addEventListener("click",()=>void setDragonScoreboardVisible(false));
     this.element.querySelector("[data-dragon-reset]")?.addEventListener("click",()=>void resetDragonDice());
     for(const select of this.element.querySelectorAll("select[data-dragon-seat-index]")){
       select.addEventListener("change",async event=>{
@@ -119,17 +123,32 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     }
   }
 
-  _animateCup(type){
-    const cup=this.element.querySelector(".cassinooo-dragon-cup");
-    const dice=this.element.querySelector(".cassinooo-dragon-dice-cluster");
-    if(!cup) return;
+  _animateTable(type){
+    const scene=this.element.querySelector(".cassinooo-dragon-3d-scene");
+    const cup=this.element.querySelector(".cassinooo-dragon-cup3d");
+    const dice=[...this.element.querySelectorAll(".cassinooo-dragon-model-die")];
+    if(!scene||!cup) return;
+
+    scene.classList.remove("is-rolling","is-covered","is-revealing");
     cup.classList.remove("rolling","covered","revealing");
-    if(type==="cup-roll") cup.classList.add("rolling");
-    if(type==="cup-cover") cup.classList.add("covered");
+    for(const die of dice) die.classList.remove("tumbling","settling","revealed");
+
+    if(type==="cup-roll"){
+      scene.classList.add("is-rolling");
+      cup.classList.add("rolling");
+      for(const die of dice) die.classList.add("tumbling");
+      return;
+    }
+    if(type==="cup-cover"){
+      scene.classList.add("is-covered");
+      cup.classList.add("covered");
+      for(const die of dice) die.classList.add("settling");
+      return;
+    }
     if(type==="cup-reveal"){
+      scene.classList.add("is-revealing");
       cup.classList.add("revealing");
-      dice?.classList.add("revealed-burst");
-      window.setTimeout(()=>dice?.classList.remove("revealed-burst"),900);
+      for(const die of dice) die.classList.add("revealed");
     }
   }
 }
