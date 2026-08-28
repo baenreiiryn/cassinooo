@@ -9,17 +9,40 @@ async function gunzip(bytes){
     const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
     return new Uint8Array(await new Response(stream).arrayBuffer());
   }
-  throw new Error("DecompressionStream/gzip indisponível neste navegador.");
+  throw new Error("Descompactação gzip indisponível neste navegador.");
+}
+
+function alignedBytes(raw,part){
+  const [start,length]=part;
+  return raw.slice(start,start+length);
 }
 
 export async function decodePackedMesh(data){
+  if(!data?.payload||!Array.isArray(data.parts)||data.parts.length<4) throw new Error("Pacote de geometria 3D inválido.");
   const raw=await gunzip(b64Bytes(data.payload));
   const [pPart,nPart,uvPart,iPart]=data.parts;
-  const pView=new Uint16Array(raw.buffer,raw.byteOffset+pPart[0],pPart[1]/2);
-  const nView=new Int8Array(raw.buffer,raw.byteOffset+nPart[0],nPart[1]);
-  const uvView=new Uint16Array(raw.buffer,raw.byteOffset+uvPart[0],uvPart[1]/2);
-  const iView=new Uint32Array(raw.buffer,raw.byteOffset+iPart[0],iPart[1]/4);
-  const positions=new Float32Array(pView.length), normals=new Float32Array(nView.length), uvs=new Float32Array(uvView.length);
+
+  // Packed sections are byte-tight and are not guaranteed to begin on the
+  // alignment required by TypedArray constructors. Copying each section to
+  // its own buffer guarantees offset 0 and prevents RangeError on meshes
+  // whose normal/UV blocks have odd byte lengths (notably the dice cup).
+  const pBytes=alignedBytes(raw,pPart);
+  const nBytes=alignedBytes(raw,nPart);
+  const uvBytes=alignedBytes(raw,uvPart);
+  const iBytes=alignedBytes(raw,iPart);
+
+  if((pBytes.byteLength%2)!==0||(uvBytes.byteLength%2)!==0||(iBytes.byteLength%4)!==0) throw new Error("Pacote 3D possui blocos com tamanho inválido.");
+
+  const pView=new Uint16Array(pBytes.buffer,pBytes.byteOffset,pBytes.byteLength/2);
+  const nView=new Int8Array(nBytes.buffer,nBytes.byteOffset,nBytes.byteLength);
+  const uvView=new Uint16Array(uvBytes.buffer,uvBytes.byteOffset,uvBytes.byteLength/2);
+  const iView=new Uint32Array(iBytes.buffer,iBytes.byteOffset,iBytes.byteLength/4);
+
+  const expectedP=(Number(data.count)||0)*3;
+  const expectedUV=(Number(data.count)||0)*2;
+  if(pView.length<expectedP||nView.length<expectedP||uvView.length<expectedUV) throw new Error("Pacote 3D incompleto após descompactação.");
+
+  const positions=new Float32Array(expectedP), normals=new Float32Array(expectedP), uvs=new Float32Array(expectedUV);
   for(let i=0;i<data.count;i++){
     for(let k=0;k<3;k++) positions[i*3+k]=data.positionMin[k]+(pView[i*3+k]/65535)*data.positionSpan[k];
     for(let k=0;k<3;k++) normals[i*3+k]=nView[i*3+k]/127;
