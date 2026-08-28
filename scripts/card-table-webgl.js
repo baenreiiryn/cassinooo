@@ -1,5 +1,10 @@
-import { CARD_MODEL_DATA } from "./model-data.js";
 import { createProgram, createMesh, createTexture, compose, orthographic, lookAt, disposeMesh } from "./packed-webgl.js";
+
+let cardModelDataPromise = null;
+async function loadCardModelData() {
+  cardModelDataPromise ??= import("./model-data.js").then((module) => module.CARD_MODEL_DATA);
+  return cardModelDataPromise;
+}
 
 const VS=`#version 300 es
 precision highp float;
@@ -92,12 +97,14 @@ export class CardTableWebGL{
     this.cards=[];
     this.resizeObserver=null;
     this.disposed=false;
+    this.modelData=null;
   }
 
   async init(){
     const gl=this.canvas?.getContext("webgl2",{alpha:true,antialias:true,premultipliedAlpha:false});
     if(!gl)throw new Error("WebGL2 indisponível para cartas 3D.");
     this.gl=gl;
+    this.modelData=await loadCardModelData();
     this.program=createProgram(gl,VS,FS);
     this.loc={
       position:gl.getAttribLocation(this.program,"aPosition"),
@@ -116,8 +123,8 @@ export class CardTableWebGL{
     this.meshes.back=createMesh(gl,this.loc,planeData(-.045,[0,0,-1],true));
     this.meshes.edge=createMesh(gl,this.loc,edgeData());
     [this.textures.front,this.textures.back]=await Promise.all([
-      createTexture(gl,CARD_MODEL_DATA.frontAtlas),
-      createTexture(gl,CARD_MODEL_DATA.backTexture)
+      createTexture(gl,this.modelData.frontAtlas),
+      createTexture(gl,this.modelData.backTexture)
     ]);
     this.textures.edge=solidTexture(gl,[58,43,42,255]);
 
@@ -195,7 +202,7 @@ export class CardTableWebGL{
   }
 
   render(){
-    if(this.disposed||!this.gl)return;
+    if(this.disposed||!this.gl||!this.modelData)return;
     this._resize();
     const gl=this.gl;
     gl.clearColor(0,0,0,0);
@@ -208,7 +215,7 @@ export class CardTableWebGL{
       const cx=c.x+c.width/2-this.designWidth/2;
       const cy=this.designHeight/2-(c.y+c.height/2);
       const model={position:[cx,cy,c.z],rotation:[-.075,.035,c.angle],scale:[c.width,c.height,Math.min(c.width,c.height)]};
-      const rect=CARD_MODEL_DATA.map[c.key]||CARD_MODEL_DATA.map["A♠"]||[0,0,1/13,1/4];
+      const rect=this.modelData.map[c.key]||this.modelData.map["A♠"]||[0,0,1/13,1/4];
       const frontUV=[rect[0],1-rect[1]-rect[3],rect[2],rect[3]];
       const faceTexture=c.hidden?this.textures.back:this.textures.front;
       const faceUV=c.hidden?[0,0,1,1]:frontUV;
@@ -230,5 +237,6 @@ export class CardTableWebGL{
     }
     this.meshes={};
     this.textures={};
+    this.modelData=null;
   }
 }
