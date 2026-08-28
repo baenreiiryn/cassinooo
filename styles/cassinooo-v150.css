@@ -1,0 +1,227 @@
+/* Cassinooo 0.15.0 — stable 2D/2.5D presentation. No WebGL is required. */
+
+/* Any stale 3D surface from a cached template must stay out of the layout. */
+.cassinooo-card-model-layer,
+.cassinooo-dragon-webgl,
+.cassinooo-dragon-webgl-fallback { display:none !important; }
+
+/* Never let the old v140 state hide the real HTML cards. */
+.cassinooo-model3d-active .cassinooo-playing-card[data-card-key],
+.cassinooo-model3d-active .cassinooo-poker-card[data-card-key],
+.cassinooo-model3d-active .cassinooo-deck-card,
+.cassinooo-model3d-active .cassinooo-beholdem-deck > div {
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.cassinooo-model3d-active .cassinooo-card-fallback-label { visibility:visible !important; }
+
+/* ---------- Cards: 2.5D depth ---------- */
+.cassinooo-25d-table { perspective:900px; transform-style:preserve-3d; }
+.cassinooo-25d-hand { transform-style:preserve-3d; }
+
+.cassinooo-25d-card {
+  position:relative;
+  transform-origin:50% 92%;
+  transform:perspective(380px) rotateX(4deg) translateZ(0);
+  background:
+    linear-gradient(118deg,rgba(255,255,255,.9) 0 12%,rgba(255,255,255,.18) 26%,transparent 42%),
+    linear-gradient(155deg,#fffdf4,#eadfc7 76%,#d0bea1);
+  border:1px solid rgba(83,52,29,.72) !important;
+  box-shadow:
+    0 2px 0 rgba(110,82,54,.86),
+    0 4px 0 rgba(61,39,25,.46),
+    0 10px 13px rgba(0,0,0,.34),
+    inset 0 0 0 1px rgba(255,255,255,.72),
+    inset -5px -7px 12px rgba(95,62,32,.08) !important;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+  backface-visibility:hidden;
+}
+.cassinooo-25d-hand .cassinooo-25d-card:nth-child(2n){transform:perspective(380px) rotateX(4deg) rotateZ(1.7deg) translateY(-1px)}
+.cassinooo-25d-hand .cassinooo-25d-card:nth-child(3n){transform:perspective(380px) rotateX(4deg) rotateZ(-1.2deg) translateY(1px)}
+.cassinooo-25d-hand .cassinooo-25d-card:last-child {
+  box-shadow:0 2px 0 rgba(110,82,54,.86),0 5px 0 rgba(61,39,25,.42),0 12px 17px rgba(0,0,0,.38),inset 0 0 0 1px rgba(255,255,255,.72) !important;
+}
+
+.cassinooo-25d-card.hidden-card {
+  background:
+    linear-gradient(125deg,rgba(255,255,255,.24),transparent 32%),
+    repeating-linear-gradient(45deg,rgba(234,190,90,.22) 0 3px,transparent 3px 8px),
+    repeating-linear-gradient(-45deg,rgba(234,190,90,.16) 0 3px,transparent 3px 8px),
+    radial-gradient(circle at 50% 45%,#68201c,#32100e 68%,#160706) !important;
+  border:2px solid #d0a457 !important;
+  box-shadow:0 3px 0 #6e4b27,0 7px 0 rgba(40,20,12,.54),0 13px 18px rgba(0,0,0,.43),inset 0 0 0 3px rgba(235,190,95,.22) !important;
+}
+.cassinooo-25d-card.hidden-card .cassinooo-card-fallback-label { color:transparent !important; text-shadow:none !important; }
+.cassinooo-25d-card.hidden-card::after {
+  content:"◆"; position:absolute; inset:0; display:grid; place-items:center; color:#e2bd72; font-size:1.1rem; text-shadow:0 2px 2px #170706,0 0 8px rgba(242,191,85,.32);
+}
+
+.cassinooo-25d-deck { transform:perspective(420px) rotateX(9deg) rotateZ(-2deg); transform-style:preserve-3d; filter:drop-shadow(0 12px 8px rgba(0,0,0,.34)); }
+.cassinooo-25d-deck > div,
+.cassinooo-25d-deck .cassinooo-deck-card {
+  box-shadow:0 2px 0 #6f4829,0 5px 0 #332015,0 8px 11px rgba(0,0,0,.3) !important;
+}
+
+.cassinooo-flying-card,
+.cassinooo-beholdem-flying-card {
+  background:
+    repeating-linear-gradient(45deg,rgba(230,184,83,.22) 0 3px,transparent 3px 8px),
+    repeating-linear-gradient(-45deg,rgba(230,184,83,.16) 0 3px,transparent 3px 8px),
+    radial-gradient(circle at 50% 45%,#6b201b,#2f0e0c 70%) !important;
+  border:2px solid #d5a756 !important;
+  box-shadow:0 3px 0 #6e4726,0 8px 10px rgba(0,0,0,.48),0 18px 24px rgba(0,0,0,.25) !important;
+  filter:brightness(1.08);
+  will-change:transform,opacity,filter;
+  transition:transform .52s cubic-bezier(.18,.78,.22,1),opacity .18s ease,filter .52s ease !important;
+}
+
+/* ---------- Dragon Dice: pure CSS 2.5D ---------- */
+.cassinooo-dragon-25d-center {
+  width:470px !important;
+  height:315px !important;
+  top:53% !important;
+  overflow:visible;
+}
+
+.cassinooo-dragon-25d-scene {
+  position:relative;
+  width:430px;
+  height:245px;
+  margin:0 auto;
+  perspective:720px;
+  transform-style:preserve-3d;
+  isolation:isolate;
+}
+.cassinooo-dragon-floor-glow {
+  position:absolute; left:50%; bottom:16px; width:300px; height:92px; transform:translateX(-50%) rotateX(67deg);
+  border-radius:50%; background:radial-gradient(ellipse,rgba(242,174,72,.18),rgba(90,23,14,.10) 45%,transparent 72%); filter:blur(5px); z-index:0;
+}
+.cassinooo-dragon-floor-shadow {
+  position:absolute; left:50%; bottom:28px; width:205px; height:46px; transform:translateX(-50%) scaleY(.55);
+  border-radius:50%; background:radial-gradient(ellipse,rgba(0,0,0,.58),rgba(0,0,0,.2) 55%,transparent 74%); filter:blur(5px); z-index:1;
+  transition:transform .7s ease,opacity .7s ease;
+}
+
+.cassinooo-dragon-dice-layer { position:absolute; inset:0; z-index:4; transform-style:preserve-3d; }
+.cassinooo-dragon-die {
+  position:absolute; display:grid; place-items:center; color:#fff8df; font-weight:950; font-size:1.25rem; line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.82); transform-style:preserve-3d; transition:transform .78s cubic-bezier(.2,.8,.2,1),opacity .5s ease,filter .5s ease;
+  filter:drop-shadow(0 9px 6px rgba(0,0,0,.42));
+}
+.cassinooo-dragon-die::before {
+  content:""; position:absolute; inset:8%; border-radius:inherit; background:linear-gradient(135deg,rgba(255,255,255,.48),transparent 35%,rgba(0,0,0,.24) 72%); mix-blend-mode:soft-light; pointer-events:none;
+}
+.cassinooo-dragon-die span { position:relative; z-index:2; }
+.die-d4 {
+  left:118px; top:125px; width:72px; height:68px; clip-path:polygon(50% 1%,98% 92%,2% 92%);
+  padding-top:18px; background:linear-gradient(145deg,#7fd57c 0%,#2f8b48 43%,#154b2c 100%); border-radius:9px;
+  transform:rotate(-9deg) translateZ(12px);
+}
+.die-d6 {
+  left:188px; top:118px; width:68px; height:68px; border-radius:13px;
+  background:linear-gradient(145deg,#65a7ff 0%,#2d62bb 48%,#153d85 100%);
+  box-shadow:inset -8px -9px 10px rgba(8,24,72,.25),inset 6px 6px 8px rgba(255,255,255,.16);
+  transform:rotate(7deg) translateZ(23px);
+}
+.die-d8 {
+  left:254px; top:119px; width:70px; height:70px; clip-path:polygon(50% 0,96% 50%,50% 100%,4% 50%);
+  background:linear-gradient(145deg,#ef7770 0%,#b63236 48%,#671820 100%);
+  transform:rotate(10deg) translateZ(8px);
+}
+
+.cassinooo-dragon-cup-wrap {
+  position:absolute; left:50%; top:28px; width:180px; height:190px; margin-left:-90px; z-index:7; transform-origin:50% 78%; transform-style:preserve-3d;
+  transition:transform .95s cubic-bezier(.18,.77,.18,1),filter .5s ease;
+}
+.cassinooo-dragon-cup-shadow {
+  position:absolute; left:23px; bottom:-5px; width:138px; height:34px; border-radius:50%; background:rgba(0,0,0,.48); filter:blur(7px); transform:scaleY(.55); z-index:-1;
+}
+.cassinooo-dragon-cup { position:absolute; inset:0; transform-style:preserve-3d; filter:drop-shadow(0 13px 9px rgba(0,0,0,.38)); }
+.cassinooo-dragon-cup-body {
+  position:absolute; left:24px; top:26px; width:132px; height:142px;
+  clip-path:polygon(4% 0,96% 0,82% 100%,18% 100%);
+  background:linear-gradient(90deg,#32110c 0%,#7d3421 20%,#a95431 42%,#6c291c 66%,#260c09 100%);
+  box-shadow:inset 13px 0 14px rgba(255,166,92,.10),inset -18px 0 20px rgba(0,0,0,.36);
+}
+.cassinooo-dragon-cup-rim {
+  position:absolute; left:17px; top:16px; width:146px; height:34px; border-radius:50%; z-index:3;
+  background:radial-gradient(ellipse at 50% 42%,#120504 0 39%,#b75e35 42%,#6f2b1d 62%,#2b0c08 78%);
+  box-shadow:0 5px 5px rgba(0,0,0,.42),inset 0 2px 3px rgba(255,190,119,.35);
+}
+.cassinooo-dragon-cup-base {
+  position:absolute; left:43px; top:151px; width:94px; height:25px; border-radius:50%; background:linear-gradient(#5c2118,#260b08); box-shadow:0 5px 8px rgba(0,0,0,.35);
+}
+.cassinooo-dragon-cup-highlight {
+  position:absolute; left:51px; top:48px; width:28px; height:92px; border-radius:50%; transform:rotate(7deg); z-index:4;
+  background:linear-gradient(90deg,transparent,rgba(255,211,166,.25),transparent); filter:blur(2px); opacity:.7;
+}
+
+/* Rolling: cup accelerates in different axes while dice use separate trajectories. */
+.cassinooo-dragon-25d-scene.is-rolling .cassinooo-dragon-cup-wrap { animation:cassinooo-cup-roll-25d 2.18s cubic-bezier(.28,.04,.18,1) both; }
+.cassinooo-dragon-25d-scene.is-rolling .die-d4 { animation:cassinooo-d4-roll-25d .58s linear infinite; }
+.cassinooo-dragon-25d-scene.is-rolling .die-d6 { animation:cassinooo-d6-roll-25d .49s linear infinite reverse; }
+.cassinooo-dragon-25d-scene.is-rolling .die-d8 { animation:cassinooo-d8-roll-25d .63s linear infinite; }
+.cassinooo-dragon-25d-scene.is-rolling .cassinooo-dragon-floor-shadow { animation:cassinooo-shadow-pulse-25d .48s ease-in-out infinite alternate; }
+
+/* Betting: inverted cup visually seals the dice. */
+.cassinooo-dragon-25d-scene.is-covered .cassinooo-dragon-cup-wrap { transform:translateY(76px) rotate(180deg) scale(1.1); }
+.cassinooo-dragon-25d-scene.is-covered .cassinooo-dragon-die { opacity:.06; transform:translateY(57px) scale(.72) !important; filter:blur(2px) drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+.cassinooo-dragon-25d-scene.is-covered .cassinooo-dragon-floor-shadow { transform:translateX(-50%) scale(1.05,.62); opacity:.75; }
+
+/* Reveal: cup lifts diagonally; dice pop into depth with staggered timing. */
+.cassinooo-dragon-25d-scene.is-revealed .cassinooo-dragon-cup-wrap { transform:translate(145px,-64px) rotate(-18deg) scale(.86); filter:brightness(1.08); }
+.cassinooo-dragon-25d-scene.is-revealed .die-d4 { transform:translate(-14px,-8px) rotate(-11deg) scale(1.03) translateZ(18px); }
+.cassinooo-dragon-25d-scene.is-revealed .die-d6 { transform:translate(0,-16px) rotate(5deg) scale(1.08) translateZ(30px); transition-delay:.08s; }
+.cassinooo-dragon-25d-scene.is-revealed .die-d8 { transform:translate(16px,-7px) rotate(12deg) scale(1.02) translateZ(12px); transition-delay:.14s; }
+.cassinooo-dragon-25d-scene.is-revealed .cassinooo-dragon-floor-shadow { transform:translateX(-50%) scale(.82,.45); opacity:.5; }
+
+.cassinooo-dragon-25d-values {
+  position:absolute; left:50%; top:238px; transform:translateX(-50%); width:300px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; z-index:15;
+}
+.cassinooo-dragon-25d-values > div {
+  display:grid; place-items:center; padding:4px 7px; border:1px solid rgba(224,174,92,.42); border-radius:9px;
+  background:linear-gradient(rgba(55,15,11,.9),rgba(18,4,3,.88)); box-shadow:0 2px 0 rgba(197,139,66,.18),0 8px 14px rgba(0,0,0,.34);
+  animation:cassinooo-value-rise-25d .42s cubic-bezier(.2,.9,.24,1.25) both;
+}
+.cassinooo-dragon-25d-values strong { color:#fff0bc; font-size:1rem; line-height:1; }
+.cassinooo-dragon-25d-values span { margin-top:2px; color:#d8b97c; font-size:.54rem; font-weight:800; white-space:nowrap; }
+.cassinooo-dragon-25d-center .cassinooo-dragon-sum { top:292px !important; z-index:16; }
+
+@keyframes cassinooo-cup-roll-25d {
+  0%{transform:translate(0,0) rotate(0) scale(1)}
+  10%{transform:translate(-22px,-17px) rotate(-10deg) scale(1.03)}
+  22%{transform:translate(27px,-31px) rotate(12deg) scale(1.08)}
+  34%{transform:translate(-30px,-19px) rotate(-14deg) scale(1.04)}
+  47%{transform:translate(25px,-36px) rotate(13deg) scale(1.09)}
+  60%{transform:translate(-18px,-21px) rotate(-9deg) scale(1.05)}
+  70%{transform:translate(9px,-31px) rotate(8deg) scale(1.06)}
+  82%{transform:translate(0,5px) rotate(104deg) scale(1.09)}
+  100%{transform:translate(0,76px) rotate(180deg) scale(1.1)}
+}
+@keyframes cassinooo-d4-roll-25d {
+  0%{transform:translate(0,0) rotate(-8deg) scale(.92);filter:drop-shadow(0 6px 4px rgba(0,0,0,.35))}
+  25%{transform:translate(31px,-47px) rotate(84deg) scale(1.13);filter:drop-shadow(-9px 18px 9px rgba(0,0,0,.22))}
+  50%{transform:translate(53px,-4px) rotate(174deg) scale(.88)}
+  75%{transform:translate(7px,-62px) rotate(264deg) scale(1.18);filter:drop-shadow(9px 22px 10px rgba(0,0,0,.2))}
+  100%{transform:translate(0,0) rotate(352deg) scale(.92)}
+}
+@keyframes cassinooo-d6-roll-25d {
+  0%{transform:translate(0,0) rotate(6deg) scale(.95)}
+  25%{transform:translate(-38px,-58px) rotate(96deg) scale(1.2)}
+  50%{transform:translate(-58px,-8px) rotate(187deg) scale(.9)}
+  75%{transform:translate(18px,-52px) rotate(278deg) scale(1.15)}
+  100%{transform:translate(0,0) rotate(366deg) scale(.95)}
+}
+@keyframes cassinooo-d8-roll-25d {
+  0%{transform:translate(0,0) rotate(10deg) scale(.9)}
+  25%{transform:translate(-15px,-39px) rotate(104deg) scale(1.08)}
+  50%{transform:translate(-49px,-3px) rotate(194deg) scale(.86)}
+  75%{transform:translate(-3px,-67px) rotate(286deg) scale(1.21)}
+  100%{transform:translate(0,0) rotate(370deg) scale(.9)}
+}
+@keyframes cassinooo-shadow-pulse-25d { from{transform:translateX(-50%) scale(.72,.4);opacity:.44} to{transform:translateX(-50%) scale(1.04,.62);opacity:.68} }
+@keyframes cassinooo-value-rise-25d { from{opacity:0;transform:translateY(8px) scale(.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+@media (prefers-reduced-motion:reduce){
+  .cassinooo-dragon-25d-scene *,.cassinooo-25d-card,.cassinooo-flying-card,.cassinooo-beholdem-flying-card{animation:none !important;transition-duration:1ms !important}
+}
