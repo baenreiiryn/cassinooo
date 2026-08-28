@@ -1,4 +1,5 @@
-import { getTableBackground, getCardBack } from "../scripts/backgrounds.js";
+import { getTableBackground } from "../scripts/backgrounds.js";
+import { CardTableWebGL } from "../scripts/card-table-webgl.js";
 import {
   advanceBeholdemTurn,
   assignBeholdemSeat,
@@ -21,8 +22,9 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 function cardView(card, hidden = false) {
   if (!card) return null;
-  if (hidden) return { hidden: true, label: "?", red: false };
-  return { hidden: false, label: `${card.rank}${card.suit}`, red: card.suit === "♥" || card.suit === "♦" };
+  if (hidden) return { hidden: true, label: "?", red: false, key: "A♠" };
+  const key = `${card.rank}${card.suit}`;
+  return { hidden: false, label: key, key, red: card.suit === "♥" || card.suit === "♦" };
 }
 function formatDelta(value) {
   const n = Number(value) || 0;
@@ -35,6 +37,7 @@ function formatDelta(value) {
 export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
   _lastAnimationNonce = null;
   _resizeObserver = null;
+  _card3d = null;
 
   static DEFAULT_OPTIONS = {
     id: "cassinooo-beholdem-table",
@@ -123,12 +126,10 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       board.style.backgroundPosition = "center center";
       board.style.backgroundSize = background ? "cover" : "auto";
       board.style.backgroundRepeat = "no-repeat";
-      const customBack = getCardBack("beholdem");
-      if (customBack) board.style.setProperty("--beholdem-card-back", `url(${JSON.stringify(customBack)})`);
-      else board.style.removeProperty("--beholdem-card-back");
     }
 
     this._setupScaleObserver();
+    if (board) void this._setupCardWebGL(board);
 
     const state = getBeholdemState();
     const animation = state.lastAnimation;
@@ -190,10 +191,33 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       stage.style.setProperty("--beholdem-scale", String(scale));
       stage.style.width = `${1100 * scale}px`;
       stage.style.height = `${700 * scale}px`;
+      this._card3d?.sync?.();
     };
     applyScale();
     this._resizeObserver = new ResizeObserver(applyScale);
     this._resizeObserver.observe(viewport);
+  }
+
+  async _setupCardWebGL(board) {
+    this._card3d?.dispose();
+    this._card3d = null;
+    board.classList.remove("cassinooo-model3d-active");
+    const canvas = this.element.querySelector("canvas[data-beholdem-card-webgl]");
+    if (!canvas) return;
+    try {
+      const renderer = await new CardTableWebGL(canvas, board, {
+        designWidth: 1100,
+        designHeight: 700,
+        cardSelector: ".cassinooo-poker-card[data-card-key]",
+        deckSelector: ".cassinooo-beholdem-deck[data-card-deck-3d]"
+      }).init();
+      if (!this.element?.isConnected) { renderer.dispose(); return; }
+      this._card3d = renderer;
+      board.classList.add("cassinooo-model3d-active");
+      renderer.sync();
+    } catch (err) {
+      console.error("cassinooo | Beholdem 3D card renderer failed", err);
+    }
   }
 
   _animateDeal(animation) {
@@ -213,7 +237,7 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const from = deck.getBoundingClientRect();
     const to = target.getBoundingClientRect();
     const flying = document.createElement("div");
-    flying.className = "cassinooo-beholdem-flying-card";
+    flying.className = "cassinooo-beholdem-flying-card cassinooo-card-fallback-flying";
     flying.style.left = `${(from.left - boardRect.left) / (boardRect.width / 1100) + from.width / 2 / (boardRect.width / 1100) - 22}px`;
     flying.style.top = `${(from.top - boardRect.top) / (boardRect.height / 700) + from.height / 2 / (boardRect.height / 700) - 31}px`;
     board.append(flying);
@@ -232,5 +256,12 @@ export class BeholdemTable extends HandlebarsApplicationMixin(ApplicationV2) {
       if (animation.type === "deal-community") flying.classList.add("flip");
       window.setTimeout(() => flying.remove(), 180);
     }, 470);
+  }
+
+  async close(options = {}) {
+    this._resizeObserver?.disconnect();
+    this._card3d?.dispose();
+    this._card3d = null;
+    return super.close(options);
   }
 }
