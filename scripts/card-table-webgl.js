@@ -2,7 +2,7 @@ import { createProgram, createMesh, createTexture, compose, orthographic, lookAt
 
 let cardModelDataPromise = null;
 async function loadCardModelData() {
-  cardModelDataPromise ??= import("./model-data.js").then((module) => module.CARD_MODEL_DATA);
+  cardModelDataPromise ??= import("./model-data-cards.js").then((module) => module.CARD_MODEL_DATA);
   return cardModelDataPromise;
 }
 
