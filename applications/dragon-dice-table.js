@@ -1,5 +1,6 @@
 import { getTableBackground } from "../scripts/backgrounds.js";
 import { setupScaledBoard } from "../scripts/scaled-board.js";
+import { DragonDiceWebGL } from "../scripts/dragon-dice-webgl.js";
 import {
   DRAGON_BET_TYPES,
   assignDragonDiceSeat,
@@ -20,7 +21,8 @@ const VISUAL_ORDER=[1,5,4,3,2,0];
 function deltaText(value){ const n=Number(value)||0; return n>0?`+${n} PO`:n<0?`${n} PO`:"0 PO"; }
 
 export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
-  _lastAnimationNonce=null;
+  _dragon3d=null;
+
   static DEFAULT_OPTIONS={
     id:"cassinooo-dragon-dice-table",
     classes:["cassinooo","cassinooo-dragon-dice-table"],
@@ -92,11 +94,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     setupScaledBoard(this,{viewportSelector:".cassinooo-dragon-viewport",boardSelector:".cassinooo-dragon-felt",designWidth:1100,designHeight:700});
 
     const state=getDragonDiceState();
-    const animation=state.lastAnimation;
-    if(animation?.nonce&&animation.nonce!==this._lastAnimationNonce){
-      this._lastAnimationNonce=animation.nonce;
-      requestAnimationFrame(()=>this._animateTable(animation.type));
-    }
+    void this._setupWebGL(state);
 
     for(const input of this.element.querySelectorAll("input[data-dragon-bet]")){
       input.addEventListener("change",async event=>{
@@ -111,7 +109,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     this.element.querySelector("[data-dragon-roll]")?.addEventListener("click",()=>void gmRollDragonDice());
     this.element.querySelector("[data-dragon-reveal]")?.addEventListener("click",()=>void gmRevealDragonDice());
     this.element.querySelector("[data-dragon-show-scoreboard]")?.addEventListener("click",()=>void setDragonScoreboardVisible(true));
-    this.element.querySelector("[data-dragon-hide-scoreboard]")?.addEventListener("click",()=>void setDragonScoreboardVisible(false));
+    this.element.querySelectorAll("[data-dragon-hide-scoreboard]").forEach(button=>button.addEventListener("click",()=>void setDragonScoreboardVisible(false)));
     this.element.querySelector("[data-dragon-reset]")?.addEventListener("click",()=>void resetDragonDice());
     for(const select of this.element.querySelectorAll("select[data-dragon-seat-index]")){
       select.addEventListener("change",async event=>{
@@ -123,32 +121,34 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     }
   }
 
-  _animateTable(type){
-    const scene=this.element.querySelector(".cassinooo-dragon-3d-scene");
-    const cup=this.element.querySelector(".cassinooo-dragon-cup3d");
-    const dice=[...this.element.querySelectorAll(".cassinooo-dragon-model-die")];
-    if(!scene||!cup) return;
+  async _setupWebGL(state){
+    this._dragon3d?.dispose();
+    this._dragon3d=null;
+    const canvas=this.element.querySelector("canvas[data-dragon-webgl]");
+    const fallback=this.element.querySelector("[data-dragon-webgl-fallback]");
+    if(!canvas) return;
+    try{
+      const renderer=await new DragonDiceWebGL(canvas).init();
+      if(!this.element?.isConnected){ renderer.dispose(); return; }
+      this._dragon3d=renderer;
+      const dice=state.dice??{d4:1,d6:1,d8:1};
+      const animation=state.lastAnimation?.type;
+      if(animation==="cup-reveal"){
+        renderer.setState("betting",dice);
+        requestAnimationFrame(()=>renderer.setState("revealed",dice));
+      } else if(animation==="cup-roll") renderer.setState("rolling",dice);
+      else if(animation==="cup-cover") renderer.setState("betting",dice);
+      else renderer.setState(state.phase,dice);
+      fallback?.classList.add("hidden");
+    }catch(err){
+      console.error("cassinooo | WebGL2 Dragon Dice failed",err);
+      fallback?.classList.remove("hidden");
+    }
+  }
 
-    scene.classList.remove("is-rolling","is-covered","is-revealing");
-    cup.classList.remove("rolling","covered","revealing");
-    for(const die of dice) die.classList.remove("tumbling","settling","revealed");
-
-    if(type==="cup-roll"){
-      scene.classList.add("is-rolling");
-      cup.classList.add("rolling");
-      for(const die of dice) die.classList.add("tumbling");
-      return;
-    }
-    if(type==="cup-cover"){
-      scene.classList.add("is-covered");
-      cup.classList.add("covered");
-      for(const die of dice) die.classList.add("settling");
-      return;
-    }
-    if(type==="cup-reveal"){
-      scene.classList.add("is-revealing");
-      cup.classList.add("revealing");
-      for(const die of dice) die.classList.add("revealed");
-    }
+  async close(options={}){
+    this._dragon3d?.dispose();
+    this._dragon3d=null;
+    return super.close(options);
   }
 }
