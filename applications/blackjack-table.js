@@ -1,5 +1,6 @@
 import { assignSeat, getSeats, SOCKET_NAME } from "../scripts/state.js";
 import { getTableBackground } from "../scripts/backgrounds.js";
+import { CardTableWebGL } from "../scripts/card-table-webgl.js";
 import {
   getBlackjackState,
   getBlackjackWagers,
@@ -13,8 +14,9 @@ import {
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 function cardView(card, hidden = false) {
-  if (hidden) return { hidden: true, label: "?", red: false };
-  return { hidden: false, label: `${card.rank}${card.suit}`, red: card.suit === "♥" || card.suit === "♦" };
+  if (hidden) return { hidden: true, label: "?", red: false, key: "A♠" };
+  const key = `${card.rank}${card.suit}`;
+  return { hidden: false, label: key, key, red: card.suit === "♥" || card.suit === "♦" };
 }
 
 function formatDelta(value) {
@@ -26,12 +28,13 @@ function formatDelta(value) {
 
 export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
   _lastAnimationNonce = null;
+  _card3d = null;
 
   static DEFAULT_OPTIONS = {
     id: "cassinooo-blackjack-table",
     classes: ["cassinooo", "cassinooo-blackjack-table"],
     position: { width: 1120, height: 860 },
-    window: { title: "Cassinooo — Blackjack", icon: "fa-solid fa-club" }
+    window: { title: "Cassinooo — Blackjack", icon: "fa-solid fa-club", resizable: true }
   };
 
   static PARTS = { table: { template: "modules/cassinooo/templates/blackjack-table.hbs" } };
@@ -106,6 +109,7 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
       felt.style.backgroundPosition = "center center";
       felt.style.backgroundSize = background ? "cover" : "auto";
       felt.style.backgroundRepeat = "no-repeat";
+      void this._setupCardWebGL(felt);
     }
 
     const state = getBlackjackState();
@@ -146,6 +150,28 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  async _setupCardWebGL(felt) {
+    this._card3d?.dispose();
+    this._card3d = null;
+    felt?.classList.remove("cassinooo-model3d-active");
+    const canvas = this.element.querySelector("canvas[data-blackjack-card-webgl]");
+    if (!canvas || !felt) return;
+    try {
+      const renderer = await new CardTableWebGL(canvas, felt, {
+        designWidth: 1040,
+        designHeight: 693,
+        cardSelector: ".cassinooo-playing-card[data-card-key]",
+        deckSelector: ".cassinooo-deck[data-card-deck-3d]"
+      }).init();
+      if (!this.element?.isConnected) { renderer.dispose(); return; }
+      this._card3d = renderer;
+      felt.classList.add("cassinooo-model3d-active");
+      renderer.sync();
+    } catch (err) {
+      console.error("cassinooo | Blackjack 3D card renderer failed", err);
+    }
+  }
+
   _animateDeal(animation) {
     if (!["deal-to-seat", "deal-to-dealer", "reveal-dealer-hole"].includes(animation?.type)) return;
     if (animation.type === "reveal-dealer-hole") {
@@ -158,12 +184,18 @@ export class BlackjackTable extends HandlebarsApplicationMixin(ApplicationV2) {
     const board = this.element.querySelector(".cassinooo-felt");
     if (!deck || !target || !board) return;
     const boardRect = board.getBoundingClientRect(), from = deck.getBoundingClientRect(), to = target.getBoundingClientRect();
-    const flying = document.createElement("div"); flying.className = "cassinooo-flying-card";
+    const flying = document.createElement("div"); flying.className = "cassinooo-flying-card cassinooo-card-fallback-flying";
     flying.style.left = `${from.left - boardRect.left + from.width / 2 - 19}px`;
     flying.style.top = `${from.top - boardRect.top + from.height / 2 - 27}px`; board.append(flying);
     const dx = to.left - boardRect.left + to.width / 2 - (from.left - boardRect.left + from.width / 2);
     const dy = to.top - boardRect.top + to.height / 2 - (from.top - boardRect.top + from.height / 2);
     requestAnimationFrame(() => { flying.style.transform = `translate(${dx}px, ${dy}px) rotate(8deg)`; flying.style.opacity = "0.98"; });
     window.setTimeout(() => flying.remove(), 540);
+  }
+
+  async close(options = {}) {
+    this._card3d?.dispose();
+    this._card3d = null;
+    return super.close(options);
   }
 }
