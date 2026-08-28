@@ -1,0 +1,290 @@
+/* Cassinooo 0.12.3 — self-contained Dragon Dice 3D scene */
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-center {
+  width: 430px;
+  height: 250px;
+  top: 54%;
+  overflow: visible;
+  perspective: 900px;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 320px;
+  height: 190px;
+  transform: translateX(-50%);
+  transform-style: preserve-3d;
+  perspective: 780px;
+  overflow: visible;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-table-shadow {
+  position: absolute;
+  left: 50%;
+  top: 129px;
+  width: 205px;
+  height: 48px;
+  transform: translateX(-50%) rotateX(72deg);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,0,0,.5) 0%, rgba(0,0,0,.22) 48%, transparent 72%);
+  filter: blur(3px);
+}
+
+/* Dice use simple low-poly geometry inspired by public-domain tabletop asset packs.
+   They are rendered entirely in CSS so the module has no runtime asset dependency. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-model-die {
+  position: absolute;
+  top: 99px;
+  width: 62px;
+  height: 72px;
+  transform-style: preserve-3d;
+  transform-origin: center 32px;
+  z-index: 5;
+  transition: opacity .24s ease, filter .3s ease, transform .45s cubic-bezier(.2,.72,.23,1);
+}
+.cassinooo-dragon-dice-table .dragon-model-d4 { left: 58px; }
+.cassinooo-dragon-dice-table .dragon-model-d6 { left: 130px; }
+.cassinooo-dragon-dice-table .dragon-model-d8 { left: 202px; }
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-model-die small {
+  position: absolute;
+  left: 50%;
+  top: 58px;
+  width: 88px;
+  transform: translateX(-50%) translateZ(30px);
+  color: #ffe7ae;
+  font-size: .58rem;
+  line-height: 1;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 0 2px 4px #000, 0 0 7px #000;
+}
+
+.cassinooo-dragon-dice-table .die-polyhedron {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 54px;
+  height: 54px;
+  transform: translateX(-50%) rotateX(58deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 8px 5px rgba(0,0,0,.48));
+}
+.cassinooo-dragon-dice-table .dragon-model-d4 .die-polyhedron {
+  width: 58px;
+  height: 55px;
+  clip-path: polygon(50% 0, 100% 92%, 0 92%);
+  background:
+    linear-gradient(125deg, transparent 49%, rgba(255,255,255,.28) 50% 52%, transparent 53%),
+    linear-gradient(235deg, transparent 49%, rgba(0,0,0,.25) 50% 52%, transparent 53%),
+    linear-gradient(145deg,#54c878 0%,#168643 55%,#075328 100%);
+  border: 2px solid rgba(230,255,216,.65);
+}
+.cassinooo-dragon-dice-table .dragon-model-d8 .die-polyhedron {
+  width: 58px;
+  height: 58px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background:
+    linear-gradient(45deg, transparent 48%, rgba(255,255,255,.23) 49% 51%, transparent 52%),
+    linear-gradient(135deg, transparent 48%, rgba(0,0,0,.24) 49% 51%, transparent 52%),
+    linear-gradient(145deg,#e3584e 0%,#a62927 55%,#671111 100%);
+  border: 2px solid rgba(255,220,200,.66);
+}
+.cassinooo-dragon-dice-table .die-value {
+  color: #fff9dc;
+  font-size: 1.18rem;
+  font-weight: 1000;
+  text-shadow: 0 2px 3px #000;
+}
+
+/* True CSS cube for the d6. */
+.cassinooo-dragon-dice-table .dragon-model-d6 .cube {
+  width: 42px;
+  height: 42px;
+  top: 4px;
+  transform: translateX(-50%) rotateX(-22deg) rotateY(32deg) rotateZ(5deg);
+  filter: drop-shadow(0 8px 5px rgba(0,0,0,.48));
+}
+.cassinooo-dragon-dice-table .cube-face {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(220,235,255,.7);
+  background: linear-gradient(145deg,#4b8cdf,#174ca1);
+  box-shadow: inset 0 0 13px rgba(255,255,255,.12);
+  backface-visibility: hidden;
+}
+.cassinooo-dragon-dice-table .cube-face.front { transform: rotateY(0deg) translateZ(21px); }
+.cassinooo-dragon-dice-table .cube-face.back { transform: rotateY(180deg) translateZ(21px); }
+.cassinooo-dragon-dice-table .cube-face.right { transform: rotateY(90deg) translateZ(21px); }
+.cassinooo-dragon-dice-table .cube-face.left { transform: rotateY(-90deg) translateZ(21px); }
+.cassinooo-dragon-dice-table .cube-face.top { transform: rotateX(90deg) translateZ(21px); }
+.cassinooo-dragon-dice-table .cube-face.bottom { transform: rotateX(-90deg) translateZ(21px); }
+
+/* Cup: tapered body + elliptical mouth create a lightweight 3D model. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup3d {
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 112px;
+  height: 128px;
+  transform: translateX(-50%) rotateX(-8deg) rotateZ(-6deg) translateZ(65px);
+  transform-origin: 50% 16px;
+  transform-style: preserve-3d;
+  z-index: 15;
+  transition: transform .82s cubic-bezier(.22,.78,.22,1), opacity .5s ease;
+}
+.cassinooo-dragon-dice-table .cup3d-mouth {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  width: 96px;
+  height: 27px;
+  border: 6px solid #c88a47;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,#120706 0 50%,#4c2416 54% 70%,#9a5d31 72% 100%);
+  box-shadow: inset 0 3px 7px #000, 0 3px 4px rgba(0,0,0,.4);
+  transform: rotateX(58deg);
+  z-index: 3;
+}
+.cassinooo-dragon-dice-table .cup3d-body {
+  position: absolute;
+  left: 13px;
+  top: 14px;
+  width: 86px;
+  height: 104px;
+  clip-path: polygon(2% 0,98% 0,83% 100%,17% 100%);
+  border-radius: 8px 8px 20px 20px;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.42),transparent 17% 61%,rgba(0,0,0,.44) 86%),
+    linear-gradient(145deg,#5f2b19,#a76534 38%,#6e321d 67%,#34150e);
+  box-shadow: inset 0 0 18px rgba(255,195,112,.14), 0 12px 16px rgba(0,0,0,.45);
+}
+.cassinooo-dragon-dice-table .cup3d-highlight {
+  position: absolute;
+  left: 22px;
+  top: 8px;
+  width: 11px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(rgba(255,214,154,.36),rgba(255,214,154,.02));
+  transform: rotate(4deg);
+}
+.cassinooo-dragon-dice-table .cup3d-band {
+  position: absolute;
+  left: 5px;
+  bottom: 9px;
+  width: 76px;
+  height: 8px;
+  border-top: 2px solid #dfa65e;
+  border-bottom: 2px solid #7d401f;
+  background: #a36434;
+}
+
+/* Hidden/betting state: cup is upside down and completely covers the dice. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-covered .cassinooo-dragon-cup3d,
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup3d.covered {
+  transform: translateX(-50%) translateY(45px) rotateX(8deg) rotateZ(180deg) translateZ(72px);
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-covered .cassinooo-dragon-model-die {
+  opacity: 0;
+}
+
+/* Full shake: dice bounce/spin inside the cup while cup itself swings. */
+@keyframes cassinooo-cup3d-roll {
+  0% { transform:translateX(-50%) rotateX(-8deg) rotateZ(-8deg) translate3d(0,0,65px); }
+  14% { transform:translateX(-50%) rotateX(12deg) rotateZ(24deg) translate3d(22px,-14px,80px); }
+  29% { transform:translateX(-50%) rotateX(-14deg) rotateZ(-31deg) translate3d(-25px,-4px,67px); }
+  45% { transform:translateX(-50%) rotateX(15deg) rotateZ(22deg) translate3d(25px,-18px,84px); }
+  61% { transform:translateX(-50%) rotateX(-10deg) rotateZ(-24deg) translate3d(-18px,-2px,70px); }
+  76% { transform:translateX(-50%) rotateX(9deg) rotateZ(18deg) translate3d(15px,-11px,76px); }
+  100% { transform:translateX(-50%) translateY(45px) rotateX(8deg) rotateZ(180deg) translateZ(72px); }
+}
+@keyframes cassinooo-d4-tumble {
+  0% { transform:translate3d(0,-30px,12px) rotateX(0) rotateY(0) rotateZ(0); }
+  20% { transform:translate3d(36px,-57px,66px) rotateX(205deg) rotateY(130deg) rotateZ(90deg); }
+  43% { transform:translate3d(-29px,-39px,31px) rotateX(440deg) rotateY(300deg) rotateZ(250deg); }
+  69% { transform:translate3d(26px,-69px,58px) rotateX(690deg) rotateY(520deg) rotateZ(410deg); }
+  100% { transform:translate3d(8px,0,0) rotateX(840deg) rotateY(650deg) rotateZ(540deg); }
+}
+@keyframes cassinooo-d6-tumble {
+  0% { transform:translate3d(0,-24px,5px) rotateX(0) rotateY(0) rotateZ(0); }
+  24% { transform:translate3d(-39px,-63px,62px) rotateX(240deg) rotateY(190deg) rotateZ(150deg); }
+  48% { transform:translate3d(34px,-42px,28px) rotateX(470deg) rotateY(370deg) rotateZ(300deg); }
+  74% { transform:translate3d(-24px,-72px,55px) rotateX(710deg) rotateY(590deg) rotateZ(450deg); }
+  100% { transform:translate3d(-4px,0,0) rotateX(900deg) rotateY(720deg) rotateZ(585deg); }
+}
+@keyframes cassinooo-d8-tumble {
+  0% { transform:translate3d(0,-27px,9px) rotateX(0) rotateY(0) rotateZ(0); }
+  18% { transform:translate3d(31px,-69px,54px) rotateX(190deg) rotateY(225deg) rotateZ(120deg); }
+  41% { transform:translate3d(-37px,-37px,40px) rotateX(460deg) rotateY(390deg) rotateZ(270deg); }
+  67% { transform:translate3d(24px,-66px,64px) rotateX(700deg) rotateY(630deg) rotateZ(430deg); }
+  100% { transform:translate3d(-8px,0,0) rotateX(875deg) rotateY(760deg) rotateZ(610deg); }
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup3d.rolling,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-rolling .cassinooo-dragon-cup3d {
+  animation: cassinooo-cup3d-roll 2.12s cubic-bezier(.32,.05,.31,.96) both;
+}
+.cassinooo-dragon-dice-table .dragon-model-d4.tumbling,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-rolling .dragon-model-d4 { animation:cassinooo-d4-tumble 1.9s linear both; }
+.cassinooo-dragon-dice-table .dragon-model-d6.tumbling,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-rolling .dragon-model-d6 { animation:cassinooo-d6-tumble 1.95s linear both; }
+.cassinooo-dragon-dice-table .dragon-model-d8.tumbling,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-rolling .dragon-model-d8 { animation:cassinooo-d8-tumble 2.02s linear both; }
+
+/* Reveal: cup lifts and slides toward dealer; dice pop into focus. */
+@keyframes cassinooo-cup3d-reveal {
+  0% { transform:translateX(-50%) translateY(45px) rotateX(8deg) rotateZ(180deg) translateZ(72px); opacity:1; }
+  38% { transform:translateX(-50%) translateY(-42px) rotateX(-18deg) rotateZ(145deg) translateZ(130px); opacity:1; }
+  100% { transform:translateX(-50%) translate(126px,-77px) rotateX(-24deg) rotateZ(118deg) translateZ(105px); opacity:.72; }
+}
+@keyframes cassinooo-die-reveal {
+  0% { transform:translateY(5px) scale(.72); filter:brightness(.8); }
+  55% { transform:translateY(-10px) scale(1.18); filter:brightness(1.75) drop-shadow(0 0 13px rgba(255,195,71,.8)); }
+  100% { transform:translateY(0) scale(1); filter:brightness(1); }
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup3d.revealing,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-revealing .cassinooo-dragon-cup3d,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-revealed .cassinooo-dragon-cup3d {
+  animation:cassinooo-cup3d-reveal .95s cubic-bezier(.17,.76,.24,1) both;
+  transform:translateX(-50%) translate(126px,-77px) rotateX(-24deg) rotateZ(118deg) translateZ(105px);
+  opacity:.72;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-model-die.revealed,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-revealing .cassinooo-dragon-model-die,
+.cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-revealed .cassinooo-dragon-model-die {
+  opacity:1;
+  animation:cassinooo-die-reveal .82s ease both;
+}
+
+/* Result is independent from the reveal animation. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-sum.hidden-sum {
+  opacity:0;
+  pointer-events:none;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-sum {
+  top:207px;
+  transition:opacity .25s ease;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-overlay-close {
+  display:block;
+  margin:12px auto 0;
+  min-width:145px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cassinooo-dragon-dice-table .cassinooo-dragon-cup3d.rolling,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-3d-scene.is-rolling .cassinooo-dragon-cup3d,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-model-die.tumbling,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-cup3d.revealing,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-model-die.revealed {
+    animation-duration:1ms !important;
+  }
+}
