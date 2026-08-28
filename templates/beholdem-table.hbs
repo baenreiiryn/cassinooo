@@ -35,17 +35,18 @@
   <div class="cassinooo-beholdem-viewport">
     <div class="cassinooo-beholdem-stage">
       <div class="cassinooo-beholdem-felt">
+        <canvas class="cassinooo-card-model-layer" data-beholdem-card-webgl aria-hidden="true"></canvas>
         <section class="cassinooo-beholdem-dealer">
           <span>DEALER / MESTRE</span>
           <strong>{{dealerName}}</strong>
-          <div class="cassinooo-beholdem-deck" aria-label="Baralho do dealer">
+          <div class="cassinooo-beholdem-deck" data-card-deck-3d aria-label="Baralho do dealer">
             <div></div><div></div><div></div>
           </div>
         </section>
 
         <section class="cassinooo-community-cards">
           {{#each community}}
-            <div class="cassinooo-poker-card community-card {{#if red}}red{{/if}}">{{label}}</div>
+            <div class="cassinooo-poker-card community-card {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="false"><span class="cassinooo-card-fallback-label">{{label}}</span></div>
           {{/each}}
           {{#unless community.length}}
             <span class="cassinooo-community-placeholder">CARTAS COMUNITÁRIAS</span>
@@ -75,7 +76,7 @@
             <div class="cassinooo-hole-row">
               <div class="cassinooo-hole-cards">
                 {{#each cards}}
-                  <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}">{{label}}</div>
+                  <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="{{#if hidden}}true{{else}}false{{/if}}"><span class="cassinooo-card-fallback-label">{{label}}</span></div>
                 {{/each}}
                 {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
               </div>
