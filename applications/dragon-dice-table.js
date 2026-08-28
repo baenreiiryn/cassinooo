@@ -19,6 +19,10 @@ const SEAT_CLASSES=["seat-upper-left","seat-upper-right","seat-lower-left","seat
 const VISUAL_ORDER=[1,5,4,3,2,0];
 
 function deltaText(value){ const n=Number(value)||0; return n>0?`+${n} PO`:n<0?`${n} PO`:"0 PO"; }
+function rendererErrorText(err){
+  const name=err?.name&&err.name!=="Error"?`${err.name}: `:"";
+  return `${name}${err?.message||String(err)||"Erro desconhecido"}`;
+}
 
 export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
   _dragon3d=null;
@@ -126,8 +130,10 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     this._dragon3d=null;
     const canvas=this.element.querySelector("canvas[data-dragon-webgl]");
     const fallback=this.element.querySelector("[data-dragon-webgl-fallback]");
+    const errorLabel=this.element.querySelector("[data-dragon-webgl-error]");
     if(!canvas) return;
     try{
+      if(errorLabel) errorLabel.textContent="Inicializando renderizador 3D…";
       const renderer=await new DragonDiceModelRenderer(canvas).init();
       if(!this.element?.isConnected){ renderer.dispose(); return; }
       this._dragon3d=renderer;
@@ -142,8 +148,12 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       else renderer.setState(state.phase,dice);
       fallback?.classList.add("hidden");
     }catch(err){
-      console.error("cassinooo | WebGL2 textured Dragon Dice failed",err);
+      const text=rendererErrorText(err);
+      console.error("cassinooo | Dragon Dice 3D renderer failed",err);
+      if(errorLabel) errorLabel.textContent=text;
+      if(fallback) fallback.title=text;
       fallback?.classList.remove("hidden");
+      ui.notifications?.warn(`Cassinooo 3D: ${text}`);
     }
   }
 
