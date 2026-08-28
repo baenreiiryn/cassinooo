@@ -138,6 +138,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
         requestAnimationFrame(()=>renderer.setState("revealed",dice));
       } else if(animation==="cup-roll") renderer.setState("rolling",dice);
       else if(animation==="cup-cover") renderer.setState("betting",dice);
+      else if(state.phase==="revealed") renderer.setState("revealed-static",dice);
       else renderer.setState(state.phase,dice);
       fallback?.classList.add("hidden");
     }catch(err){
