@@ -13,6 +13,8 @@ function normalize(v) {
 }
 function cross(a, b) { return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
 function sub(a, b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
+function clamp01(v){ return Math.max(0,Math.min(1,v)); }
+function easeOut(v){ v=clamp01(v); return 1-Math.pow(1-v,3); }
 
 function mat4Identity() { return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]); }
 function mat4Multiply(a, b) {
@@ -180,24 +182,38 @@ export class DragonDiceWebGL {
     const kinds=["d4","d6","d8"];
     const values=[this.dice.d4,this.dice.d6,this.dice.d8];
     const objects=[];
+    const flipStart=1.35;
+    const flipProgress=rolling ? easeOut((t-flipStart)/.85) : 0;
 
     for(let i=0;i<3;i++){
       let pos=[...diceBase[i]], rot=this._dieFinalRotation(kinds[i],values[i]);
-      if(rolling){
+      if(rolling && t<flipStart){
         pos=[diceBase[i][0]+Math.sin(t*8+i)*0.38,0.65+Math.abs(Math.sin(t*7.5+i))*0.72,diceBase[i][2]+Math.cos(t*7+i)*0.32];
         rot=[t*(6.2+i*1.4),t*(7.7+i),t*(5.4+i*.8)];
+      } else if(rolling){
+        const p=flipProgress;
+        pos=[diceBase[i][0]*(1-.12*p),.55-(.27*p),diceBase[i][2]];
+        const final=this._dieFinalRotation(kinds[i],values[i]);
+        rot=[final[0]+(1-p)*3.2,final[1]+(1-p)*4.1,final[2]+(1-p)*2.7];
       }
       objects.push({mesh:kinds[i],position:pos,rotation:rot,scale:[.72,.72,.72],color:i===0?[.12,.67,.29]:i===1?[.13,.39,.86]:[.78,.12,.12],metallic:.15});
     }
 
     let cup={position:[0,2.35,0],rotation:[0,0,0],scale:[1.55,1.55,1.55]};
-    if(rolling){
+    if(rolling && t<flipStart){
       cup.position=[Math.sin(t*8)*.45,2.0+Math.abs(Math.sin(t*6))*.45,Math.cos(t*7)*.20];
       cup.rotation=[Math.sin(t*7)*.22,Math.sin(t*5)*.18,Math.sin(t*9)*.28];
+    } else if(rolling){
+      const p=flipProgress;
+      cup={
+        position:[0,2.0-(1.12*p),0],
+        rotation:[Math.PI*p,.14*Math.sin(p*Math.PI),-.12*Math.sin(p*Math.PI)],
+        scale:[1.55+.10*p,1.55+.10*p,1.55+.10*p]
+      };
     } else if(covered){
       cup={position:[0,.88,0],rotation:[Math.PI,0,0],scale:[1.65,1.65,1.65]};
     } else if(revealing){
-      const p=Math.min(1,t/1.15), ease=1-Math.pow(1-p,3);
+      const ease=easeOut(t/1.15);
       cup={position:[2.8*ease,.88+2.9*ease,-.25*ease],rotation:[Math.PI-(.55*ease),.15*ease,-.35*ease],scale:[1.65,1.65,1.65]};
     } else if(revealedStatic){
       cup={position:[2.8,3.78,-.25],rotation:[Math.PI-.55,.15,-.35],scale:[1.65,1.65,1.65]};
