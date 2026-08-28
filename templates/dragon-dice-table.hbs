@@ -29,7 +29,7 @@
           <canvas class="cassinooo-dragon-webgl" data-dragon-webgl aria-label="Cena 3D dos Dados do Dragão"></canvas>
           <div class="cassinooo-dragon-webgl-fallback hidden" data-dragon-webgl-fallback>
             <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>WebGL2 indisponível</span>
+            <span data-dragon-webgl-error>Renderizador 3D indisponível</span>
           </div>
           {{#if revealed}}
             <div class="cassinooo-dragon-webgl-values" aria-label="Resultado dos dados">
@@ -97,5 +97,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Cena WebGL2 própria do Cassinooo. Os modelos 3D ficam dentro da mesa e o Mestre decide quando mostrar o placar.</footer>
+  <footer class="cassinooo-table-footer">Cena 3D própria do Cassinooo. Os modelos ficam dentro da mesa e o Mestre decide quando mostrar o placar.</footer>
 </section>
