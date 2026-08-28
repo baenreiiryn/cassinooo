@@ -22,71 +22,47 @@
 
   {{#if turnActive}}
     <div class="cassinooo-beholdem-turn-banner">
-      <span>VEZ DE</span>
-      <strong>{{activePlayerName}}</strong>
-      <em>Pote: {{pot}} PO</em>
+      <span>VEZ DE</span><strong>{{activePlayerName}}</strong><em>Pote: {{pot}} PO</em>
     </div>
   {{else if hasHand}}
-    <div class="cassinooo-beholdem-turn-banner passive">
-      <span>POTE</span><strong>{{pot}} PO</strong>
-    </div>
+    <div class="cassinooo-beholdem-turn-banner passive"><span>POTE</span><strong>{{pot}} PO</strong></div>
   {{/if}}
 
   <div class="cassinooo-beholdem-viewport">
     <div class="cassinooo-beholdem-stage">
-      <div class="cassinooo-beholdem-felt">
-        <canvas class="cassinooo-card-model-layer" data-beholdem-card-webgl aria-hidden="true"></canvas>
+      <div class="cassinooo-beholdem-felt cassinooo-25d-table">
         <section class="cassinooo-beholdem-dealer">
-          <span>DEALER / MESTRE</span>
-          <strong>{{dealerName}}</strong>
-          <div class="cassinooo-beholdem-deck" data-card-deck-3d aria-label="Baralho do dealer">
-            <div></div><div></div><div></div>
-          </div>
+          <span>DEALER / MESTRE</span><strong>{{dealerName}}</strong>
+          <div class="cassinooo-beholdem-deck cassinooo-25d-deck" aria-label="Baralho do dealer"><div></div><div></div><div></div></div>
         </section>
 
-        <section class="cassinooo-community-cards">
+        <section class="cassinooo-community-cards cassinooo-25d-hand">
           {{#each community}}
-            <div class="cassinooo-poker-card community-card {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="false"><span class="cassinooo-card-fallback-label">{{label}}</span></div>
+            <div class="cassinooo-poker-card cassinooo-25d-card community-card {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="false"><span class="cassinooo-card-fallback-label">{{label}}</span></div>
           {{/each}}
-          {{#unless community.length}}
-            <span class="cassinooo-community-placeholder">CARTAS COMUNITÁRIAS</span>
-          {{/unless}}
+          {{#unless community.length}}<span class="cassinooo-community-placeholder">CARTAS COMUNITÁRIAS</span>{{/unless}}
         </section>
 
         {{#each seats}}
           <article class="cassinooo-beholdem-seat {{positionClass}} {{#if isActive}}active-turn{{/if}} {{#if folded}}folded{{/if}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
             <span class="cassinooo-seat-number">Lugar {{number}}</span>
             {{#if ../isGM}}
-              <select data-beholdem-seat-index="{{index}}">
-                <option value="">— Lugar vazio —</option>
-                {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
-              </select>
+              <select data-beholdem-seat-index="{{index}}"><option value="">— Lugar vazio —</option>{{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}</select>
             {{else}}
               <strong class="cassinooo-player-name">{{occupantName}}</strong>
               {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
             {{/if}}
 
             {{#if occupied}}
-              <label class="cassinooo-beholdem-wager {{#if isActive}}active-wager{{/if}}">
-                <span>{{#if isActive}}Aposta total{{else}}Aposta (PO){{/if}}</span>
-                <input type="number" min="0" step="1" value="{{bet}}" data-beholdem-wager-user-id="{{userId}}" {{#unless canEditBet}}disabled{{/unless}}>
-              </label>
+              <label class="cassinooo-beholdem-wager {{#if isActive}}active-wager{{/if}}"><span>{{#if isActive}}Aposta total{{else}}Aposta (PO){{/if}}</span><input type="number" min="0" step="1" value="{{bet}}" data-beholdem-wager-user-id="{{userId}}" {{#unless canEditBet}}disabled{{/unless}}></label>
             {{/if}}
 
             <div class="cassinooo-hole-row">
-              <div class="cassinooo-hole-cards">
-                {{#each cards}}
-                  <div class="cassinooo-poker-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="{{#if hidden}}true{{else}}false{{/if}}"><span class="cassinooo-card-fallback-label">{{label}}</span></div>
-                {{/each}}
+              <div class="cassinooo-hole-cards cassinooo-25d-hand">
+                {{#each cards}}<div class="cassinooo-poker-card cassinooo-25d-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="{{#if hidden}}true{{else}}false{{/if}}"><span class="cassinooo-card-fallback-label">{{label}}</span></div>{{/each}}
                 {{#unless hasCards}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
               </div>
-              {{#if canFold}}
-                <button type="button" class="cassinooo-fold-button" data-beholdem-fold-user-id="{{userId}}" title="Desistir desta mão" aria-label="Desistir desta mão">
-                  <svg viewBox="0 0 64 64" aria-hidden="true">
-                    <path d="M20 28V12c0-4 6-4 6 0v12-14c0-4 6-4 6 0v14-12c0-4 6-4 6 0v13-9c0-4 6-4 6 0v19l5-6c3-4 8 0 5 4L42 49c-3 4-7 6-12 6h-5c-7 0-12-4-15-10L5 34c-2-4 4-7 6-3l5 8V28c0-4 4-5 6-2" fill="currentColor"/>
-                  </svg>
-                </button>
-              {{/if}}
+              {{#if canFold}}<button type="button" class="cassinooo-fold-button" data-beholdem-fold-user-id="{{userId}}" title="Desistir desta mão" aria-label="Desistir desta mão"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 28V12c0-4 6-4 6 0v12-14c0-4 6-4 6 0v14-12c0-4 6-4 6 0v13-9c0-4 6-4 6 0v19l5-6c3-4 8 0 5 4L42 49c-3 4-7 6-12 6h-5c-7 0-12-4-15-10L5 34c-2-4 4-7 6-3l5 8V28c0-4 4-5 6-2" fill="currentColor"/></svg></button>{{/if}}
             </div>
             {{#if folded}}<div class="cassinooo-folded-label">DESISTIU</div>{{/if}}
             {{#if bestHand}}<div class="cassinooo-beholdem-best-hand">{{bestHand}}</div>{{/if}}
@@ -95,31 +71,11 @@
         {{/each}}
 
         {{#if showResults}}
-          <aside class="cassinooo-beholdem-results-overlay">
-            <div class="cassinooo-beholdem-results-card">
-              <h3><i class="fa-solid fa-trophy"></i> Resultado da mão</h3>
-              <div class="cassinooo-beholdem-results-pot">Pote total: <strong>{{pot}} PO</strong></div>
-              <table>
-                <thead><tr><th>Jogador</th><th>Mão</th><th>Aposta</th><th>Saldo</th></tr></thead>
-                <tbody>
-                  {{#each roundResults}}
-                    <tr class="{{#if winner}}winner{{/if}}">
-                      <td>{{name}}</td>
-                      <td>{{handName}}</td>
-                      <td>{{bet}} PO</td>
-                      <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td>
-                    </tr>
-                  {{/each}}
-                </tbody>
-              </table>
-            </div>
-          </aside>
+          <aside class="cassinooo-beholdem-results-overlay"><div class="cassinooo-beholdem-results-card"><h3><i class="fa-solid fa-trophy"></i> Resultado da mão</h3><div class="cassinooo-beholdem-results-pot">Pote total: <strong>{{pot}} PO</strong></div><table><thead><tr><th>Jogador</th><th>Mão</th><th>Aposta</th><th>Saldo</th></tr></thead><tbody>{{#each roundResults}}<tr class="{{#if winner}}winner{{/if}}"><td>{{name}}</td><td>{{handName}}</td><td>{{bet}} PO</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td></tr>{{/each}}</tbody></table></div></aside>
         {{/if}}
       </div>
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">
-    No próprio turno, o jogador pode aumentar sua aposta total ou desistir. Jogadores que desistiram saem do carrossel e não concorrem ao pote.
-  </footer>
+  <footer class="cassinooo-table-footer">No próprio turno, o jogador pode aumentar sua aposta total ou desistir. Jogadores que desistiram saem do carrossel e não concorrem ao pote.</footer>
 </section>
