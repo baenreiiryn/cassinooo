@@ -1,5 +1,5 @@
 import { MODULE_ID, SOCKET_NAME } from "../scripts/state.js";
-import { BACKGROUND_SETTINGS, CARD_BACK_SETTINGS, getTableBackground, getCardBack, applyCardBackVariables } from "../scripts/backgrounds.js";
+import { BACKGROUND_SETTINGS, getTableBackground } from "../scripts/backgrounds.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const FilePicker = foundry.applications.apps.FilePicker;
@@ -8,7 +8,7 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "cassinooo-settings",
     classes: ["cassinooo", "cassinooo-settings"],
-    position: { width: 760, height: 820 },
+    position: { width: 760, height: 720 },
     window: { title: "Cassinooo — Configurações", icon: "fa-solid fa-gears" }
   };
 
@@ -22,10 +22,6 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
         { id: "roulette", label: "Roleta", icon: "fa-solid fa-circle-notch", value: getTableBackground("roulette") },
         { id: "beholdem", label: "Beholdem", icon: "fa-solid fa-spade", value: getTableBackground("beholdem") },
         { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20", value: getTableBackground("dragonDice") }
-      ],
-      cardBacks: [
-        { id: "blackjackCardBack", label: "Verso — Blackjack", icon: "fa-solid fa-club", value: getCardBack("blackjack") },
-        { id: "beholdemCardBack", label: "Verso — Beholdem", icon: "fa-solid fa-spade", value: getCardBack("beholdem") }
       ]
     });
   }
@@ -57,11 +53,6 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
       const input = this.element.querySelector(`input[name="${gameId}"]`);
       await game.settings.set(MODULE_ID, settingKey, String(input?.value ?? "").trim());
     }
-    for (const [fieldId, settingKey] of Object.entries(CARD_BACK_SETTINGS)) {
-      const input = this.element.querySelector(`input[name="${fieldId}"]`);
-      await game.settings.set(MODULE_ID, settingKey, String(input?.value ?? "").trim());
-    }
-    applyCardBackVariables();
     game.socket.emit(SOCKET_NAME, { type: "backgrounds-updated" });
     Hooks.callAll("cassinoooBackgroundsUpdated");
     ui.notifications?.info("Aparência das mesas do Cassinooo salva.");
