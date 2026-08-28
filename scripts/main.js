@@ -1,8 +1,3 @@
-import { BlackjackTable } from "../applications/blackjack-table.js";
-import { RouletteTable } from "../applications/roulette-table.js";
-import { BeholdemTable } from "../applications/beholdem-table.js";
-import { DragonDiceTable } from "../applications/dragon-dice-table.js";
-import { GamePlaceholder } from "../applications/game-placeholder.js";
 import { MODULE_ID, SOCKET_NAME, registerSettings } from "./state.js";
 import { registerModuleSettings } from "./module-settings.js";
 import { setupScaledBoard } from "./scaled-board.js";
@@ -11,25 +6,83 @@ import { handleRouletteSocket, recoverRouletteSpin, registerRouletteSettings } f
 import { handleBeholdemSocket, registerBeholdemSettings } from "./beholdem.js";
 import { handleDragonDiceSocket, registerDragonDiceSettings } from "./dragon-dice.js";
 
-RouletteTable.DEFAULT_OPTIONS.window.resizable = true;
-
 let blackjackTable = null;
 let rouletteTable = null;
 let beholdemTable = null;
 let dragonDiceTable = null;
 const futureGames = new Map();
 
-function getBlackjackTable() { blackjackTable ??= new BlackjackTable(); return blackjackTable; }
-function getRouletteTable() { rouletteTable ??= new RouletteTable(); return rouletteTable; }
-function getBeholdemTable() { beholdemTable ??= new BeholdemTable(); return beholdemTable; }
-function getDragonDiceTable() { dragonDiceTable ??= new DragonDiceTable(); return dragonDiceTable; }
-function getFutureGame(id, config) { if (!futureGames.has(id)) futureGames.set(id, new GamePlaceholder({ id, ...config })); return futureGames.get(id); }
+async function getBlackjackTable() {
+  if (!blackjackTable) {
+    const { BlackjackTable } = await import("../applications/blackjack-table.js");
+    blackjackTable = new BlackjackTable();
+  }
+  return blackjackTable;
+}
 
-function openBlackjack() { getBlackjackTable().render({ force: true }); }
-function openRoulette() { void recoverRouletteSpin(); getRouletteTable().render({ force: true }); }
-function openBeholdem() { getBeholdemTable().render({ force: true }); }
-function openDragonDice() { getDragonDiceTable().render({ force: true }); }
-function openLiarsDice() { getFutureGame("liars-dice", { title: "Liar's Dice", icon: "fa-solid fa-dice", gameName: "Liar's Dice", description: "Mesa de Liar's Dice do Cassinooo. Será implementada em seguida." }).render({ force: true }); }
+async function getRouletteTable() {
+  if (!rouletteTable) {
+    const { RouletteTable } = await import("../applications/roulette-table.js");
+    try { RouletteTable.DEFAULT_OPTIONS.window.resizable = true; } catch (_) {}
+    rouletteTable = new RouletteTable();
+  }
+  return rouletteTable;
+}
+
+async function getBeholdemTable() {
+  if (!beholdemTable) {
+    const { BeholdemTable } = await import("../applications/beholdem-table.js");
+    beholdemTable = new BeholdemTable();
+  }
+  return beholdemTable;
+}
+
+async function getDragonDiceTable() {
+  if (!dragonDiceTable) {
+    const { DragonDiceTable } = await import("../applications/dragon-dice-table.js");
+    dragonDiceTable = new DragonDiceTable();
+  }
+  return dragonDiceTable;
+}
+
+async function getFutureGame(id, config) {
+  if (!futureGames.has(id)) {
+    const { GamePlaceholder } = await import("../applications/game-placeholder.js");
+    futureGames.set(id, new GamePlaceholder({ id, ...config }));
+  }
+  return futureGames.get(id);
+}
+
+function reportOpenError(gameName, err) {
+  console.error(`cassinooo | Falha ao abrir ${gameName}`, err);
+  ui.notifications?.error(`Cassinooo: não foi possível abrir ${gameName}. Veja o console para detalhes.`);
+}
+
+function openBlackjack() {
+  void getBlackjackTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Blackjack", err));
+}
+
+function openRoulette() {
+  void recoverRouletteSpin();
+  void getRouletteTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Roleta", err));
+}
+
+function openBeholdem() {
+  void getBeholdemTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Beholdem", err));
+}
+
+function openDragonDice() {
+  void getDragonDiceTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Dados do Dragão", err));
+}
+
+function openLiarsDice() {
+  void getFutureGame("liars-dice", {
+    title: "Liar's Dice",
+    icon: "fa-solid fa-dice",
+    gameName: "Liar's Dice",
+    description: "Mesa de Liar's Dice do Cassinooo. Será implementada em seguida."
+  }).then((app) => app.render({ force: true })).catch((err) => reportOpenError("Liar's Dice", err));
+}
 
 async function refreshOpenBlackjack() { if (blackjackTable?.rendered) await blackjackTable.render({ force: true }); }
 async function refreshOpenRoulette() { if (rouletteTable?.rendered) await rouletteTable.render({ force: true }); }
@@ -39,11 +92,27 @@ async function refreshOpenCasinoTables() { await Promise.all([refreshOpenBlackja
 
 function makeLauncherButton({ id, icon, label, onClick }) {
   const button = document.createElement("button");
-  button.id = id; button.type = "button"; button.innerHTML = `<i class="${icon}"></i> ${label}`; button.addEventListener("click", onClick); return button;
+  button.id = id;
+  button.type = "button";
+  button.innerHTML = `<i class="${icon}"></i> ${label}`;
+  button.addEventListener("click", onClick);
+  return button;
 }
+
+function resolveHookElement(app, element) {
+  if (element instanceof HTMLElement) return element;
+  if (element?.[0] instanceof HTMLElement) return element[0];
+  if (app?.element instanceof HTMLElement) return app.element;
+  return null;
+}
+
 function injectJournalButtons(app, element) {
-  if (!(element instanceof HTMLElement) || element.querySelector("#cassinooo-game-launchers")) return;
-  const wrapper = document.createElement("div"); wrapper.id = "cassinooo-game-launchers"; wrapper.className = "cassinooo-journal-launcher";
+  const root = resolveHookElement(app, element);
+  if (!root || root.querySelector("#cassinooo-game-launchers")) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.id = "cassinooo-game-launchers";
+  wrapper.className = "cassinooo-journal-launcher";
   wrapper.append(
     makeLauncherButton({ id: "cassinooo-open-blackjack", icon: "fa-solid fa-club", label: "Blackjack", onClick: openBlackjack }),
     makeLauncherButton({ id: "cassinooo-open-roulette", icon: "fa-solid fa-circle-notch", label: "Roleta", onClick: openRoulette }),
@@ -51,7 +120,10 @@ function injectJournalButtons(app, element) {
     makeLauncherButton({ id: "cassinooo-open-dragon-dice", icon: "fa-solid fa-dice-d20", label: "Dados do Dragão", onClick: openDragonDice }),
     makeLauncherButton({ id: "cassinooo-open-liars-dice", icon: "fa-solid fa-dice", label: "Liar's Dice", onClick: openLiarsDice })
   );
-  const footer = element.querySelector("footer.directory-footer, .directory-footer"); if (footer) footer.append(wrapper); else element.append(wrapper);
+
+  const footer = root.querySelector("footer.directory-footer, .directory-footer");
+  if (footer) footer.append(wrapper);
+  else root.append(wrapper);
 }
 
 function setupApplicationScale(app) {
