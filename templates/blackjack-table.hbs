@@ -28,14 +28,13 @@
   {{/if}}{{/if}}
 
   <div class="cassinooo-board">
-    <div class="cassinooo-felt">
-      <canvas class="cassinooo-card-model-layer" data-blackjack-card-webgl aria-hidden="true"></canvas>
+    <div class="cassinooo-felt cassinooo-25d-table">
       <section class="cassinooo-dealer-zone">
         <span class="cassinooo-role-label">DEALER / MESTRE</span>
         <strong>{{dealerName}}</strong>
         <div class="cassinooo-dealer-tabletop">
           <div class="cassinooo-deck-wrap">
-            <div class="cassinooo-deck" data-card-deck-3d aria-label="Baralho do dealer">
+            <div class="cassinooo-deck cassinooo-25d-deck" aria-label="Baralho do dealer">
               <div class="cassinooo-deck-card back-3"></div>
               <div class="cassinooo-deck-card back-2"></div>
               <div class="cassinooo-deck-card back-1"></div>
@@ -43,8 +42,8 @@
             <small>{{deckCount}} cartas</small>
           </div>
           <div>
-            <div class="cassinooo-hand cassinooo-dealer-hand">
-              {{#each dealerCards}}<div class="cassinooo-playing-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="{{#if hidden}}true{{else}}false{{/if}}"><span class="cassinooo-card-fallback-label">{{label}}</span></div>{{/each}}
+            <div class="cassinooo-hand cassinooo-25d-hand">
+              {{#each dealerCards}}<div class="cassinooo-playing-card cassinooo-25d-card {{#if hidden}}hidden-card{{/if}} {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="{{#if hidden}}true{{else}}false{{/if}}"><span class="cassinooo-card-fallback-label">{{label}}</span></div>{{/each}}
             </div>
             {{#if showDealerScore}}<span class="cassinooo-score">Pontuação: {{dealerScore}}</span>{{/if}}
           </div>
@@ -73,8 +72,8 @@
             </label>
           {{/if}}
 
-          <div class="cassinooo-hand">
-            {{#each cards}}<div class="cassinooo-playing-card {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="false"><span class="cassinooo-card-fallback-label">{{label}}</span></div>{{/each}}
+          <div class="cassinooo-hand cassinooo-25d-hand">
+            {{#each cards}}<div class="cassinooo-playing-card cassinooo-25d-card {{#if red}}red{{/if}}" data-card-key="{{key}}" data-card-hidden="false"><span class="cassinooo-card-fallback-label">{{label}}</span></div>{{/each}}
             {{#unless cards.length}}<span class="cassinooo-empty-hand">Sem cartas</span>{{/unless}}
           </div>
 
