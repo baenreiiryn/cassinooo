@@ -1,6 +1,6 @@
 import { getTableBackground } from "../scripts/backgrounds.js";
 import { setupScaledBoard } from "../scripts/scaled-board.js";
-import { DragonDiceWebGL } from "../scripts/dragon-dice-webgl.js";
+import { DragonDiceModelRenderer } from "../scripts/dragon-dice-model-renderer.js";
 import {
   DRAGON_BET_TYPES,
   assignDragonDiceSeat,
@@ -128,7 +128,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     const fallback=this.element.querySelector("[data-dragon-webgl-fallback]");
     if(!canvas) return;
     try{
-      const renderer=await new DragonDiceWebGL(canvas).init();
+      const renderer=await new DragonDiceModelRenderer(canvas).init();
       if(!this.element?.isConnected){ renderer.dispose(); return; }
       this._dragon3d=renderer;
       const dice=state.dice??{d4:1,d6:1,d8:1};
@@ -142,7 +142,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       else renderer.setState(state.phase,dice);
       fallback?.classList.add("hidden");
     }catch(err){
-      console.error("cassinooo | WebGL2 Dragon Dice failed",err);
+      console.error("cassinooo | WebGL2 textured Dragon Dice failed",err);
       fallback?.classList.remove("hidden");
     }
   }
