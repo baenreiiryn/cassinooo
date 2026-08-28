@@ -167,7 +167,6 @@ export class DragonDiceWebGL {
       const map={1:[0,0,0],2:[Math.PI/2,0,0],3:[0,-Math.PI/2,0],4:[0,Math.PI/2,0],5:[-Math.PI/2,0,0],6:[Math.PI,0,0]};
       return map[v]||[0,0,0];
     }
-    // d4/d8 values are represented by deterministic orientations. Visible labels are HTML overlays.
     return [((v*1.17)%3.1)-1.55,((v*0.83)%3.1)-1.55,((v*0.51)%2.2)-1.1];
   }
 
@@ -175,7 +174,8 @@ export class DragonDiceWebGL {
     const t=(now-this.started)/1000;
     const rolling=this.phase==="rolling";
     const covered=this.phase==="betting";
-    const revealed=this.phase==="revealed";
+    const revealing=this.phase==="revealed";
+    const revealedStatic=this.phase==="revealed-static";
     const diceBase=[[-1.15,0.28,0],[0,0.28,0.12],[1.15,0.28,-0.05]];
     const kinds=["d4","d6","d8"];
     const values=[this.dice.d4,this.dice.d6,this.dice.d8];
@@ -196,9 +196,11 @@ export class DragonDiceWebGL {
       cup.rotation=[Math.sin(t*7)*.22,Math.sin(t*5)*.18,Math.sin(t*9)*.28];
     } else if(covered){
       cup={position:[0,.88,0],rotation:[Math.PI,0,0],scale:[1.65,1.65,1.65]};
-    } else if(revealed){
+    } else if(revealing){
       const p=Math.min(1,t/1.15), ease=1-Math.pow(1-p,3);
       cup={position:[2.8*ease,.88+2.9*ease,-.25*ease],rotation:[Math.PI-(.55*ease),.15*ease,-.35*ease],scale:[1.65,1.65,1.65]};
+    } else if(revealedStatic){
+      cup={position:[2.8,3.78,-.25],rotation:[Math.PI-.55,.15,-.35],scale:[1.65,1.65,1.65]};
     }
     objects.push({mesh:"cup",...cup,color:[.31,.10,.055],metallic:.62});
     return objects;
