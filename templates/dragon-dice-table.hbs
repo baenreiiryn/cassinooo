@@ -2,13 +2,15 @@
   <header class="cassinooo-table-header cassinooo-dragon-header">
     <div>
       <h2>Dados do Dragão</h2>
-      <p>O crupiê rola d4, d6 e d8 sob o copo. Aposte antes da revelação.</p>
+      <p>O crupiê rola d4, d6 e d8 dentro do copo. Aposte depois que o copo fechar.</p>
     </div>
     {{#if isGM}}
       <div class="cassinooo-gm-controls">
         <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
         {{#if canRoll}}<button type="button" data-dragon-roll><i class="fa-solid fa-dice"></i> Rolar escondido</button>{{/if}}
         {{#if canReveal}}<button type="button" data-dragon-reveal><i class="fa-solid fa-hand"></i> Erguer o copo</button>{{/if}}
+        {{#if canShowScoreboard}}<button type="button" data-dragon-show-scoreboard><i class="fa-solid fa-coins"></i> Mostrar placar</button>{{/if}}
+        {{#if canHideScoreboard}}<button type="button" data-dragon-hide-scoreboard><i class="fa-solid fa-eye-slash"></i> Ocultar placar</button>{{/if}}
         {{#if hasRound}}<button type="button" data-dragon-reset><i class="fa-solid fa-broom"></i> Reiniciar mesa</button>{{/if}}
       </div>
     {{/if}}
@@ -23,17 +25,30 @@
       </section>
 
       <section class="cassinooo-dragon-center">
-        <div class="cassinooo-dragon-cup-wrap">
-          <div class="cassinooo-dragon-cup {{#if rolling}}rolling{{/if}} {{#if betting}}covered{{/if}} {{#if revealed}}revealing{{/if}}" aria-label="Copo do crupiê">
-            <div class="cup-rim"></div><div class="cup-body"></div>
+        <div class="cassinooo-dragon-3d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}">
+          <div class="cassinooo-dragon-table-shadow"></div>
+
+          <div class="cassinooo-dragon-model-die dragon-model-d4" aria-label="d4 Garra">
+            <div class="die-polyhedron"><span class="die-value">{{d4}}</span></div>
+            <small>Garra · d4</small>
+          </div>
+          <div class="cassinooo-dragon-model-die dragon-model-d6" aria-label="d6 Presa">
+            <div class="die-polyhedron cube">
+              <span class="cube-face front die-value">{{d6}}</span><span class="cube-face back"></span><span class="cube-face right"></span><span class="cube-face left"></span><span class="cube-face top"></span><span class="cube-face bottom"></span>
+            </div>
+            <small>Presa · d6</small>
+          </div>
+          <div class="cassinooo-dragon-model-die dragon-model-d8" aria-label="d8 Cauda">
+            <div class="die-polyhedron"><span class="die-value">{{d8}}</span></div>
+            <small>Cauda · d8</small>
+          </div>
+
+          <div class="cassinooo-dragon-cup3d" aria-label="Copo de dados">
+            <div class="cup3d-mouth"></div>
+            <div class="cup3d-body"><span class="cup3d-highlight"></span><span class="cup3d-band"></span></div>
           </div>
         </div>
-        <div class="cassinooo-dragon-dice-cluster {{#if revealed}}is-revealed{{/if}}">
-          <div class="dragon-die d4"><span>d4</span><strong>{{d4}}</strong><small>Garra</small></div>
-          <div class="dragon-die d6"><span>d6</span><strong>{{d6}}</strong><small>Presa</small></div>
-          <div class="dragon-die d8"><span>d8</span><strong>{{d8}}</strong><small>Cauda</small></div>
-        </div>
-        <div class="cassinooo-dragon-sum">Soma <strong>{{sum}}</strong></div>
+        <div class="cassinooo-dragon-sum {{#unless revealed}}hidden-sum{{/unless}}">Soma <strong>{{sum}}</strong></div>
       </section>
 
       <aside class="cassinooo-dragon-paytable">
@@ -84,11 +99,12 @@
                 {{/each}}
               </tbody>
             </table>
+            {{#if isGM}}<button type="button" class="cassinooo-dragon-overlay-close" data-dragon-hide-scoreboard><i class="fa-solid fa-eye-slash"></i> Ocultar placar</button>{{/if}}
           </div>
         </aside>
       {{/if}}
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">As apostas são independentes. O Dice So Nice é usado quando estiver ativo; sem ele, o jogo continua normalmente com a animação do copo.</footer>
+  <footer class="cassinooo-table-footer">Animação própria do Cassinooo, sem Dice So Nice. Depois da revelação, o Mestre decide quando mostrar o placar de ganhos e perdas.</footer>
 </section>
