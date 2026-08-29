@@ -1,0 +1,138 @@
+/* Cassinooo 0.16.1 — explicit loser picker + dice constrained to cup footprint */
+
+/* ---------- GM loser selection ---------- */
+.cassinooo-liars-dice-table .cassinooo-liars-loser-control {
+  display:grid;
+  grid-template-columns:auto 158px;
+  align-items:center;
+  gap:5px;
+  margin:0;
+  color:#e7c986;
+  font-size:.62rem;
+  font-weight:800;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-loser-control span {
+  white-space:nowrap;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-loser-control select {
+  width:158px;
+  min-width:158px;
+  height:31px;
+  margin:0;
+  font-size:.66rem;
+}
+.cassinooo-liars-dice-table [data-liars-mark-loser]:disabled {
+  opacity:.46;
+  filter:saturate(.35);
+  cursor:not-allowed;
+}
+
+/* ---------- Dice footprint beneath the inverted cup ---------- */
+.cassinooo-liars-dice-table .cassinooo-liars-dice-stage {
+  width:158px;
+  height:82px;
+}
+
+/* This ellipse is deliberately smaller than the cup's 116px open base. */
+.cassinooo-liars-dice-table .cassinooo-liars-roll-zone {
+  left:50%;
+  top:25px;
+  width:106px;
+  height:46px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  overflow:hidden;
+  clip-path:ellipse(50% 50% at 50% 50%);
+}
+.cassinooo-liars-dice-table .cassinooo-liars-die {
+  left:40px;
+  top:10px;
+}
+
+/* A wider cup now physically covers the entire roll ellipse. */
+.cassinooo-liars-dice-table .cassinooo-liars-cup {
+  left:50%;
+  top:0;
+  width:126px;
+  height:76px;
+  margin-left:-63px;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-cup-body {
+  left:5px;
+  top:15px;
+  width:116px;
+  height:56px;
+  clip-path:polygon(22% 0,78% 0,100% 100%,0 100%);
+  border-radius:11px 11px 5px 5px;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-cup-grain {
+  left:8px;
+  top:18px;
+  width:110px;
+  height:50px;
+  clip-path:polygon(21% 0,79% 0,99% 100%,1% 100%);
+}
+.cassinooo-liars-dice-table .cassinooo-liars-cup-bottom {
+  left:34px;
+  top:7px;
+  width:58px;
+  height:16px;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-cup-highlight {
+  left:38px;
+  top:26px;
+  width:12px;
+  height:35px;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-cup-shadow {
+  width:120px;
+  height:15px;
+  bottom:0;
+}
+
+/* The cup stays lifted while the dice move, then descends vertically over the
+   exact same footprint. */
+@keyframes cassinooo-liars-cup-cover {
+  0%,68%{transform:translateY(-78px);opacity:0}
+  75%{transform:translateY(-58px);opacity:.55}
+  88%{transform:translateY(-21px);opacity:1}
+  100%{transform:translateY(0);opacity:1}
+}
+
+/* Every path remains inside the 106x46 ellipse. Dice are 25px, so x is kept
+   approximately within -34..33 and y within -9..9 around their anchor. */
+@keyframes cassinooo-liars-die-a {
+  0%{transform:translate(-34px,-5px) rotate(0)}
+  25%{transform:translate(4px,-9px) rotate(95deg)}
+  55%{transform:translate(32px,5px) rotate(205deg)}
+  80%{transform:translate(-10px,8px) rotate(300deg)}
+  100%{transform:translate(-34px,-5px) rotate(360deg)}
+}
+@keyframes cassinooo-liars-die-b {
+  0%{transform:translate(31px,6px) rotate(0)}
+  28%{transform:translate(-17px,-8px) rotate(-110deg)}
+  60%{transform:translate(-32px,7px) rotate(-230deg)}
+  82%{transform:translate(8px,9px) rotate(-310deg)}
+  100%{transform:translate(31px,6px) rotate(-360deg)}
+}
+@keyframes cassinooo-liars-die-c {
+  0%{transform:translate(-5px,8px) rotate(0)}
+  30%{transform:translate(33px,-6px) rotate(120deg)}
+  58%{transform:translate(14px,7px) rotate(220deg)}
+  78%{transform:translate(-32px,-4px) rotate(305deg)}
+  100%{transform:translate(-5px,8px) rotate(360deg)}
+}
+@keyframes cassinooo-liars-die-d {
+  0%{transform:translate(32px,-4px) rotate(0)}
+  24%{transform:translate(-4px,9px) rotate(-100deg)}
+  51%{transform:translate(-33px,-5px) rotate(-210deg)}
+  79%{transform:translate(10px,-8px) rotate(-305deg)}
+  100%{transform:translate(32px,-4px) rotate(-360deg)}
+}
+@keyframes cassinooo-liars-die-e {
+  0%{transform:translate(-31px,7px) rotate(0)}
+  27%{transform:translate(20px,-7px) rotate(105deg)}
+  57%{transform:translate(32px,8px) rotate(215deg)}
+  81%{transform:translate(-8px,-6px) rotate(310deg)}
+  100%{transform:translate(-31px,7px) rotate(360deg)}
+}
