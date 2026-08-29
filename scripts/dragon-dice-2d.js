@@ -49,7 +49,7 @@ export class DragonDice2DAnimator {
       ...cfg,
       element:this.elements[index],
       angle:(index-1)*11,
-      depth:index===1?1.05:index===0?.98:1.01
+      depth:index===1 ? 1.05 : index===0 ? .98 : 1.01
     }));
     for(const body of this.bodies)this._applyBody(body,0);
   }
@@ -121,7 +121,7 @@ export class DragonDice2DAnimator {
         body.vy+=(-body.y*10.5*bounds.gather)*dt;
       }
 
-      const damping=Math.pow(bounds.gather>.55?.94:.985,dt*60);
+      const damping=Math.pow(bounds.gather>.55 ? .94 : .985,dt*60);
       body.vx*=damping;
       body.vy*=damping;
       body.x+=body.vx*dt;
