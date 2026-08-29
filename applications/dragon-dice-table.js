@@ -1,6 +1,6 @@
 import { getTableBackground } from "../scripts/backgrounds.js";
 import { setupScaledBoard } from "../scripts/scaled-board.js";
-import { DragonDiceModelRenderer } from "../scripts/dragon-dice-model-renderer.js";
+import { DragonDice2DAnimator } from "../scripts/dragon-dice-2d.js";
 import {
   DRAGON_BET_TYPES,
   assignDragonDiceSeat,
@@ -19,13 +19,9 @@ const SEAT_CLASSES=["seat-upper-left","seat-upper-right","seat-lower-left","seat
 const VISUAL_ORDER=[1,5,4,3,2,0];
 
 function deltaText(value){ const n=Number(value)||0; return n>0?`+${n} PO`:n<0?`${n} PO`:"0 PO"; }
-function rendererErrorText(err){
-  const name=err?.name&&err.name!=="Error"?`${err.name}: `:"";
-  return `${name}${err?.message||String(err)||"Erro desconhecido"}`;
-}
 
 export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
-  _dragon3d=null;
+  _dragon2d=null;
 
   static DEFAULT_OPTIONS={
     id:"cassinooo-dragon-dice-table",
@@ -71,6 +67,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       rolling:state.phase==="rolling",
       betting,
       revealed,
+      idle:state.phase==="idle",
       canRoll:["idle","revealed"].includes(state.phase),
       canReveal:betting,
       canShowScoreboard:revealed&&roundResults.length>0&&!state.scoreboardVisible,
@@ -98,7 +95,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     setupScaledBoard(this,{viewportSelector:".cassinooo-dragon-viewport",boardSelector:".cassinooo-dragon-felt",designWidth:1100,designHeight:700});
 
     const state=getDragonDiceState();
-    void this._setupWebGL(state);
+    this._setup2DAnimation(state);
 
     for(const input of this.element.querySelectorAll("input[data-dragon-bet]")){
       input.addEventListener("change",async event=>{
@@ -125,41 +122,17 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     }
   }
 
-  async _setupWebGL(state){
-    this._dragon3d?.dispose();
-    this._dragon3d=null;
-    const canvas=this.element.querySelector("canvas[data-dragon-webgl]");
-    const fallback=this.element.querySelector("[data-dragon-webgl-fallback]");
-    const errorLabel=this.element.querySelector("[data-dragon-webgl-error]");
-    if(!canvas) return;
-    try{
-      if(errorLabel) errorLabel.textContent="Inicializando renderizador 3D…";
-      const renderer=await new DragonDiceModelRenderer(canvas).init();
-      if(!this.element?.isConnected){ renderer.dispose(); return; }
-      this._dragon3d=renderer;
-      const dice=state.dice??{d4:1,d6:1,d8:1};
-      const animation=state.lastAnimation?.type;
-      if(animation==="cup-reveal"){
-        renderer.setState("betting",dice);
-        requestAnimationFrame(()=>renderer.setState("revealed",dice));
-      } else if(animation==="cup-roll") renderer.setState("rolling",dice);
-      else if(animation==="cup-cover") renderer.setState("betting",dice);
-      else if(state.phase==="revealed") renderer.setState("revealed-static",dice);
-      else renderer.setState(state.phase,dice);
-      fallback?.classList.add("hidden");
-    }catch(err){
-      const text=rendererErrorText(err);
-      console.error("cassinooo | Dragon Dice 3D renderer failed",err);
-      if(errorLabel) errorLabel.textContent=text;
-      if(fallback) fallback.title=text;
-      fallback?.classList.remove("hidden");
-      ui.notifications?.warn(`Cassinooo 3D: ${text}`);
-    }
+  _setup2DAnimation(state){
+    this._dragon2d?.dispose();
+    this._dragon2d=null;
+    const scene=this.element.querySelector("[data-dragon-2d-scene]");
+    if(!scene)return;
+    this._dragon2d=new DragonDice2DAnimator(scene,{phase:state.phase}).init();
   }
 
   async close(options={}){
-    this._dragon3d?.dispose();
-    this._dragon3d=null;
+    this._dragon2d?.dispose();
+    this._dragon2d=null;
     return super.close(options);
   }
 }
