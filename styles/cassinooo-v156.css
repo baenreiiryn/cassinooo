@@ -1,0 +1,7 @@
+/* Cassinooo 0.15.6 — visual cup alignment */
+
+/* The animation scene and dice arena are centered correctly; only the rendered
+   cup silhouette needs a small optical correction to the right. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-wrap {
+  left:calc(50% + 24px) !important;
+}
