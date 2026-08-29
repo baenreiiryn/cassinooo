@@ -1,0 +1,111 @@
+<section class="cassinooo-liars-shell">
+  <header class="cassinooo-table-header cassinooo-liars-header">
+    <div>
+      <h2>Liar's Dice</h2>
+      <p>Cada jogador começa com 5d6. Só você pode espiar os seus próprios dados.</p>
+    </div>
+    {{#if isGM}}
+      <div class="cassinooo-gm-controls cassinooo-liars-gm-controls">
+        <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
+        {{#if canStartRound}}<button type="button" data-liars-start-round><i class="fa-solid fa-dice"></i> {{#if between}}Nova rodada{{else}}Começar rodada{{/if}}</button>{{/if}}
+        {{#if canPassTurn}}<button type="button" data-liars-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>{{/if}}
+        {{#if canMarkLoser}}
+          <select data-liars-loser aria-label="Jogador que perdeu a rodada">
+            {{#each loserOptions}}<option value="{{id}}">{{name}} · {{diceCount}}d6</option>{{/each}}
+          </select>
+          <button type="button" data-liars-mark-loser><i class="fa-solid fa-dice-one"></i> Perdeu 1d6</button>
+        {{/if}}
+        {{#if hasGame}}<button type="button" data-liars-reset><i class="fa-solid fa-broom"></i> Reiniciar mesa</button>{{/if}}
+      </div>
+    {{/if}}
+  </header>
+
+  <div class="cassinooo-message" aria-live="polite">{{message}}</div>
+
+  {{#if activePhase}}
+    <div class="cassinooo-liars-turn-banner"><span>TURNO</span><strong>{{activePlayerName}}</strong><em>Pote: {{pot}} PO</em></div>
+  {{else}}
+    <div class="cassinooo-liars-turn-banner passive"><span>POTE</span><strong>{{pot}} PO</strong>{{#if round}}<em>Rodada {{round}}</em>{{/if}}</div>
+  {{/if}}
+
+  <div class="cassinooo-liars-viewport">
+    <div class="cassinooo-liars-felt">
+      <div class="cassinooo-liars-table-marking">
+        <strong>LIAR'S DICE</strong>
+        <span>O último jogador com dados vence 90% do pote</span>
+      </div>
+
+      {{#each seats}}
+        <article class="cassinooo-liars-seat {{positionClass}} {{#if isActive}}active-turn{{/if}} {{#if eliminated}}eliminated{{/if}}" data-seat-index="{{index}}" data-user-id="{{userId}}">
+          <div class="cassinooo-liars-seat-head">
+            <span class="cassinooo-seat-number">Lugar {{number}}</span>
+            {{#if occupied}}<b class="cassinooo-liars-dice-count">{{diceCount}}d6</b>{{/if}}
+          </div>
+
+          {{#if ../isGM}}
+            <select data-liars-seat-index="{{index}}" {{#unless ../canAssignSeats}}disabled{{/unless}}>
+              <option value="">— Lugar vazio —</option>
+              {{#each options}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
+            </select>
+          {{else}}
+            <strong class="cassinooo-player-name">{{occupantName}}</strong>
+            {{#if occupied}}<small class="cassinooo-status {{#if occupantActive}}online{{else}}offline{{/if}}">{{#if occupantActive}}Online{{else}}Offline{{/if}}</small>{{/if}}
+          {{/if}}
+
+          {{#if occupied}}
+            <label class="cassinooo-liars-wager">
+              <span>Aposta total</span>
+              <input type="number" min="{{wagerMin}}" step="1" value="{{wager}}" data-liars-wager-user-id="{{userId}}" {{#unless canEditWager}}disabled{{/unless}}>
+            </label>
+          {{/if}}
+
+          {{#if eliminated}}
+            <div class="cassinooo-liars-eliminated"><i class="fa-solid fa-skull"></i> Eliminado</div>
+          {{else if showDiceStage}}
+            <div class="cassinooo-liars-dice-stage {{#if ../rolling}}is-rolling{{else}}is-covered{{/if}} {{#if owner}}owner-stage{{/if}}">
+              <div class="cassinooo-liars-roll-zone">
+                {{#each diceViews}}
+                  <div class="cassinooo-liars-die die-{{index}} {{#if visible}}has-value{{/if}}"><span>{{value}}</span></div>
+                {{/each}}
+              </div>
+              <div class="cassinooo-liars-cup">
+                <div class="cassinooo-liars-cup-bottom"></div>
+                <div class="cassinooo-liars-cup-body"></div>
+                <div class="cassinooo-liars-cup-grain"></div>
+                <div class="cassinooo-liars-cup-highlight"></div>
+              </div>
+              <div class="cassinooo-liars-cup-shadow"></div>
+            </div>
+            {{#if canPeek}}<button type="button" class="cassinooo-liars-peek" data-liars-peek>Espiar meus dados</button>{{/if}}
+          {{/if}}
+
+          {{#if isActive}}<div class="cassinooo-turn-indicator">◆ TURNO ATUAL</div>{{/if}}
+        </article>
+      {{/each}}
+
+      {{#if showResults}}
+        <aside class="cassinooo-results-overlay">
+          <div class="cassinooo-results-card">
+            <h3><i class="fa-solid fa-trophy"></i> Resultado do Liar's Dice</h3>
+            <div class="cassinooo-results-summary">
+              <span>Vencedor: <strong>{{winnerName}}</strong></span>
+              <span>Pote: <strong>{{totalPot}} PO</strong></span>
+              <span>Casa (10%): <strong>{{houseCut}} PO</strong></span>
+              <span>Prêmio: <strong>{{prize}} PO</strong></span>
+            </div>
+            <table>
+              <thead><tr><th>Jogador</th><th>Apostado</th><th>Recebeu</th><th>Saldo</th></tr></thead>
+              <tbody>
+                {{#each roundResults}}
+                  <tr class="{{#if winner}}winner{{/if}}"><td>{{name}}</td><td>{{wagerText}}</td><td>{{receivedText}}</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td></tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+        </aside>
+      {{/if}}
+    </div>
+  </div>
+
+  <footer class="cassinooo-table-footer">As apostas entram no pote e só podem aumentar durante o próprio turno. O Mestre controla turnos e quem perde 1d6.</footer>
+</section>
