@@ -1,0 +1,328 @@
+/* Cassinooo 0.15.2 — constrained 2D Dragon Dice cup simulation */
+
+/* The tracked scene supersedes the free-floating v150 dice animation. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-25d-scene {
+  width:430px;
+  height:245px;
+  perspective:760px;
+  overflow:visible;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-wrap {
+  left:50%;
+  top:17px;
+  width:180px;
+  height:190px;
+  margin-left:-90px;
+  transform-origin:50% 58%;
+  transform:translate3d(0,0,0) rotate(0deg);
+  transition:transform .9s cubic-bezier(.18,.78,.18,1),filter .5s ease;
+  z-index:8;
+}
+
+/* Cup-local tracked volume. The JS solver owns x/y positions; all previous CSS
+   tumble animations are explicitly disabled. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-dice-track {
+  position:absolute;
+  left:24px;
+  top:7px;
+  width:132px;
+  height:155px;
+  z-index:3;
+  overflow:visible;
+  pointer-events:none;
+}
+
+.cassinooo-dragon-dice-table .tracked-die {
+  left:0 !important;
+  top:0 !important;
+  margin:0;
+  animation:none !important;
+  transition:none !important;
+  will-change:transform,opacity;
+  transform-origin:50% 50%;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-die {
+  position:absolute;
+  display:grid;
+  place-items:center;
+  color:#fff9e8;
+  font-weight:950;
+  line-height:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.5);
+  filter:drop-shadow(0 calc(4px + 7px * (1 - var(--die-shadow-lift,0))) calc(3px + 3px * (1 - var(--die-shadow-lift,0))) rgba(0,0,0,.5));
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-die span { position:relative; z-index:2; }
+.cassinooo-dragon-dice-table .cassinooo-dragon-die::before {
+  content:"";
+  position:absolute;
+  inset:7%;
+  border-radius:inherit;
+  background:linear-gradient(128deg,rgba(255,255,255,.48),transparent 34%,rgba(0,0,0,.28) 76%);
+  mix-blend-mode:soft-light;
+  pointer-events:none;
+}
+
+/* Proportions: all three fit through the ~116px inner mouth without becoming
+   toy-sized. Collision radii in dragon-dice-2d.js match these dimensions. */
+.cassinooo-dragon-dice-table .die-d4 {
+  width:38px !important;
+  height:36px !important;
+  padding-top:7px;
+  box-sizing:border-box;
+  clip-path:polygon(50% 1%,98% 94%,2% 94%);
+  border-radius:5px;
+  background:
+    radial-gradient(circle at 22% 24%,rgba(255,255,255,.24) 0 1px,transparent 1.4px) 0 0/7px 7px,
+    radial-gradient(circle at 72% 68%,rgba(20,55,26,.28) 0 1px,transparent 1.5px) 2px 3px/8px 8px,
+    linear-gradient(145deg,#8bd78b 0%,#3e9a56 46%,#1b5a34 100%);
+  box-shadow:inset 4px 3px 7px rgba(255,255,255,.12),inset -5px -6px 8px rgba(12,49,24,.28);
+  font-size:1.02rem;
+}
+.cassinooo-dragon-dice-table .die-d6 {
+  width:40px !important;
+  height:40px !important;
+  border-radius:8px;
+  background:
+    radial-gradient(circle at 24% 28%,rgba(255,255,255,.22) 0 1px,transparent 1.4px) 0 0/7px 7px,
+    radial-gradient(circle at 76% 74%,rgba(9,31,80,.24) 0 1px,transparent 1.5px) 2px 3px/9px 9px,
+    linear-gradient(145deg,#78b9ff 0%,#386ec5 48%,#1a428f 100%);
+  box-shadow:inset 5px 5px 8px rgba(255,255,255,.15),inset -6px -7px 9px rgba(8,26,74,.28);
+  font-size:1.04rem;
+}
+.cassinooo-dragon-dice-table .die-d8 {
+  width:40px !important;
+  height:40px !important;
+  clip-path:polygon(50% 0,96% 50%,50% 100%,4% 50%);
+  background:
+    radial-gradient(circle at 27% 22%,rgba(255,255,255,.22) 0 1px,transparent 1.4px) 0 0/7px 7px,
+    radial-gradient(circle at 70% 72%,rgba(84,14,22,.28) 0 1px,transparent 1.5px) 3px 2px/8px 8px,
+    linear-gradient(145deg,#f0837d 0%,#bd3b40 48%,#721d27 100%);
+  box-shadow:inset 4px 4px 8px rgba(255,255,255,.13),inset -6px -7px 9px rgba(72,11,17,.28);
+  font-size:1.04rem;
+}
+
+/* ---------- Cup geometry ---------- */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup {
+  position:absolute;
+  inset:0;
+  transform-style:preserve-3d;
+  filter:drop-shadow(0 12px 9px rgba(0,0,0,.38));
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-body {
+  position:absolute;
+  left:28px;
+  top:29px;
+  width:124px;
+  height:135px;
+  z-index:4;
+  clip-path:polygon(2% 0,98% 0,84% 100%,16% 100%);
+  border-radius:6px 6px 18px 18px;
+  background:
+    repeating-linear-gradient(96deg,rgba(255,225,188,.035) 0 1px,rgba(49,14,8,.025) 1px 3px,transparent 3px 7px),
+    radial-gradient(ellipse at 37% 22%,rgba(255,197,137,.2),transparent 31%),
+    linear-gradient(90deg,#28100b 0%,#6c2d1d 16%,#a7502f 38%,#7f3522 64%,#431810 83%,#220b08 100%);
+  background-blend-mode:overlay,screen,normal;
+  box-shadow:inset 9px 0 12px rgba(255,183,116,.08),inset -13px 0 16px rgba(0,0,0,.34);
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-grain {
+  position:absolute;
+  left:31px;
+  top:32px;
+  width:118px;
+  height:129px;
+  z-index:5;
+  clip-path:polygon(2% 0,98% 0,83% 100%,17% 100%);
+  opacity:.42;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(255,231,197,.15) 0 1px,transparent 1.5px) 0 0/11px 13px,
+    radial-gradient(circle at 72% 63%,rgba(30,7,5,.24) 0 1px,transparent 1.6px) 4px 3px/13px 12px,
+    repeating-linear-gradient(8deg,transparent 0 7px,rgba(255,214,170,.035) 7px 8px);
+  pointer-events:none;
+}
+
+/* Thin mouth: visible only while upright. The center is translucent so jumping
+   dice read as being inside the opening, not pasted behind the cup. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-mouth {
+  position:absolute;
+  left:25px;
+  top:17px;
+  width:130px;
+  height:25px;
+  z-index:7;
+  box-sizing:border-box;
+  border:3px solid #9a512f;
+  border-top-color:#c47443;
+  border-bottom-color:#5d281b;
+  border-radius:50%;
+  background:rgba(25,7,5,.17);
+  box-shadow:0 3px 4px rgba(0,0,0,.32),inset 0 2px 4px rgba(0,0,0,.55);
+  opacity:1;
+  transition:opacity .18s ease;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-mouth > div {
+  position:absolute;
+  inset:3px 7px;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(16,4,3,.36),rgba(42,12,7,.13) 62%,transparent 66%);
+  box-shadow:inset 0 3px 5px rgba(0,0,0,.34);
+}
+
+/* The physical bottom is a separate ellipse. It is completely hidden while the
+   cup is upright, then becomes the only top surface after the cup turns over. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-bottom {
+  position:absolute;
+  left:47px;
+  top:151px;
+  width:86px;
+  height:21px;
+  z-index:7;
+  border-radius:50%;
+  border:2px solid #542116;
+  background:
+    radial-gradient(ellipse at 45% 34%,rgba(222,135,79,.22),transparent 38%),
+    repeating-linear-gradient(10deg,rgba(255,220,177,.035) 0 1px,transparent 1px 6px),
+    linear-gradient(#6b2c1d,#32100c 72%);
+  box-shadow:0 3px 6px rgba(0,0,0,.34),inset 0 1px 2px rgba(255,194,139,.1);
+  opacity:0;
+  transition:opacity .18s ease;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-highlight {
+  position:absolute;
+  left:52px;
+  top:45px;
+  width:20px;
+  height:91px;
+  z-index:6;
+  border-radius:50%;
+  transform:rotate(5deg);
+  background:linear-gradient(90deg,transparent,rgba(255,213,169,.18),transparent);
+  filter:blur(1.5px);
+  opacity:.72;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-shadow {
+  left:31px;
+  bottom:4px;
+  width:118px;
+  height:25px;
+  border-radius:50%;
+  background:rgba(0,0,0,.43);
+  filter:blur(6px);
+  transform:scaleY(.5);
+  z-index:0;
+}
+
+/* ---------- Roll and turn ---------- */
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-wrap {
+  animation:cassinooo-cup-tracked-roll 2.18s cubic-bezier(.24,.05,.19,1) both !important;
+}
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-mouth {
+  animation:cassinooo-mouth-hide-on-turn 2.18s linear both;
+}
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-bottom {
+  animation:cassinooo-bottom-show-on-turn 2.18s linear both;
+}
+
+@keyframes cassinooo-cup-tracked-roll {
+  0%   {transform:translate3d(0,0,0) rotate(0deg)}
+  8%   {transform:translate3d(-9px,-5px,0) rotate(-4deg)}
+  17%  {transform:translate3d(11px,-9px,0) rotate(5deg)}
+  27%  {transform:translate3d(-13px,-3px,0) rotate(-6deg)}
+  38%  {transform:translate3d(12px,-10px,0) rotate(6deg)}
+  49%  {transform:translate3d(-10px,-4px,0) rotate(-5deg)}
+  59%  {transform:translate3d(8px,-8px,0) rotate(4deg)}
+  67%  {transform:translate3d(0,0,0) rotate(0deg)}
+  74%  {transform:translate3d(5px,5px,0) rotate(18deg)}
+  82%  {transform:translate3d(13px,17px,0) rotate(68deg) scale(.98)}
+  90%  {transform:translate3d(6px,43px,0) rotate(128deg) scale(1.02)}
+  100% {transform:translate3d(0,72px,0) rotate(180deg) scale(1.08)}
+}
+@keyframes cassinooo-mouth-hide-on-turn {
+  0%,70%{opacity:1;visibility:visible}
+  80%{opacity:.58;visibility:visible}
+  88%,100%{opacity:0;visibility:hidden}
+}
+@keyframes cassinooo-bottom-show-on-turn {
+  0%,78%{opacity:0}
+  88%{opacity:.55}
+  100%{opacity:1}
+}
+
+/* The JS adds is-turning at the point where jumping stops. */
+.cassinooo-dragon-dice-table .is-turning .cassinooo-dragon-dice-track {
+  filter:brightness(.8);
+}
+
+/* Covered state: bottom is visible, mouth is not. This is intentionally strict
+   so the inverted cup can never display both surfaces simultaneously. */
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-wrap {
+  transform:translate3d(0,72px,0) rotate(180deg) scale(1.08) !important;
+}
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-mouth,
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-mouth {
+  opacity:0 !important;
+  visibility:hidden !important;
+  animation:none !important;
+}
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-bottom,
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-bottom {
+  opacity:1 !important;
+  visibility:visible !important;
+  animation:none !important;
+}
+
+/* Reveal keeps the cup inverted while lifting it. The bottom remains the visible
+   surface, avoiding the impossible simultaneous mouth+bottom view. */
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-wrap {
+  transform:translate3d(142px,-44px,0) rotate(166deg) scale(.9) !important;
+  filter:brightness(1.06);
+}
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-floor-shadow {
+  transform:translateX(-50%) scale(.78,.43);
+  opacity:.46;
+}
+
+/* Final dice live on the table, independent of the lifted cup. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice {
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .result-die {
+  opacity:1;
+  animation:cassinooo-result-die-land .48s cubic-bezier(.2,.82,.2,1) both;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d4 {
+  left:126px !important;
+  top:139px !important;
+  transform:rotate(-10deg) scale(1.12);
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d6 {
+  left:190px !important;
+  top:131px !important;
+  transform:rotate(6deg) scale(1.14);
+  animation-delay:.06s;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d8 {
+  left:254px !important;
+  top:140px !important;
+  transform:rotate(11deg) scale(1.12);
+  animation-delay:.11s;
+}
+@keyframes cassinooo-result-die-land {
+  from{opacity:0;filter:brightness(1.35) drop-shadow(0 18px 10px rgba(0,0,0,.2))}
+  to{opacity:1;filter:brightness(1) drop-shadow(0 8px 6px rgba(0,0,0,.45))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-wrap,
+  .cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-mouth,
+  .cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-bottom,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .result-die {animation:none !important}
+}
