@@ -9,6 +9,8 @@
         <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
         {{#if canStartRound}}<button type="button" data-liars-start-round><i class="fa-solid fa-dice"></i> {{#if between}}Nova rodada{{else}}Começar rodada{{/if}}</button>{{/if}}
         {{#if canPassTurn}}<button type="button" data-liars-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>{{/if}}
+        {{#if canShowChallengeSummary}}<button type="button" data-liars-show-summary><i class="fa-solid fa-chart-simple"></i> Mostrar conferência</button>{{/if}}
+        {{#if canHideChallengeSummary}}<button type="button" data-liars-hide-summary><i class="fa-solid fa-eye-slash"></i> Ocultar conferência</button>{{/if}}
         {{#if canMarkLoser}}
           <label class="cassinooo-liars-loser-control">
             <span>Quem perdeu?</span>
@@ -92,6 +94,27 @@
         </article>
       {{/each}}
 
+      {{#if challengeSummaryVisible}}
+        <aside class="cassinooo-results-overlay cassinooo-liars-challenge-overlay">
+          <div class="cassinooo-results-card cassinooo-liars-challenge-card">
+            <h3><i class="fa-solid fa-dice"></i> Conferência do MENTIROSO</h3>
+            <p class="cassinooo-liars-challenge-note">Contagem de todos os dados revelados na mesa.</p>
+            <div class="cassinooo-liars-face-counts">
+              {{#each faceCounts}}
+                <div class="cassinooo-liars-face-count"><span class="face">{{face}}</span><strong>{{count}}</strong><small>dados</small></div>
+              {{/each}}
+            </div>
+            <div class="cassinooo-results-summary cassinooo-liars-challenge-money">
+              <span>Total de dados: <strong>{{totalDiceOnTable}}</strong></span>
+              <span>Pote: <strong>{{challengePot}} PO</strong></span>
+              <span>Casa (10%): <strong>{{challengeHouseCut}} PO</strong></span>
+              <span>Prêmio líquido ao vencedor: <strong>{{challengePrize}} PO</strong></span>
+            </div>
+            {{#if isGM}}<button type="button" class="cassinooo-liars-summary-close" data-liars-hide-summary><i class="fa-solid fa-eye-slash"></i> Ocultar conferência</button>{{/if}}
+          </div>
+        </aside>
+      {{/if}}
+
       {{#if showResults}}
         <aside class="cassinooo-results-overlay">
           <div class="cassinooo-results-card">
@@ -116,5 +139,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">No próprio turno, o jogador pode aumentar a aposta ou chamar MENTIROSO. O desafio revela todos os dados; depois o Mestre escolhe quem perde 1d6.</footer>
+  <footer class="cassinooo-table-footer">No próprio turno, o jogador pode aumentar a aposta ou chamar MENTIROSO. O Mestre pode mostrar a contagem das faces e depois escolher quem perde 1d6.</footer>
 </section>
