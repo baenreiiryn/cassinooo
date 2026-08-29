@@ -8,6 +8,7 @@ import {
   gmMarkLiarsLoser,
   gmPassLiarsTurn,
   gmStartLiarsRound,
+  requestLiarsCall,
   requestLiarsWagerChange,
   resetLiarsDice
 } from "../scripts/liars-dice.js";
@@ -44,6 +45,7 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     const wagers=getLiarsDiceWagers();
     const players=game.users.filter(u=>!u.isGM).map(u=>({id:u.id,name:u.name,active:u.active}));
     const activePhase=state.phase==="active";
+    const revealedPhase=state.phase==="revealed";
     const rolling=state.phase==="rolling";
     const between=state.phase==="between";
     const finished=state.phase==="finished";
@@ -58,11 +60,11 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       const owner=Boolean(occupant&&game.user?.id===userId&&!game.user?.isGM);
       const canEditWager=Boolean(owner&&!eliminated&&(state.phase==="idle"||between||isActive));
       const sourceDice=state.dice?.[userId]??[];
-      const diceViews=Array.from({length:Math.max(0,diceCount)},(_,dieIndex)=>({
-        index:dieIndex,
-        value:owner&&activePhase?sourceDice[dieIndex]:null,
-        visible:Boolean(owner&&activePhase&&sourceDice[dieIndex])
-      }));
+      const diceViews=Array.from({length:Math.max(0,diceCount)},(_,dieIndex)=>{
+        const canSeeValue=revealedPhase||(owner&&activePhase);
+        const value=canSeeValue?sourceDice[dieIndex]:null;
+        return {index:dieIndex,value,visible:Boolean(canSeeValue&&sourceDice[dieIndex])};
+      });
       return {
         index,
         number:index+1,
@@ -76,11 +78,13 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
         isActive,
         owner,
         canPeek:Boolean(owner&&activePhase&&!eliminated),
+        canCallLiar:Boolean(owner&&isActive&&!eliminated),
         canEditWager,
         wager,
         wagerMin:state.phase==="idle"?0:wager,
         diceViews,
-        showDiceStage:Boolean(occupant&&!eliminated&&(rolling||activePhase)),
+        stageClass:rolling?"is-rolling":revealedPhase?"is-revealed":"is-covered",
+        showDiceStage:Boolean(occupant&&!eliminated&&(rolling||activePhase||revealedPhase)),
         options:players.map(p=>({...p,selected:p.id===userId}))
       };
     });
@@ -105,15 +109,17 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       round:state.round,
       rolling,
       activePhase,
+      revealedPhase,
       between,
       finished,
       hasGame:state.phase!=="idle",
       canAssignSeats,
       canStartRound:Boolean(game.user?.isGM&&["idle","between"].includes(state.phase)&&alive.length>=2),
       canPassTurn:Boolean(game.user?.isGM&&activePhase),
-      canMarkLoser:Boolean(game.user?.isGM&&activePhase&&loserOptions.length>1),
+      canMarkLoser:Boolean(game.user?.isGM&&revealedPhase&&loserOptions.length>1),
       loserOptions,
       activePlayerName:state.activeUserId?game.users.get(state.activeUserId)?.name??"":"",
+      challengerName:state.challengerId?game.users.get(state.challengerId)?.name??"":"",
       pot:money(pot),
       totalPot:money(state.totalPot),
       houseCut:money(state.houseCut),
@@ -157,6 +163,10 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     this.element.querySelector("[data-liars-peek]")?.addEventListener("click",()=>{
       this._peekOpen=!this._peekOpen;
       this._syncPeek();
+    });
+
+    this.element.querySelector("[data-liars-call]")?.addEventListener("click",()=>{
+      void requestLiarsCall(game.user?.id);
     });
 
     if(!game.user?.isGM)return;
