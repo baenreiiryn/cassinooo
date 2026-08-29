@@ -2,7 +2,7 @@
   <header class="cassinooo-table-header cassinooo-dragon-header">
     <div>
       <h2>Dados do Dragão</h2>
-      <p>O crupiê rola d4, d6 e d8 dentro do copo. Aposte depois que o copo fechar.</p>
+      <p>O crupiê rola d4, d6 e d8 sobre a mesa e cobre o resultado com o copo.</p>
     </div>
     {{#if isGM}}
       <div class="cassinooo-gm-controls">
@@ -25,9 +25,17 @@
       </section>
 
       <section class="cassinooo-dragon-center cassinooo-dragon-25d-center">
-        <div class="cassinooo-dragon-25d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}" data-dragon-2d-scene>
+        <div class="cassinooo-dragon-25d-scene {{#if idle}}is-idle{{/if}} {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}" data-dragon-2d-scene>
           <div class="cassinooo-dragon-floor-glow"></div>
           <div class="cassinooo-dragon-floor-shadow"></div>
+
+          {{#if rolling}}
+            <div class="cassinooo-dragon-roll-arena" data-dragon-roll-arena aria-label="Dados rolando sobre a mesa">
+              <div class="cassinooo-dragon-die die-d4 table-rolling-die" data-dragon-die="d4" aria-label="d4 rolando"></div>
+              <div class="cassinooo-dragon-die die-d6 table-rolling-die" data-dragon-die="d6" aria-label="d6 rolando"></div>
+              <div class="cassinooo-dragon-die die-d8 table-rolling-die" data-dragon-die="d8" aria-label="d8 rolando"></div>
+            </div>
+          {{/if}}
 
           {{#if revealed}}
             <div class="cassinooo-dragon-result-dice" aria-label="Resultado dos Dados do Dragão">
@@ -38,21 +46,12 @@
           {{/if}}
 
           <div class="cassinooo-dragon-cup-wrap" aria-hidden="true">
-            {{#if rolling}}
-              <div class="cassinooo-dragon-dice-track" data-dragon-dice-track>
-                <div class="cassinooo-dragon-die die-d4 tracked-die" data-dragon-die="d4"><span>4</span></div>
-                <div class="cassinooo-dragon-die die-d6 tracked-die" data-dragon-die="d6"><span>6</span></div>
-                <div class="cassinooo-dragon-die die-d8 tracked-die" data-dragon-die="d8"><span>8</span></div>
-              </div>
-            {{/if}}
-
             <div class="cassinooo-dragon-cup-shadow"></div>
             <div class="cassinooo-dragon-cup">
               <div class="cassinooo-dragon-cup-bottom"></div>
               <div class="cassinooo-dragon-cup-body"></div>
               <div class="cassinooo-dragon-cup-grain"></div>
               <div class="cassinooo-dragon-cup-highlight"></div>
-              <div class="cassinooo-dragon-cup-mouth"><div></div></div>
             </div>
           </div>
         </div>
@@ -115,5 +114,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Dados 2D rastreados dentro do copo, com profundidade simulada por movimento, textura, luz e sombra.</footer>
+  <footer class="cassinooo-table-footer">Os dados rolam sobre a mesa sem revelar valores; o resultado só aparece quando o Mestre ergue o copo.</footer>
 </section>
