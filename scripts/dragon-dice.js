@@ -6,6 +6,11 @@ export const DRAGON_DICE_BETS_SETTING = "dragonDiceBets";
 
 const EMPTY_SEATS = { 0:"",1:"",2:"",3:"",4:"",5:"" };
 export const DRAGON_VISUAL_SEAT_ORDER = [1,5,4,3,2,0];
+export const DRAGON_HEART_RANGES = [
+  { id:"low", label:"4–8", min:4, max:8 },
+  { id:"mid", label:"9–13", min:9, max:13 },
+  { id:"high", label:"14–18", min:14, max:18 }
+];
 export const DRAGON_BET_TYPES = [
   { id:"heart", label:"❤️ Coração do Dragão", payout:1 },
   { id:"gold", label:"☀️ Escamas Douradas", payout:6 },
@@ -14,7 +19,7 @@ export const DRAGON_BET_TYPES = [
   { id:"perfect", label:"👑 Dragão Perfeito", payout:175 }
 ];
 
-function emptyBets(){ return { heart:0, gold:0, black:0, heads:0, perfect:0 }; }
+function emptyBets(){ return { heart:0, heartRange:"mid", gold:0, black:0, heads:0, perfect:0 }; }
 function emptyState(){
   return {
     phase:"idle",
@@ -27,6 +32,7 @@ function emptyState(){
   };
 }
 function sanitize(value){ const n=Number(value); return Number.isFinite(n) ? Math.max(0,Math.floor(n)) : 0; }
+function sanitizeHeartRange(value){ return DRAGON_HEART_RANGES.some(range=>range.id===value) ? value : "mid"; }
 function primaryGM(){ return game.users.filter(u=>u.isGM&&u.active).sort((a,b)=>a.id.localeCompare(b.id))[0] ?? null; }
 function isPrimaryGM(){ return Boolean(game.user?.isGM && primaryGM()?.id===game.user.id); }
 function sleep(ms){ return new Promise(resolve=>window.setTimeout(resolve,ms)); }
@@ -73,16 +79,37 @@ async function applyBet(userId,betId,value){
   if(state.phase!=="betting") return false;
   if(!game.users.get(userId) || !DRAGON_BET_TYPES.some(b=>b.id===betId)) return false;
   const bets=getDragonDiceBets();
-  bets[userId] ??= emptyBets();
+  bets[userId] = {...emptyBets(),...(bets[userId]??{})};
   bets[userId][betId]=sanitize(value);
+  bets[userId].heartRange=sanitizeHeartRange(bets[userId].heartRange);
   await saveBets(bets);
   return true;
 }
+
+async function applyHeartRange(userId,rangeId){
+  const state=getDragonDiceState();
+  if(state.phase!=="betting" || !game.users.get(userId)) return false;
+  const bets=getDragonDiceBets();
+  bets[userId] = {...emptyBets(),...(bets[userId]??{})};
+  bets[userId].heartRange=sanitizeHeartRange(rangeId);
+  await saveBets(bets);
+  return true;
+}
+
 export async function requestDragonBetChange(userId,betId,value){
   if(!userId) return false;
   if(game.user?.isGM) return applyBet(userId,betId,value);
   if(game.user?.id!==userId) return false;
   game.socket.emit(SOCKET_NAME,{type:"dragon-dice-bet",userId,betId,value:sanitize(value)});
+  return true;
+}
+
+export async function requestDragonHeartRangeChange(userId,rangeId){
+  if(!userId) return false;
+  const safeRange=sanitizeHeartRange(rangeId);
+  if(game.user?.isGM) return applyHeartRange(userId,safeRange);
+  if(game.user?.id!==userId) return false;
+  game.socket.emit(SOCKET_NAME,{type:"dragon-dice-heart-range",userId,rangeId:safeRange});
   return true;
 }
 
@@ -114,21 +141,24 @@ export async function gmRollDragonDice(){
   state.dice=dice;
   state.rollNonce=`${Date.now()}-${Math.random()}`;
   state.lastAnimation={nonce:state.rollNonce,type:"cup-roll"};
-  state.message="O crupiê sacode os dados dentro do copo...";
+  state.message="Os três dados rolam sobre a mesa...";
   await saveState(state);
 
-  // The in-table CSS 3D animation owns the complete rolling presentation.
   await sleep(2200);
   state.phase="betting";
   state.lastAnimation={nonce:`${Date.now()}-${Math.random()}`,type:"cup-cover"};
-  state.message="O copo está virado sobre os dados. Façam suas apostas.";
+  state.message="O copo cobre o resultado. Façam suas apostas.";
   await saveState(state);
   return true;
 }
 
-function winFor(type,d){
+function winFor(type,d,wager){
   const sum=d.d4+d.d6+d.d8;
-  if(type==="heart") return sum>=9&&sum<=12;
+  if(type==="heart"){
+    const selected=sanitizeHeartRange(wager.heartRange);
+    const range=DRAGON_HEART_RANGES.find(item=>item.id===selected) ?? DRAGON_HEART_RANGES[1];
+    return sum>=range.min&&sum<=range.max;
+  }
   if(type==="gold") return d.d4%2===0&&d.d6%2===0&&d.d8%2===0;
   if(type==="black") return d.d4%2===1&&d.d6%2===1&&d.d8%2===1;
   if(type==="heads") return d.d4===d.d6&&d.d6===d.d8;
@@ -141,15 +171,17 @@ function settle(dice){
   for(const userId of getDragonDiceSeats().filter(Boolean)){
     const user=game.users.get(userId); if(!user) continue;
     const wager={...emptyBets(),...(bets[userId]??{})};
+    wager.heartRange=sanitizeHeartRange(wager.heartRange);
     let totalBet=0, delta=0;
     const breakdown=[];
     for(const type of DRAGON_BET_TYPES){
       const amount=sanitize(wager[type.id]); if(!amount) continue;
       totalBet+=amount;
-      const won=winFor(type.id,dice);
+      const won=winFor(type.id,dice,wager);
       const part=won ? amount*type.payout : -amount;
       delta+=part;
-      breakdown.push(`${type.label.replace(/^\S+\s/,"")}: ${won?`+${part}`:part} PO`);
+      const extra=type.id==="heart" ? ` (${DRAGON_HEART_RANGES.find(r=>r.id===wager.heartRange)?.label??"9–13"})` : "";
+      breakdown.push(`${type.label.replace(/^\S+\s/,"")}${extra}: ${won?`+${part}`:part} PO`);
     }
     rows.push({userId,name:user.name,totalBet,delta,breakdown:breakdown.join(" • ")||"Sem apostas"});
   }
@@ -184,4 +216,5 @@ export async function resetDragonDice(){ if(!game.user?.isGM) return false; awai
 export async function handleDragonDiceSocket(message){
   if(!message) return;
   if(message.type==="dragon-dice-bet" && isPrimaryGM()) await applyBet(message.userId,message.betId,message.value);
+  if(message.type==="dragon-dice-heart-range" && isPrimaryGM()) await applyHeartRange(message.userId,message.rangeId);
 }
