@@ -81,7 +81,10 @@ async function applyWager(userId,value){
   const wagers=getLiarsDiceWagers();
   const previous=sanitizeWager(wagers[userId]);
 
-  if(state.phase==="idle"||state.phase==="between"){
+  if(state.phase==="idle"){
+    wagers[userId]=next;
+  }else if(state.phase==="between"){
+    if(next<previous) return false;
     wagers[userId]=next;
   }else if(state.phase==="active"&&state.activeUserId===userId){
     if(next<previous) return false;
