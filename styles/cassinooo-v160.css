@@ -1,0 +1,234 @@
+/* Cassinooo 0.16.0 — Liar's Dice + unified casino scoreboards */
+
+/* ---------- Shared result scoreboard ---------- */
+.cassinooo-results-overlay,
+.cassinooo-beholdem-results-overlay,
+.cassinooo-dragon-results-overlay {
+  position:absolute !important;
+  inset:0 !important;
+  z-index:60 !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:26px !important;
+  box-sizing:border-box !important;
+  background:rgba(7,2,2,.58) !important;
+  backdrop-filter:blur(3px) !important;
+  animation:cassinooo-scoreboard-in .28s ease both;
+}
+@keyframes cassinooo-scoreboard-in { from{opacity:0} to{opacity:1} }
+
+.cassinooo-results-card,
+.cassinooo-beholdem-results-card,
+.cassinooo-dragon-results-card {
+  width:min(690px,88%) !important;
+  max-height:78% !important;
+  overflow:auto !important;
+  padding:16px 18px !important;
+  box-sizing:border-box !important;
+  border:2px solid #d4a65b !important;
+  border-radius:14px !important;
+  background:linear-gradient(180deg,rgba(48,13,10,.98),rgba(24,6,5,.98)) !important;
+  box-shadow:0 0 38px rgba(219,142,45,.42),0 18px 38px rgba(0,0,0,.58) !important;
+  color:#f4e5c9 !important;
+}
+.cassinooo-results-card h3,
+.cassinooo-beholdem-results-card h3,
+.cassinooo-dragon-results-card h3 {
+  margin:0 0 9px !important;
+  color:#f1d08e !important;
+  text-align:center !important;
+}
+.cassinooo-results-summary {
+  display:flex;
+  justify-content:center;
+  gap:12px 18px;
+  flex-wrap:wrap;
+  margin:0 0 10px;
+  padding:7px 10px;
+  border:1px solid rgba(222,179,98,.22);
+  border-radius:9px;
+  background:rgba(0,0,0,.18);
+  color:#cdb68b;
+  font-size:.72rem;
+}
+.cassinooo-results-summary strong { color:#fff0b9; }
+.cassinooo-results-card table,
+.cassinooo-beholdem-results-card table,
+.cassinooo-dragon-results-card table { width:100% !important; border-collapse:collapse !important; font-size:.72rem !important; }
+.cassinooo-results-card th,.cassinooo-results-card td,
+.cassinooo-beholdem-results-card th,.cassinooo-beholdem-results-card td,
+.cassinooo-dragon-results-card th,.cassinooo-dragon-results-card td {
+  padding:6px 7px !important;
+  border-bottom:1px solid rgba(222,179,98,.2) !important;
+  text-align:left;
+}
+.cassinooo-results-card th,
+.cassinooo-beholdem-results-card th,
+.cassinooo-dragon-results-card th { color:#d9bd84 !important; }
+.cassinooo-results-card tr.winner,
+.cassinooo-beholdem-results-card tr.winner { background:rgba(182,119,33,.15) !important; }
+.cassinooo-results-card .positive,
+.cassinooo-beholdem-results-card .positive,
+.cassinooo-dragon-results-card .positive { color:#9fe0a4 !important; font-weight:900 !important; }
+.cassinooo-results-card .negative,
+.cassinooo-beholdem-results-card .negative,
+.cassinooo-dragon-results-card .negative { color:#ef9b91 !important; font-weight:900 !important; }
+
+/* ---------- Liar's Dice app shell ---------- */
+.cassinooo-liars-dice-table .window-content { padding:0; overflow:hidden; background:#120706; }
+.cassinooo-liars-shell {
+  height:100%; min-height:100%; display:flex; flex-direction:column; overflow:hidden;
+  padding:10px; box-sizing:border-box; color:#f5e7cf;
+  background:radial-gradient(circle at 50% 8%,#42160f,#140706 72%);
+}
+.cassinooo-liars-header { flex:0 0 auto; margin-bottom:5px; }
+.cassinooo-liars-header h2 { font-size:1.2rem; }
+.cassinooo-liars-header p { font-size:.72rem; }
+.cassinooo-liars-gm-controls select { min-width:155px; height:31px; font-size:.68rem; }
+
+.cassinooo-liars-turn-banner {
+  flex:0 0 auto; align-self:center; display:flex; align-items:center; gap:9px;
+  margin:0 0 6px; padding:4px 11px; border:1px solid rgba(244,190,81,.6); border-radius:999px;
+  background:rgba(41,12,8,.92); box-shadow:0 0 14px rgba(238,163,43,.25); color:#e9cb8e;
+}
+.cassinooo-liars-turn-banner span { font-size:.6rem; letter-spacing:.14em; font-weight:900; }
+.cassinooo-liars-turn-banner strong { color:#fff0bb; }
+.cassinooo-liars-turn-banner em { color:#c8ae7a; font-size:.68rem; font-style:normal; }
+.cassinooo-liars-turn-banner.passive { opacity:.82; }
+
+.cassinooo-liars-viewport { flex:1 1 auto; min-height:300px; min-width:0; position:relative; overflow:hidden; }
+.cassinooo-liars-felt {
+  position:relative; width:1100px; min-width:1100px; height:700px; overflow:hidden;
+  border:14px solid #3c2418; border-radius:50% / 43%; box-sizing:border-box;
+  background:
+    radial-gradient(ellipse at 50% 48%,rgba(113,28,22,.98) 0%,rgba(70,18,15,.98) 53%,rgba(31,8,7,.99) 100%);
+  box-shadow:inset 0 0 0 2px #9c6b37,inset 0 0 75px rgba(0,0,0,.45),0 14px 34px rgba(0,0,0,.5);
+}
+.cassinooo-liars-felt::after {
+  content:""; position:absolute; inset:18px; border:1px solid rgba(225,176,91,.15); border-radius:50% / 43%; pointer-events:none;
+}
+.cassinooo-liars-table-marking {
+  position:absolute; left:50%; top:45%; transform:translate(-50%,-50%); z-index:1;
+  display:grid; gap:5px; place-items:center; color:rgba(236,198,126,.34); text-align:center; pointer-events:none;
+}
+.cassinooo-liars-table-marking strong { font-size:2rem; letter-spacing:.16em; }
+.cassinooo-liars-table-marking span { font-size:.72rem; letter-spacing:.05em; }
+
+/* Clockwise seats: 1 upper-right, 2 right, 3 lower-right, 4 lower-left, 5 left, 6 upper-left. */
+.cassinooo-liars-seat {
+  position:absolute; width:214px; height:188px; padding:7px 8px; z-index:10;
+  border:1px solid rgba(218,158,83,.58); border-radius:12px; box-sizing:border-box;
+  background:linear-gradient(180deg,rgba(35,8,7,.88),rgba(20,5,5,.9));
+  box-shadow:0 6px 16px rgba(0,0,0,.4); text-align:center;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,opacity .18s ease;
+}
+.cassinooo-liars-seat.seat-upper-right { left:68%; top:8%; }
+.cassinooo-liars-seat.seat-right { left:78.5%; top:36%; }
+.cassinooo-liars-seat.seat-lower-right { left:65.5%; top:68%; }
+.cassinooo-liars-seat.seat-lower-left { left:15%; top:68%; }
+.cassinooo-liars-seat.seat-left { left:2%; top:36%; }
+.cassinooo-liars-seat.seat-upper-left { left:17%; top:8%; }
+.cassinooo-liars-seat.active-turn {
+  border-color:#ffd36b; transform:scale(1.025);
+  box-shadow:0 0 0 2px rgba(255,211,107,.32),0 0 28px rgba(255,174,55,.8),0 7px 16px rgba(0,0,0,.45);
+}
+.cassinooo-liars-seat.eliminated { opacity:.58; filter:saturate(.45); }
+.cassinooo-liars-seat-head { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+.cassinooo-liars-seat .cassinooo-seat-number { margin:0; font-size:.58rem; }
+.cassinooo-liars-dice-count {
+  padding:2px 6px; border:1px solid rgba(222,178,96,.35); border-radius:999px; color:#f0d393; font-size:.58rem;
+}
+.cassinooo-liars-seat > select { width:100%; height:25px; min-height:25px; margin:3px 0 2px; font-size:.66rem; }
+.cassinooo-liars-seat .cassinooo-player-name { font-size:.76rem; }
+.cassinooo-liars-seat .cassinooo-status { margin:0; font-size:.56rem; }
+.cassinooo-liars-wager {
+  display:grid; grid-template-columns:1fr 58px; align-items:center; gap:5px; margin:3px 0 1px;
+  color:#e3c486; font-size:.58rem; font-weight:800; text-align:left;
+}
+.cassinooo-liars-wager input { width:58px; height:22px; padding:1px 4px; font-size:.64rem; text-align:right; }
+.cassinooo-liars-eliminated { margin-top:25px; color:#d99187; font-size:.74rem; font-weight:900; text-transform:uppercase; }
+
+/* ---------- Private mini dice scene ---------- */
+.cassinooo-liars-dice-stage {
+  position:relative; width:152px; height:78px; margin:2px auto 0; overflow:visible; isolation:isolate;
+}
+.cassinooo-liars-roll-zone { position:absolute; left:50%; top:31px; width:118px; height:42px; transform:translateX(-50%); z-index:3; }
+.cassinooo-liars-die {
+  position:absolute; left:46px; top:8px; width:25px; height:25px; display:grid; place-items:center;
+  border:1px solid rgba(255,239,205,.68); border-radius:5px;
+  background:
+    radial-gradient(circle at 24% 22%,rgba(255,255,255,.22) 0 1px,transparent 1.3px) 0 0/6px 6px,
+    linear-gradient(145deg,#f0d7a3,#b98a50 52%,#72502e);
+  box-shadow:inset 3px 3px 5px rgba(255,255,255,.14),inset -4px -5px 6px rgba(60,35,18,.2),0 5px 5px rgba(0,0,0,.35);
+  color:#3b1d12; font-size:.78rem; font-weight:1000; text-shadow:0 1px rgba(255,255,255,.35);
+  opacity:.98;
+}
+.cassinooo-liars-die span:empty { display:none; }
+.cassinooo-liars-die.die-0 { transform:translate(-34px,-4px) rotate(-13deg); }
+.cassinooo-liars-die.die-1 { transform:translate(-5px,4px) rotate(8deg); }
+.cassinooo-liars-die.die-2 { transform:translate(26px,-2px) rotate(14deg); }
+.cassinooo-liars-die.die-3 { transform:translate(-20px,15px) rotate(5deg); }
+.cassinooo-liars-die.die-4 { transform:translate(17px,16px) rotate(-9deg); }
+
+.cassinooo-liars-cup {
+  position:absolute; left:50%; top:2px; width:92px; height:72px; margin-left:-46px; z-index:7;
+  transform:translateY(0); transform-origin:50% 100%;
+  filter:drop-shadow(0 7px 6px rgba(0,0,0,.4));
+}
+.cassinooo-liars-cup-body {
+  position:absolute; left:7px; top:17px; width:78px; height:52px;
+  clip-path:polygon(20% 0,80% 0,98% 100%,2% 100%); border-radius:10px 10px 4px 4px;
+  background:
+    repeating-linear-gradient(98deg,rgba(255,227,189,.05) 0 1px,transparent 1px 5px),
+    radial-gradient(ellipse at 38% 20%,rgba(255,196,131,.18),transparent 31%),
+    linear-gradient(90deg,#2c100b,#7a3220 20%,#ac5833 45%,#74301f 72%,#260d09);
+  box-shadow:inset 6px 0 8px rgba(255,188,119,.08),inset -8px 0 10px rgba(0,0,0,.3);
+}
+.cassinooo-liars-cup-grain {
+  position:absolute; left:10px; top:20px; width:72px; height:46px; z-index:2;
+  clip-path:polygon(19% 0,81% 0,97% 100%,3% 100%); opacity:.42;
+  background:radial-gradient(circle,rgba(255,226,188,.16) 0 1px,transparent 1.4px) 0 0/9px 10px;
+}
+.cassinooo-liars-cup-bottom {
+  position:absolute; left:25px; top:10px; width:42px; height:14px; z-index:4; border:1px solid #542116; border-radius:50%;
+  background:radial-gradient(ellipse at 44% 32%,rgba(236,153,96,.22),transparent 38%),linear-gradient(#7b3622,#3a130e 72%);
+  box-shadow:0 2px 3px rgba(0,0,0,.3);
+}
+.cassinooo-liars-cup-highlight { position:absolute; left:28px; top:27px; width:10px; height:32px; z-index:3; border-radius:50%; background:rgba(255,217,176,.16); filter:blur(1px); }
+.cassinooo-liars-cup-shadow { position:absolute; left:50%; bottom:1px; width:91px; height:14px; transform:translateX(-50%) scaleY(.45); border-radius:50%; background:rgba(0,0,0,.44); filter:blur(4px); z-index:2; }
+
+/* Roll first; cup descends only at the end. */
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-cup { animation:cassinooo-liars-cup-cover 1.82s cubic-bezier(.18,.72,.18,1) both; }
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die { color:transparent; text-shadow:none; }
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die:nth-child(1){animation:cassinooo-liars-die-a .44s linear infinite;}
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die:nth-child(2){animation:cassinooo-liars-die-b .39s linear infinite;}
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die:nth-child(3){animation:cassinooo-liars-die-c .47s linear infinite;}
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die:nth-child(4){animation:cassinooo-liars-die-d .42s linear infinite;}
+.cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die:nth-child(5){animation:cassinooo-liars-die-e .51s linear infinite;}
+@keyframes cassinooo-liars-cup-cover {
+  0%,68%{transform:translateY(-73px);opacity:0}
+  75%{transform:translateY(-55px);opacity:.55}
+  88%{transform:translateY(-20px);opacity:1}
+  100%{transform:translateY(0);opacity:1}
+}
+@keyframes cassinooo-liars-die-a {0%{transform:translate(-42px,-4px) rotate(0)}25%{transform:translate(5px,-11px) rotate(95deg)}55%{transform:translate(29px,8px) rotate(205deg)}80%{transform:translate(-12px,15px) rotate(300deg)}100%{transform:translate(-42px,-4px) rotate(360deg)}}
+@keyframes cassinooo-liars-die-b {0%{transform:translate(29px,9px) rotate(0)}28%{transform:translate(-18px,-10px) rotate(-110deg)}60%{transform:translate(-37px,10px) rotate(-230deg)}82%{transform:translate(9px,15px) rotate(-310deg)}100%{transform:translate(29px,9px) rotate(-360deg)}}
+@keyframes cassinooo-liars-die-c {0%{transform:translate(-8px,14px) rotate(0)}30%{transform:translate(35px,-8px) rotate(120deg)}58%{transform:translate(15px,11px) rotate(220deg)}78%{transform:translate(-35px,-5px) rotate(305deg)}100%{transform:translate(-8px,14px) rotate(360deg)}}
+@keyframes cassinooo-liars-die-d {0%{transform:translate(38px,-5px) rotate(0)}24%{transform:translate(-4px,14px) rotate(-100deg)}51%{transform:translate(-37px,-7px) rotate(-210deg)}79%{transform:translate(12px,-11px) rotate(-305deg)}100%{transform:translate(38px,-5px) rotate(-360deg)}}
+@keyframes cassinooo-liars-die-e {0%{transform:translate(-31px,11px) rotate(0)}27%{transform:translate(21px,-10px) rotate(105deg)}57%{transform:translate(36px,12px) rotate(215deg)}81%{transform:translate(-8px,-8px) rotate(310deg)}100%{transform:translate(-31px,11px) rotate(360deg)}}
+
+/* Covered state is static. Only the owner may locally lift it. */
+.cassinooo-liars-dice-stage.is-covered .cassinooo-liars-cup { transform:translateY(0); transition:transform .42s cubic-bezier(.2,.8,.2,1),filter .3s ease; }
+.cassinooo-liars-dice-stage.is-covered .cassinooo-liars-roll-zone { opacity:.08; transition:opacity .28s ease; }
+.cassinooo-liars-dice-stage.is-peeking .cassinooo-liars-cup { transform:translate(44px,-49px) rotate(8deg) scale(.9); filter:brightness(1.05) drop-shadow(0 10px 7px rgba(0,0,0,.28)); }
+.cassinooo-liars-dice-stage.is-peeking .cassinooo-liars-roll-zone { opacity:1; }
+.cassinooo-liars-peek {
+  margin-top:1px; min-height:22px; height:22px; padding:1px 8px; border:1px solid rgba(220,173,88,.45); border-radius:999px;
+  background:rgba(72,24,16,.88); color:#edcf91; font-size:.56rem;
+}
+.cassinooo-liars-seat .cassinooo-turn-indicator { margin-top:1px; font-size:.53rem; }
+
+@media (prefers-reduced-motion:reduce){
+  .cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-cup,
+  .cassinooo-liars-dice-stage.is-rolling .cassinooo-liars-die { animation-duration:1ms !important; }
+}
