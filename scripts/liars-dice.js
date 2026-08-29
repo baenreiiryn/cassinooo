@@ -16,6 +16,7 @@ function emptyState(){
     turnOrder:[],
     activeTurn:-1,
     activeUserId:null,
+    challengerId:null,
     lastLoserId:null,
     winnerId:null,
     totalPot:0,
@@ -41,7 +42,11 @@ export function registerLiarsDiceSettings(){
   game.settings.register(MODULE_ID,LIARS_DICE_WAGERS_SETTING,{name:"Apostas do Liar's Dice",scope:"world",config:false,type:Object,default:{}});
 }
 
-export function getLiarsDiceState(){ return foundry.utils.deepClone(game.settings.get(MODULE_ID,LIARS_DICE_STATE_SETTING)??emptyState()); }
+export function getLiarsDiceState(){
+  const state=foundry.utils.deepClone(game.settings.get(MODULE_ID,LIARS_DICE_STATE_SETTING)??emptyState());
+  state.challengerId??=null;
+  return state;
+}
 export function getLiarsDiceSeats(){
   const stored=game.settings.get(MODULE_ID,LIARS_DICE_SEATS_SETTING)??EMPTY_SEATS;
   return Array.from({length:6},(_,i)=>stored[i]??"");
@@ -101,6 +106,25 @@ export async function requestLiarsWagerChange(userId,value){
   return true;
 }
 
+async function applyLiarsCall(userId){
+  const state=getLiarsDiceState();
+  if(state.phase!=="active"||state.activeUserId!==userId||!game.users.get(userId)) return false;
+  state.phase="revealed";
+  state.challengerId=userId;
+  const name=game.users.get(userId)?.name??"Jogador";
+  state.message=`${name} gritou MENTIROSO! Todos os dados foram revelados.`;
+  await saveState(state);
+  return true;
+}
+
+export async function requestLiarsCall(userId){
+  if(!userId||game.user?.isGM||game.user?.id!==userId) return false;
+  const state=getLiarsDiceState();
+  if(state.phase!=="active"||state.activeUserId!==userId) return false;
+  game.socket.emit(SOCKET_NAME,{type:"liars-dice-call",userId,requesterId:game.user.id});
+  return true;
+}
+
 function getRollClass(){ return CONFIG?.Dice?.rolls?.[0]??foundry?.dice?.Roll??globalThis.Roll; }
 async function rollD6Pool(count){
   const RollClass=getRollClass();
@@ -135,6 +159,7 @@ export async function gmStartLiarsRound(){
   state.turnOrder=order;
   state.activeTurn=-1;
   state.activeUserId=null;
+  state.challengerId=null;
   state.dice={};
   state.lastLoserId=null;
   state.message=`Rodada ${state.round}: os dados estão rolando...`;
@@ -189,7 +214,7 @@ function buildFinalResults(state,winnerId){
 export async function gmMarkLiarsLoser(userId){
   if(!game.user?.isGM) return false;
   const state=getLiarsDiceState();
-  if(state.phase!=="active"||!userId||Number(state.diceCounts?.[userId]??0)<=0) return false;
+  if(state.phase!=="revealed"||!userId||Number(state.diceCounts?.[userId]??0)<=0) return false;
 
   state.diceCounts[userId]=Math.max(0,Number(state.diceCounts[userId])-1);
   state.lastLoserId=userId;
@@ -197,6 +222,7 @@ export async function gmMarkLiarsLoser(userId){
   state.turnOrder=[];
   state.activeTurn=-1;
   state.activeUserId=null;
+  state.challengerId=null;
 
   const alive=aliveOrder(state);
   if(alive.length===1){
@@ -230,5 +256,9 @@ export async function handleLiarsDiceSocket(message){
   if(!message) return;
   if(message.type==="liars-dice-wager"&&isPrimaryGM()&&message.requesterId===message.userId){
     await applyWager(message.userId,message.value);
+    return;
+  }
+  if(message.type==="liars-dice-call"&&isPrimaryGM()&&message.requesterId===message.userId){
+    await applyLiarsCall(message.userId);
   }
 }
