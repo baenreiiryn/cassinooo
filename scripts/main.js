@@ -5,12 +5,13 @@ import { handleBlackjackSocket, registerBlackjackSetting } from "./blackjack.js"
 import { handleRouletteSocket, recoverRouletteSpin, registerRouletteSettings } from "./roulette.js";
 import { handleBeholdemSocket, registerBeholdemSettings } from "./beholdem.js";
 import { handleDragonDiceSocket, registerDragonDiceSettings } from "./dragon-dice.js";
+import { handleLiarsDiceSocket, registerLiarsDiceSettings } from "./liars-dice.js";
 
 let blackjackTable = null;
 let rouletteTable = null;
 let beholdemTable = null;
 let dragonDiceTable = null;
-const futureGames = new Map();
+let liarsDiceTable = null;
 
 async function getBlackjackTable() {
   if (!blackjackTable) {
@@ -45,12 +46,12 @@ async function getDragonDiceTable() {
   return dragonDiceTable;
 }
 
-async function getFutureGame(id, config) {
-  if (!futureGames.has(id)) {
-    const { GamePlaceholder } = await import("../applications/game-placeholder.js");
-    futureGames.set(id, new GamePlaceholder({ id, ...config }));
+async function getLiarsDiceTable() {
+  if (!liarsDiceTable) {
+    const { LiarsDiceTable } = await import("../applications/liars-dice-table.js");
+    liarsDiceTable = new LiarsDiceTable();
   }
-  return futureGames.get(id);
+  return liarsDiceTable;
 }
 
 function reportOpenError(gameName, err) {
@@ -61,34 +62,26 @@ function reportOpenError(gameName, err) {
 function openBlackjack() {
   void getBlackjackTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Blackjack", err));
 }
-
 function openRoulette() {
   void recoverRouletteSpin();
   void getRouletteTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Roleta", err));
 }
-
 function openBeholdem() {
   void getBeholdemTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Beholdem", err));
 }
-
 function openDragonDice() {
   void getDragonDiceTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Dados do Dragão", err));
 }
-
 function openLiarsDice() {
-  void getFutureGame("liars-dice", {
-    title: "Liar's Dice",
-    icon: "fa-solid fa-dice",
-    gameName: "Liar's Dice",
-    description: "Mesa de Liar's Dice do Cassinooo. Será implementada em seguida."
-  }).then((app) => app.render({ force: true })).catch((err) => reportOpenError("Liar's Dice", err));
+  void getLiarsDiceTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Liar's Dice", err));
 }
 
 async function refreshOpenBlackjack() { if (blackjackTable?.rendered) await blackjackTable.render({ force: true }); }
 async function refreshOpenRoulette() { if (rouletteTable?.rendered) await rouletteTable.render({ force: true }); }
 async function refreshOpenBeholdem() { if (beholdemTable?.rendered) await beholdemTable.render({ force: true }); }
 async function refreshOpenDragonDice() { if (dragonDiceTable?.rendered) await dragonDiceTable.render({ force: true }); }
-async function refreshOpenCasinoTables() { await Promise.all([refreshOpenBlackjack(), refreshOpenRoulette(), refreshOpenBeholdem(), refreshOpenDragonDice()]); }
+async function refreshOpenLiarsDice() { if (liarsDiceTable?.rendered) await liarsDiceTable.render({ force: true }); }
+async function refreshOpenCasinoTables() { await Promise.all([refreshOpenBlackjack(), refreshOpenRoulette(), refreshOpenBeholdem(), refreshOpenDragonDice(), refreshOpenLiarsDice()]); }
 
 function makeLauncherButton({ id, icon, label, onClick }) {
   const button = document.createElement("button");
@@ -109,7 +102,6 @@ function resolveHookElement(app, element) {
 function injectJournalButtons(app, element) {
   const root = resolveHookElement(app, element);
   if (!root || root.querySelector("#cassinooo-game-launchers")) return;
-
   const wrapper = document.createElement("div");
   wrapper.id = "cassinooo-game-launchers";
   wrapper.className = "cassinooo-journal-launcher";
@@ -120,10 +112,8 @@ function injectJournalButtons(app, element) {
     makeLauncherButton({ id: "cassinooo-open-dragon-dice", icon: "fa-solid fa-dice-d20", label: "Dados do Dragão", onClick: openDragonDice }),
     makeLauncherButton({ id: "cassinooo-open-liars-dice", icon: "fa-solid fa-dice", label: "Liar's Dice", onClick: openLiarsDice })
   );
-
   const footer = root.querySelector("footer.directory-footer, .directory-footer");
-  if (footer) footer.append(wrapper);
-  else root.append(wrapper);
+  if (footer) footer.append(wrapper); else root.append(wrapper);
 }
 
 function setupApplicationScale(app) {
@@ -131,6 +121,7 @@ function setupApplicationScale(app) {
   if (name === "BlackjackTable") setupScaledBoard(app, { boardSelector: ".cassinooo-felt", designWidth: 1040, designHeight: 693 });
   if (name === "RouletteTable") setupScaledBoard(app, { boardSelector: ".cassinooo-roulette-felt", designWidth: 1100, designHeight: 690 });
   if (name === "DragonDiceTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-dragon-viewport", boardSelector: ".cassinooo-dragon-felt", designWidth: 1100, designHeight: 700 });
+  if (name === "LiarsDiceTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-liars-viewport", boardSelector: ".cassinooo-liars-felt", designWidth: 1100, designHeight: 700 });
 }
 
 Hooks.once("init", () => {
@@ -141,6 +132,7 @@ Hooks.once("init", () => {
   registerRouletteSettings();
   registerBeholdemSettings();
   registerDragonDiceSettings();
+  registerLiarsDiceSettings();
 });
 
 Hooks.once("ready", () => {
@@ -150,10 +142,12 @@ Hooks.once("ready", () => {
     await handleRouletteSocket(message);
     await handleBeholdemSocket(message);
     await handleDragonDiceSocket(message);
+    await handleLiarsDiceSocket(message);
     if (["seats-updated", "blackjack-updated"].includes(message?.type)) await refreshOpenBlackjack();
     if (["roulette-seats-updated", "roulette-updated"].includes(message?.type)) await refreshOpenRoulette();
     if (["beholdem-seats-updated", "beholdem-updated"].includes(message?.type)) await refreshOpenBeholdem();
     if (["dragon-dice-seats-updated", "dragon-dice-updated"].includes(message?.type)) await refreshOpenDragonDice();
+    if (["liars-dice-seats-updated", "liars-dice-updated"].includes(message?.type)) await refreshOpenLiarsDice();
     if (message?.type === "backgrounds-updated") await refreshOpenCasinoTables();
   });
 });
@@ -162,6 +156,7 @@ Hooks.on("cassinoooBlackjackUpdated", refreshOpenBlackjack);
 Hooks.on("cassinoooRouletteUpdated", refreshOpenRoulette);
 Hooks.on("cassinoooBeholdemUpdated", refreshOpenBeholdem);
 Hooks.on("cassinoooDragonDiceUpdated", refreshOpenDragonDice);
+Hooks.on("cassinoooLiarsDiceUpdated", refreshOpenLiarsDice);
 Hooks.on("cassinoooBackgroundsUpdated", refreshOpenCasinoTables);
 Hooks.on("renderJournalDirectory", injectJournalButtons);
 Hooks.on("renderApplicationV2", (app, element) => {
