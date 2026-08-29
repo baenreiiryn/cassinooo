@@ -4,7 +4,8 @@ export const BACKGROUND_SETTINGS = {
   blackjack: "blackjackBackground",
   roulette: "rouletteBackground",
   beholdem: "beholdemBackground",
-  dragonDice: "dragonDiceBackground"
+  dragonDice: "dragonDiceBackground",
+  liarsDice: "liarsDiceBackground"
 };
 
 export function getTableBackground(gameId) {
