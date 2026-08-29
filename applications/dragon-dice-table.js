@@ -3,6 +3,7 @@ import { setupScaledBoard } from "../scripts/scaled-board.js";
 import { DragonDice2DAnimator } from "../scripts/dragon-dice-2d.js";
 import {
   DRAGON_BET_TYPES,
+  DRAGON_HEART_RANGES,
   assignDragonDiceSeat,
   getDragonDiceBets,
   getDragonDiceSeats,
@@ -10,6 +11,7 @@ import {
   gmRevealDragonDice,
   gmRollDragonDice,
   requestDragonBetChange,
+  requestDragonHeartRangeChange,
   resetDragonDice,
   setDragonScoreboardVisible
 } from "../scripts/dragon-dice.js";
@@ -41,6 +43,7 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     const seats=seatIds.map((userId,index)=>{
       const occupant=userId?game.users.get(userId):null;
       const wager=bets[userId]??{};
+      const heartRange=DRAGON_HEART_RANGES.some(range=>range.id===wager.heartRange)?wager.heartRange:"mid";
       return {
         index,
         number:VISUAL_ORDER.indexOf(index)+1,
@@ -50,7 +53,12 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
         occupantName:occupant?.name??"Lugar vazio",
         occupantActive:occupant?.active??false,
         canEdit:Boolean(occupant&&betting&&(game.user?.isGM||game.user?.id===userId)),
-        betFields:DRAGON_BET_TYPES.map(type=>({...type,value:Number(wager[type.id])||0})),
+        betFields:DRAGON_BET_TYPES.map(type=>({
+          ...type,
+          value:Number(wager[type.id])||0,
+          isHeart:type.id==="heart",
+          heartRanges:type.id==="heart"?DRAGON_HEART_RANGES.map(range=>({...range,selected:range.id===heartRange})):[]
+        })),
         options:players.map(p=>({...p,selected:p.id===userId}))
       };
     });
@@ -103,6 +111,13 @@ export class DragonDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
         const value=Math.max(0,Math.floor(Number(target.value)||0));
         target.value=String(value);
         await requestDragonBetChange(target.dataset.userId,target.dataset.dragonBet,value);
+      });
+    }
+
+    for(const select of this.element.querySelectorAll("select[data-dragon-heart-range]")){
+      select.addEventListener("change",async event=>{
+        const target=event.currentTarget;
+        await requestDragonHeartRangeChange(target.dataset.userId,target.value);
       });
     }
 
