@@ -21,7 +21,8 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
         { id: "blackjack", label: "Blackjack", icon: "fa-solid fa-club", value: getTableBackground("blackjack") },
         { id: "roulette", label: "Roleta", icon: "fa-solid fa-circle-notch", value: getTableBackground("roulette") },
         { id: "beholdem", label: "Beholdem", icon: "fa-solid fa-spade", value: getTableBackground("beholdem") },
-        { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20", value: getTableBackground("dragonDice") }
+        { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20", value: getTableBackground("dragonDice") },
+        { id: "liarsDice", label: "Liar's Dice", icon: "fa-solid fa-dice", value: getTableBackground("liarsDice") }
       ]
     });
   }
