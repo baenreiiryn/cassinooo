@@ -141,19 +141,30 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       });
     }
 
-    this.element.querySelector("[data-liars-peek]")?.addEventListener("click",event=>{
+    this.element.querySelector("[data-liars-peek]")?.addEventListener("click",()=>{
       this._peekOpen=!this._peekOpen;
-      event.currentTarget.textContent=this._peekOpen?"Baixar o copo":"Espiar meus dados";
       this._syncPeek();
     });
 
     if(!game.user?.isGM)return;
     this.element.querySelector("[data-liars-start-round]")?.addEventListener("click",()=>void gmStartLiarsRound());
     this.element.querySelector("[data-liars-pass-turn]")?.addEventListener("click",()=>void gmPassLiarsTurn());
-    this.element.querySelector("[data-liars-mark-loser]")?.addEventListener("click",()=>{
-      const select=this.element.querySelector("select[data-liars-loser]");
-      if(select?.value) void gmMarkLiarsLoser(select.value);
-    });
+
+    const loserSelect=this.element.querySelector("select[data-liars-loser]");
+    const loserButton=this.element.querySelector("[data-liars-mark-loser]");
+    if(loserSelect&&loserButton){
+      const syncLoserButton=()=>{ loserButton.disabled=!loserSelect.value; };
+      syncLoserButton();
+      loserSelect.addEventListener("change",syncLoserButton);
+      loserButton.addEventListener("click",()=>{
+        if(!loserSelect.value){
+          ui.notifications?.warn("Escolha qual jogador perdeu a rodada.");
+          return;
+        }
+        void gmMarkLiarsLoser(loserSelect.value);
+      });
+    }
+
     this.element.querySelector("[data-liars-reset]")?.addEventListener("click",()=>void resetLiarsDice());
 
     for(const select of this.element.querySelectorAll("select[data-liars-seat-index]")){
