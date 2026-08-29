@@ -1,0 +1,285 @@
+/* Cassinooo 0.15.4 — tabletop dice roll, descending inverted cup, clean reveal */
+
+/* Retire the previous cup-local/tumbling presentation completely. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-mouth,
+.cassinooo-dragon-dice-table .cassinooo-dragon-dice-track {
+  display:none !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-25d-scene {
+  width:430px;
+  height:245px;
+  overflow:visible;
+  perspective:760px;
+}
+
+/* ---------- Small invisible tabletop roll arena ---------- */
+.cassinooo-dragon-dice-table .cassinooo-dragon-roll-arena {
+  position:absolute;
+  left:50%;
+  top:121px;
+  width:190px;
+  height:88px;
+  transform:translateX(-50%);
+  overflow:visible;
+  z-index:5;
+  pointer-events:none;
+}
+
+.cassinooo-dragon-dice-table .table-rolling-die {
+  position:absolute !important;
+  left:0 !important;
+  top:0 !important;
+  margin:0 !important;
+  animation:none !important;
+  transition:none !important;
+  will-change:transform,opacity;
+}
+
+/* Rolling dice deliberately show no result. Their material/shape remains visible. */
+.cassinooo-dragon-dice-table .table-rolling-die span {
+  display:none !important;
+}
+
+/* Keep the existing textured materials, but tighten proportions for the arena. */
+.cassinooo-dragon-dice-table .table-rolling-die.die-d4,
+.cassinooo-dragon-dice-table .result-die.die-d4 {
+  width:38px !important;
+  height:36px !important;
+  clip-path:polygon(50% 1%,98% 94%,2% 94%);
+  border-radius:5px;
+}
+.cassinooo-dragon-dice-table .table-rolling-die.die-d6,
+.cassinooo-dragon-dice-table .result-die.die-d6 {
+  width:40px !important;
+  height:40px !important;
+  border-radius:8px;
+}
+.cassinooo-dragon-dice-table .table-rolling-die.die-d8,
+.cassinooo-dragon-dice-table .result-die.die-d8 {
+  width:40px !important;
+  height:40px !important;
+  clip-path:polygon(50% 0,96% 50%,50% 100%,4% 50%);
+}
+
+/* ---------- Inverted cup ---------- */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-wrap {
+  position:absolute;
+  left:50%;
+  top:49px;
+  width:180px;
+  height:160px;
+  margin-left:-90px;
+  z-index:9;
+  transform-origin:50% 100%;
+  transform:translate3d(0,0,0);
+  opacity:1;
+  animation:none !important;
+  transition:none;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup {
+  position:absolute;
+  inset:0;
+  filter:drop-shadow(0 12px 9px rgba(0,0,0,.4));
+}
+
+/* Inverted silhouette: narrow closed top, wide open edge touching the table. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-body {
+  position:absolute;
+  left:22px;
+  top:31px;
+  width:136px;
+  height:112px;
+  z-index:4;
+  clip-path:polygon(20% 0,80% 0,98% 100%,2% 100%);
+  border-radius:18px 18px 7px 7px;
+  background:
+    repeating-linear-gradient(96deg,rgba(255,225,188,.04) 0 1px,rgba(49,14,8,.03) 1px 3px,transparent 3px 7px),
+    radial-gradient(ellipse at 38% 23%,rgba(255,197,137,.2),transparent 31%),
+    linear-gradient(90deg,#28100b 0%,#6c2d1d 16%,#a7502f 38%,#7f3522 64%,#431810 83%,#220b08 100%);
+  background-blend-mode:overlay,screen,normal;
+  box-shadow:inset 9px 0 12px rgba(255,183,116,.08),inset -13px 0 16px rgba(0,0,0,.34);
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-grain {
+  position:absolute;
+  left:25px;
+  top:34px;
+  width:130px;
+  height:106px;
+  z-index:5;
+  clip-path:polygon(20% 0,80% 0,97% 100%,3% 100%);
+  opacity:.42;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(255,231,197,.15) 0 1px,transparent 1.5px) 0 0/11px 13px,
+    radial-gradient(circle at 72% 63%,rgba(30,7,5,.24) 0 1px,transparent 1.6px) 4px 3px/13px 12px,
+    repeating-linear-gradient(8deg,transparent 0 7px,rgba(255,214,170,.035) 7px 8px);
+  pointer-events:none;
+}
+
+/* Closed bottom is the only top surface ever drawn. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-bottom {
+  position:absolute;
+  left:48px;
+  top:20px;
+  width:84px;
+  height:23px;
+  z-index:7;
+  opacity:1 !important;
+  visibility:visible !important;
+  animation:none !important;
+  border:2px solid #542116;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 44% 32%,rgba(236,153,96,.25),transparent 38%),
+    repeating-linear-gradient(10deg,rgba(255,220,177,.04) 0 1px,transparent 1px 6px),
+    linear-gradient(#7b3622,#3a130e 72%);
+  box-shadow:0 3px 5px rgba(0,0,0,.32),inset 0 1px 2px rgba(255,205,158,.12);
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-highlight {
+  position:absolute;
+  left:55px;
+  top:48px;
+  width:20px;
+  height:78px;
+  z-index:6;
+  border-radius:50%;
+  transform:rotate(4deg);
+  background:linear-gradient(90deg,transparent,rgba(255,213,169,.18),transparent);
+  filter:blur(1.5px);
+  opacity:.7;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-shadow {
+  position:absolute;
+  left:17px;
+  bottom:2px;
+  width:146px;
+  height:25px;
+  border-radius:50%;
+  background:rgba(0,0,0,.46);
+  filter:blur(6px);
+  transform:scaleY(.48);
+  z-index:0;
+}
+
+/* Idle cup waits out of the rolling lane. */
+.cassinooo-dragon-dice-table .is-idle .cassinooo-dragon-cup-wrap {
+  transform:translate3d(142px,-34px,0) scale(.88) !important;
+  opacity:.88;
+}
+
+/* During the roll the cup stays lifted. It only descends after the dice have
+   rolled freely and begun gathering toward the center. */
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-wrap {
+  animation:cassinooo-cup-descend-over-dice 2.12s cubic-bezier(.18,.72,.18,1) both !important;
+}
+@keyframes cassinooo-cup-descend-over-dice {
+  0%,68% {
+    transform:translate3d(0,-142px,0) scale(.93);
+    opacity:0;
+  }
+  73% {
+    transform:translate3d(0,-112px,0) scale(.94);
+    opacity:.45;
+  }
+  82% {
+    transform:translate3d(0,-67px,0) scale(.97);
+    opacity:1;
+  }
+  92% {
+    transform:translate3d(0,-19px,0) scale(1.01);
+    opacity:1;
+  }
+  100% {
+    transform:translate3d(0,0,0) scale(1);
+    opacity:1;
+  }
+}
+
+/* Critical invariant: the betting DOM renders directly in the exact final frame
+   of the rolling animation. No transition is allowed, so the cup cannot jump
+   back to an earlier pose after Foundry re-renders. */
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-wrap,
+.cassinooo-dragon-dice-table .is-reveal-start .cassinooo-dragon-cup-wrap {
+  transform:translate3d(0,0,0) scale(1) !important;
+  opacity:1 !important;
+  animation:none !important;
+  transition:none !important;
+}
+
+/* Once covered, rolling placeholders must not leak around the cup edges. */
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-roll-arena,
+.cassinooo-dragon-dice-table .is-reveal-start .cassinooo-dragon-roll-arena {
+  opacity:0 !important;
+}
+
+/* Reveal: lift the already-inverted cup. There is no flip or morph. */
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-wrap {
+  transform:translate3d(138px,-92px,0) scale(.88) !important;
+  opacity:.9;
+  animation:none !important;
+  transition:transform .82s cubic-bezier(.18,.78,.18,1),opacity .55s ease !important;
+}
+
+/* ---------- Final visible result ---------- */
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice {
+  position:absolute;
+  inset:0;
+  z-index:6;
+  pointer-events:none;
+  opacity:0;
+}
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-result-dice {
+  opacity:1;
+}
+.cassinooo-dragon-dice-table .is-reveal-start .cassinooo-dragon-result-dice {
+  opacity:0 !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .result-die {
+  position:absolute !important;
+  animation:cassinooo-final-die-settle .5s cubic-bezier(.2,.82,.2,1) both !important;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d4 {
+  left:131px !important;
+  top:147px !important;
+  transform:rotate(-10deg) scale(1.12);
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d6 {
+  left:195px !important;
+  top:139px !important;
+  transform:rotate(6deg) scale(1.14);
+  animation-delay:.06s !important;
+}
+.cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .die-d8 {
+  left:258px !important;
+  top:148px !important;
+  transform:rotate(11deg) scale(1.12);
+  animation-delay:.11s !important;
+}
+@keyframes cassinooo-final-die-settle {
+  from {opacity:0;filter:brightness(1.35) drop-shadow(0 15px 9px rgba(0,0,0,.2));}
+  to {opacity:1;filter:brightness(1) drop-shadow(0 8px 6px rgba(0,0,0,.45));}
+}
+
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-floor-shadow {
+  transform:translateX(-50%) scale(1.02,.57);
+  opacity:.72;
+}
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-floor-shadow {
+  transform:translateX(-50%) scale(.78,.43);
+  opacity:.46;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-wrap,
+  .cassinooo-dragon-dice-table .cassinooo-dragon-result-dice .result-die {
+    animation:none !important;
+  }
+  .cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-wrap {
+    transition:none !important;
+  }
+}
