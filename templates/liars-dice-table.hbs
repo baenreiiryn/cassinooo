@@ -2,7 +2,7 @@
   <header class="cassinooo-table-header cassinooo-liars-header">
     <div>
       <h2>Liar's Dice</h2>
-      <p>Cada jogador começa com 5d6. Só você pode espiar os seus próprios dados.</p>
+      <p>Cada jogador começa com 5d6. Só você pode espiar os seus próprios dados até alguém chamar MENTIROSO.</p>
     </div>
     {{#if isGM}}
       <div class="cassinooo-gm-controls cassinooo-liars-gm-controls">
@@ -28,6 +28,8 @@
 
   {{#if activePhase}}
     <div class="cassinooo-liars-turn-banner"><span>TURNO</span><strong>{{activePlayerName}}</strong><em>Pote: {{pot}} PO</em></div>
+  {{else if revealedPhase}}
+    <div class="cassinooo-liars-turn-banner cassinooo-liars-called"><span>MENTIROSO!</span><strong>{{challengerName}}</strong><em>Todos os dados revelados</em></div>
   {{else}}
     <div class="cassinooo-liars-turn-banner passive"><span>POTE</span><strong>{{pot}} PO</strong>{{#if round}}<em>Rodada {{round}}</em>{{/if}}</div>
   {{/if}}
@@ -66,7 +68,7 @@
           {{#if eliminated}}
             <div class="cassinooo-liars-eliminated"><i class="fa-solid fa-skull"></i> Eliminado</div>
           {{else if showDiceStage}}
-            <div class="cassinooo-liars-dice-stage {{#if ../rolling}}is-rolling{{else}}is-covered{{/if}} {{#if owner}}owner-stage{{/if}}">
+            <div class="cassinooo-liars-dice-stage {{stageClass}} {{#if owner}}owner-stage{{/if}}">
               <div class="cassinooo-liars-roll-zone">
                 {{#each diceViews}}
                   <div class="cassinooo-liars-die die-{{index}} {{#if visible}}has-value{{/if}}"><span>{{value}}</span></div>
@@ -80,7 +82,10 @@
               </div>
               <div class="cassinooo-liars-cup-shadow"></div>
             </div>
-            {{#if canPeek}}<button type="button" class="cassinooo-liars-peek" data-liars-peek>Espiar meus dados</button>{{/if}}
+            <div class="cassinooo-liars-player-actions">
+              {{#if canPeek}}<button type="button" class="cassinooo-liars-peek" data-liars-peek>Espiar meus dados</button>{{/if}}
+              {{#if canCallLiar}}<button type="button" class="cassinooo-liars-call" data-liars-call><i class="fa-solid fa-bullhorn"></i> MENTIROSO</button>{{/if}}
+            </div>
           {{/if}}
 
           {{#if isActive}}<div class="cassinooo-turn-indicator">◆ TURNO ATUAL</div>{{/if}}
@@ -111,5 +116,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">As apostas entram no pote e só podem aumentar durante o próprio turno. O Mestre controla turnos e escolhe quem perde 1d6.</footer>
+  <footer class="cassinooo-table-footer">No próprio turno, o jogador pode aumentar a aposta ou chamar MENTIROSO. O desafio revela todos os dados; depois o Mestre escolhe quem perde 1d6.</footer>
 </section>
