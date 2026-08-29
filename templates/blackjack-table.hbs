@@ -83,26 +83,22 @@
       {{/each}}
 
       {{#if showResults}}
-        <aside class="cassinooo-payout-board">
-          <h3>Resultado da Rodada</h3>
-          <table>
-            <thead><tr><th>Jogador</th><th>Aposta</th><th>Saldo</th></tr></thead>
-            <tbody>
-              {{#each roundResults}}
-                <tr>
-                  <td title="{{result}}">{{name}}</td>
-                  <td>{{bet}} PO</td>
-                  <td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{delta}}</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
+        <aside class="cassinooo-results-overlay">
+          <div class="cassinooo-results-card">
+            <h3><i class="fa-solid fa-coins"></i> Resultado da Rodada</h3>
+            <table>
+              <thead><tr><th>Jogador</th><th>Resultado</th><th>Aposta</th><th>Saldo</th></tr></thead>
+              <tbody>
+                {{#each roundResults}}
+                  <tr><td>{{name}}</td><td>{{result}}</td><td>{{bet}} PO</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{delta}}</td></tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
         </aside>
       {{/if}}
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">
-    Vitória normal: +1× aposta. Blackjack natural: +1,5× aposta. Empate: 0. Derrota: perde a aposta inteira.
-  </footer>
+  <footer class="cassinooo-table-footer">Vitória normal: +1× aposta. Blackjack natural: +1,5× aposta. Empate: 0. Derrota: perde a aposta inteira.</footer>
 </section>
