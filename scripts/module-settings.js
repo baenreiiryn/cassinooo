@@ -17,7 +17,7 @@ export function registerModuleSettings() {
   game.settings.registerMenu(MODULE_ID, "tableBackgrounds", {
     name: "Aparência das mesas",
     label: "Configurar aparência",
-    hint: "Escolha os fundos das mesas do Cassinooo. As cartas usam as texturas do modelo 3D incluído no módulo.",
+    hint: "Escolha os fundos das mesas do Cassinooo.",
     icon: "fa-solid fa-images",
     type: CasinoSettings,
     restricted: true
