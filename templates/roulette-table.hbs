@@ -59,13 +59,22 @@
       {{/each}}
 
       {{#if showResults}}
-        <aside class="cassinooo-roulette-payout-board">
-          <h3>Resultado — {{result}}</h3>
-          <table><thead><tr><th>Jogador</th><th>Aposta</th><th>PO</th><th>Saldo</th></tr></thead><tbody>{{#each roundResults}}<tr><td>{{name}}</td><td title="{{betLabel}}">{{betLabel}}</td><td>{{amount}}</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td></tr>{{/each}}</tbody></table>
+        <aside class="cassinooo-results-overlay">
+          <div class="cassinooo-results-card">
+            <h3><i class="fa-solid fa-circle-notch"></i> Resultado — {{result}}</h3>
+            <table>
+              <thead><tr><th>Jogador</th><th>Aposta</th><th>PO</th><th>Saldo</th></tr></thead>
+              <tbody>
+                {{#each roundResults}}
+                  <tr><td>{{name}}</td><td>{{betLabel}}</td><td>{{amount}}</td><td class="{{#if positive}}positive{{/if}} {{#if negative}}negative{{/if}}">{{deltaText}}</td></tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
         </aside>
       {{/if}}
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Número exato paga 35:1; dúzia paga 2:1; vermelho/preto, par/ímpar e baixo/alto pagam 1:1. O quadro mostra o saldo líquido da rodada.</footer>
+  <footer class="cassinooo-table-footer">Número exato paga 35:1; dúzia paga 2:1; vermelho/preto, par/ímpar e baixo/alto pagam 1:1. O placar mostra o saldo líquido da rodada.</footer>
 </section>
