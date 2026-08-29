@@ -17,6 +17,7 @@ function emptyState(){
     activeTurn:-1,
     activeUserId:null,
     challengerId:null,
+    challengeSummaryVisible:false,
     lastLoserId:null,
     winnerId:null,
     totalPot:0,
@@ -45,6 +46,7 @@ export function registerLiarsDiceSettings(){
 export function getLiarsDiceState(){
   const state=foundry.utils.deepClone(game.settings.get(MODULE_ID,LIARS_DICE_STATE_SETTING)??emptyState());
   state.challengerId??=null;
+  state.challengeSummaryVisible??=false;
   return state;
 }
 export function getLiarsDiceSeats(){
@@ -111,6 +113,7 @@ async function applyLiarsCall(userId){
   if(state.phase!=="active"||state.activeUserId!==userId||!game.users.get(userId)) return false;
   state.phase="revealed";
   state.challengerId=userId;
+  state.challengeSummaryVisible=false;
   const name=game.users.get(userId)?.name??"Jogador";
   state.message=`${name} gritou MENTIROSO! Todos os dados foram revelados.`;
   await saveState(state);
@@ -122,6 +125,15 @@ export async function requestLiarsCall(userId){
   const state=getLiarsDiceState();
   if(state.phase!=="active"||state.activeUserId!==userId) return false;
   game.socket.emit(SOCKET_NAME,{type:"liars-dice-call",userId,requesterId:game.user.id});
+  return true;
+}
+
+export async function gmSetLiarsChallengeSummaryVisible(visible){
+  if(!game.user?.isGM) return false;
+  const state=getLiarsDiceState();
+  if(state.phase!=="revealed") return false;
+  state.challengeSummaryVisible=Boolean(visible);
+  await saveState(state);
   return true;
 }
 
@@ -160,6 +172,7 @@ export async function gmStartLiarsRound(){
   state.activeTurn=-1;
   state.activeUserId=null;
   state.challengerId=null;
+  state.challengeSummaryVisible=false;
   state.dice={};
   state.lastLoserId=null;
   state.message=`Rodada ${state.round}: os dados estão rolando...`;
@@ -218,6 +231,7 @@ export async function gmMarkLiarsLoser(userId){
 
   state.diceCounts[userId]=Math.max(0,Number(state.diceCounts[userId])-1);
   state.lastLoserId=userId;
+  state.challengeSummaryVisible=false;
   state.dice={};
   state.turnOrder=[];
   state.activeTurn=-1;
