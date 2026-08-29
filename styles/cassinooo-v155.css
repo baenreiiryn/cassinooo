@@ -1,0 +1,60 @@
+/* Cassinooo 0.15.5 — centered Dragon Dice scene + selectable Heart ranges */
+
+/* Keep the paytable centered in the upper lane and place the animation directly
+   beneath it on the same visual axis. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-paytable {
+  left:50% !important;
+  top:31% !important;
+  width:265px !important;
+  transform:translateX(-50%) !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-center.cassinooo-dragon-25d-center {
+  left:50% !important;
+  top:62% !important;
+  width:430px !important;
+  height:245px !important;
+  transform:translate(-50%,-50%) !important;
+  margin:0 !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-25d-scene {
+  width:430px !important;
+  height:245px !important;
+  margin:0 auto !important;
+}
+
+/* Heart bet uses the same amount field as the other bets, with a compact sum
+   range selector beside it. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-bets .cassinooo-dragon-heart-bet {
+  grid-template-columns:minmax(0,1fr) 112px !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-heart-controls {
+  display:grid;
+  grid-template-columns:44px 65px;
+  align-items:center;
+  gap:3px;
+  min-width:0;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-heart-controls input {
+  width:44px !important;
+  height:21px !important;
+  min-width:0;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-heart-controls select[data-dragon-heart-range] {
+  width:65px !important;
+  min-width:65px !important;
+  height:21px !important;
+  min-height:21px !important;
+  margin:0 !important;
+  padding:0 2px !important;
+  font-size:.58rem !important;
+  line-height:1 !important;
+}
+
+.cassinooo-dragon-dice-table .cassinooo-dragon-heart-controls select:disabled {
+  opacity:.72;
+}
