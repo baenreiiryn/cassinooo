@@ -10,10 +10,14 @@
         {{#if canStartRound}}<button type="button" data-liars-start-round><i class="fa-solid fa-dice"></i> {{#if between}}Nova rodada{{else}}Começar rodada{{/if}}</button>{{/if}}
         {{#if canPassTurn}}<button type="button" data-liars-pass-turn><i class="fa-solid fa-forward-step"></i> Passar turno</button>{{/if}}
         {{#if canMarkLoser}}
-          <select data-liars-loser aria-label="Jogador que perdeu a rodada">
-            {{#each loserOptions}}<option value="{{id}}">{{name}} · {{diceCount}}d6</option>{{/each}}
-          </select>
-          <button type="button" data-liars-mark-loser><i class="fa-solid fa-dice-one"></i> Perdeu 1d6</button>
+          <label class="cassinooo-liars-loser-control">
+            <span>Quem perdeu?</span>
+            <select data-liars-loser aria-label="Quem perdeu a rodada">
+              <option value="">— Escolha o jogador —</option>
+              {{#each loserOptions}}<option value="{{id}}">{{name}} · {{diceCount}}d6</option>{{/each}}
+            </select>
+          </label>
+          <button type="button" data-liars-mark-loser disabled><i class="fa-solid fa-dice-one"></i> Remover 1d6</button>
         {{/if}}
         {{#if hasGame}}<button type="button" data-liars-reset><i class="fa-solid fa-broom"></i> Reiniciar mesa</button>{{/if}}
       </div>
@@ -107,5 +111,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">As apostas entram no pote e só podem aumentar durante o próprio turno. O Mestre controla turnos e quem perde 1d6.</footer>
+  <footer class="cassinooo-table-footer">As apostas entram no pote e só podem aumentar durante o próprio turno. O Mestre controla turnos e escolhe quem perde 1d6.</footer>
 </section>
