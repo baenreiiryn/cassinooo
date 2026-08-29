@@ -1,0 +1,39 @@
+/* Cassinooo 0.16.2 — Liar's Dice seat clipping/layout fix */
+
+/* The felt keeps its oval background/border, but player panels are allowed to
+   extend across the rounded edge instead of being clipped by border-radius. */
+.cassinooo-liars-dice-table .cassinooo-liars-felt {
+  overflow:visible !important;
+}
+
+/* Pull the six stations slightly inward so every panel remains readable while
+   preserving the requested clockwise layout. */
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-upper-right {
+  left:66% !important;
+  top:8.5% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-right {
+  left:75.5% !important;
+  top:35.5% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-lower-right {
+  left:61.5% !important;
+  top:59.5% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-lower-left {
+  left:19% !important;
+  top:59.5% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-left {
+  left:5% !important;
+  top:35.5% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-upper-left {
+  left:18.5% !important;
+  top:8.5% !important;
+}
+
+/* Keep player panels above the oval rail when they overlap it visually. */
+.cassinooo-liars-dice-table .cassinooo-liars-seat {
+  z-index:12 !important;
+}
