@@ -77,7 +77,7 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
         canPeek:Boolean(owner&&activePhase&&!eliminated),
         canEditWager,
         wager,
-        wagerMin:isActive?wager:0,
+        wagerMin:state.phase==="idle"?0:wager,
         diceViews,
         showDiceStage:Boolean(occupant&&!eliminated&&(rolling||activePhase)),
         options:players.map(p=>({...p,selected:p.id===userId}))
@@ -167,6 +167,9 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
 
   _syncPeek(){
     const ownSeat=this.element?.querySelector(`.cassinooo-liars-seat[data-user-id="${game.user?.id??""}"]`);
-    ownSeat?.querySelector(".cassinooo-liars-dice-stage")?.classList.toggle("is-peeking",this._peekOpen);
+    const stage=ownSeat?.querySelector(".cassinooo-liars-dice-stage");
+    stage?.classList.toggle("is-peeking",this._peekOpen);
+    const button=ownSeat?.querySelector("[data-liars-peek]");
+    if(button) button.textContent=this._peekOpen?"Baixar o copo":"Espiar meus dados";
   }
 }
