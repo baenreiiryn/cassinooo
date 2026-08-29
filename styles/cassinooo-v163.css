@@ -1,0 +1,41 @@
+/* Cassinooo 0.16.3 — restore original Liar's Dice seat geometry above the oval rail */
+
+/* Player stations may overlap the visual rail, but are never clipped or drawn
+   behind it. The oval remains the table surface; the seats sit above it. */
+.cassinooo-liars-dice-table .cassinooo-liars-felt {
+  overflow:visible !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat {
+  z-index:20 !important;
+}
+
+/* Restore the original clockwise positions from 0.16.0. */
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-upper-right {
+  left:68% !important;
+  top:8% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-right {
+  left:78.5% !important;
+  top:36% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-lower-right {
+  left:65.5% !important;
+  top:68% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-lower-left {
+  left:15% !important;
+  top:68% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-left {
+  left:2% !important;
+  top:36% !important;
+}
+.cassinooo-liars-dice-table .cassinooo-liars-seat.seat-upper-left {
+  left:17% !important;
+  top:8% !important;
+}
+
+/* Keep the decorative inner rail below all seat cards. */
+.cassinooo-liars-dice-table .cassinooo-liars-felt::after {
+  z-index:1 !important;
+}
