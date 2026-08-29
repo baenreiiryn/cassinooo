@@ -1,3 +1,4 @@
+import { getTableBackground } from "../scripts/backgrounds.js";
 import { setupScaledBoard } from "../scripts/scaled-board.js";
 import {
   assignLiarsDiceSeat,
@@ -125,6 +126,18 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
 
   _onRender(context,options){
     super._onRender(context,options);
+
+    const felt=this.element.querySelector(".cassinooo-liars-felt");
+    const background=getTableBackground("liarsDice");
+    if(felt){
+      felt.style.backgroundImage=background
+        ? `linear-gradient(rgba(35,8,7,.10),rgba(35,8,7,.24)), url(${JSON.stringify(background)})`
+        : "radial-gradient(ellipse at 50% 48%,rgba(113,28,22,.98) 0%,rgba(70,18,15,.98) 53%,rgba(31,8,7,.99) 100%)";
+      felt.style.backgroundPosition="center center";
+      felt.style.backgroundSize=background?"cover":"auto";
+      felt.style.backgroundRepeat="no-repeat";
+    }
+
     setupScaledBoard(this,{viewportSelector:".cassinooo-liars-viewport",boardSelector:".cassinooo-liars-felt",designWidth:1100,designHeight:700});
 
     const state=getLiarsDiceState();
