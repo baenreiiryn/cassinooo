@@ -68,7 +68,7 @@
 
       <aside class="cassinooo-dragon-paytable">
         <h3>Pagamentos</h3>
-        <div><span>❤️ Coração</span><b>9–12 · 1:1</b></div>
+        <div><span>❤️ Coração</span><b>faixa escolhida · 1:1</b></div>
         <div><span>☀️ Douradas</span><b>todos pares · 6:1</b></div>
         <div><span>🌑 Negras</span><b>todos ímpares · 6:1</b></div>
         <div><span>🐲 Três Cabeças</span><b>trinca · 40:1</b></div>
@@ -91,7 +91,19 @@
           {{#if occupied}}
             <div class="cassinooo-dragon-bets">
               {{#each betFields}}
-                <label title="Pagamento {{payout}}:1"><span>{{label}}</span><input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}></label>
+                {{#if isHeart}}
+                  <label class="cassinooo-dragon-heart-bet" title="Pagamento {{payout}}:1">
+                    <span>{{label}}</span>
+                    <div class="cassinooo-dragon-heart-controls">
+                      <input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}>
+                      <select data-user-id="{{../userId}}" data-dragon-heart-range aria-label="Faixa do Coração" {{#unless ../canEdit}}disabled{{/unless}}>
+                        {{#each heartRanges}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+                      </select>
+                    </div>
+                  </label>
+                {{else}}
+                  <label title="Pagamento {{payout}}:1"><span>{{label}}</span><input type="number" min="0" step="1" value="{{value}}" data-user-id="{{../userId}}" data-dragon-bet="{{id}}" {{#unless ../canEdit}}disabled{{/unless}}></label>
+                {{/if}}
               {{/each}}
             </div>
           {{/if}}
