@@ -7,6 +7,7 @@ import {
   getLiarsDiceWagers,
   gmMarkLiarsLoser,
   gmPassLiarsTurn,
+  gmSetLiarsChallengeSummaryVisible,
   gmStartLiarsRound,
   requestLiarsCall,
   requestLiarsWagerChange,
@@ -26,6 +27,7 @@ function deltaText(value){
   if(n<0)return `${money(n)} PO`;
   return "0 PO";
 }
+function roundMoney(value){ return Math.round((Number(value)||0)*100)/100; }
 
 export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
   _peekOpen=false;
@@ -92,6 +94,11 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     const alive=seats.filter(s=>s.occupied&&!s.eliminated);
     const pot=seatIds.reduce((sum,id)=>sum+(Number(wagers[id])||0),0);
     const loserOptions=alive.map(s=>({id:s.userId,name:s.occupantName,diceCount:s.diceCount}));
+    const allDice=Object.values(state.dice??{}).flat().map(Number).filter(value=>Number.isInteger(value)&&value>=1&&value<=6);
+    const faceCounts=Array.from({length:6},(_,index)=>({face:index+1,count:allDice.filter(value=>value===index+1).length}));
+    const challengeHouseCut=roundMoney(pot*.10);
+    const challengePrize=roundMoney(pot-challengeHouseCut);
+    const challengeSummaryVisible=Boolean(revealedPhase&&state.challengeSummaryVisible);
     const roundResults=(state.roundResults??[]).map(row=>({
       ...row,
       wagerText:`${money(row.wager)} PO`,
@@ -117,6 +124,14 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
       canStartRound:Boolean(game.user?.isGM&&["idle","between"].includes(state.phase)&&alive.length>=2),
       canPassTurn:Boolean(game.user?.isGM&&activePhase),
       canMarkLoser:Boolean(game.user?.isGM&&revealedPhase&&loserOptions.length>1),
+      canShowChallengeSummary:Boolean(game.user?.isGM&&revealedPhase&&!challengeSummaryVisible),
+      canHideChallengeSummary:Boolean(game.user?.isGM&&challengeSummaryVisible),
+      challengeSummaryVisible,
+      faceCounts,
+      totalDiceOnTable:allDice.length,
+      challengePot:money(pot),
+      challengeHouseCut:money(challengeHouseCut),
+      challengePrize:money(challengePrize),
       loserOptions,
       activePlayerName:state.activeUserId?game.users.get(state.activeUserId)?.name??"":"",
       challengerName:state.challengerId?game.users.get(state.challengerId)?.name??"":"",
@@ -172,6 +187,8 @@ export class LiarsDiceTable extends HandlebarsApplicationMixin(ApplicationV2){
     if(!game.user?.isGM)return;
     this.element.querySelector("[data-liars-start-round]")?.addEventListener("click",()=>void gmStartLiarsRound());
     this.element.querySelector("[data-liars-pass-turn]")?.addEventListener("click",()=>void gmPassLiarsTurn());
+    this.element.querySelector("[data-liars-show-summary]")?.addEventListener("click",()=>void gmSetLiarsChallengeSummaryVisible(true));
+    this.element.querySelectorAll("[data-liars-hide-summary]").forEach(button=>button.addEventListener("click",()=>void gmSetLiarsChallengeSummaryVisible(false)));
 
     const loserSelect=this.element.querySelector("select[data-liars-loser]");
     const loserButton=this.element.querySelector("[data-liars-mark-loser]");
