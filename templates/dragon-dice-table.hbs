@@ -25,23 +25,34 @@
       </section>
 
       <section class="cassinooo-dragon-center cassinooo-dragon-25d-center">
-        <div class="cassinooo-dragon-25d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}">
+        <div class="cassinooo-dragon-25d-scene {{#if rolling}}is-rolling{{/if}} {{#if betting}}is-covered{{/if}} {{#if revealed}}is-revealed{{/if}}" data-dragon-2d-scene>
           <div class="cassinooo-dragon-floor-glow"></div>
           <div class="cassinooo-dragon-floor-shadow"></div>
 
-          <div class="cassinooo-dragon-dice-layer" aria-label="Dados do Dragão">
-            <div class="cassinooo-dragon-die die-d4"><span>{{#if revealed}}{{d4}}{{else}}4{{/if}}</span></div>
-            <div class="cassinooo-dragon-die die-d6"><span>{{#if revealed}}{{d6}}{{else}}6{{/if}}</span></div>
-            <div class="cassinooo-dragon-die die-d8"><span>{{#if revealed}}{{d8}}{{else}}8{{/if}}</span></div>
-          </div>
+          {{#if revealed}}
+            <div class="cassinooo-dragon-result-dice" aria-label="Resultado dos Dados do Dragão">
+              <div class="cassinooo-dragon-die die-d4 result-die"><span>{{d4}}</span></div>
+              <div class="cassinooo-dragon-die die-d6 result-die"><span>{{d6}}</span></div>
+              <div class="cassinooo-dragon-die die-d8 result-die"><span>{{d8}}</span></div>
+            </div>
+          {{/if}}
 
           <div class="cassinooo-dragon-cup-wrap" aria-hidden="true">
+            {{#if rolling}}
+              <div class="cassinooo-dragon-dice-track" data-dragon-dice-track>
+                <div class="cassinooo-dragon-die die-d4 tracked-die" data-dragon-die="d4"><span>4</span></div>
+                <div class="cassinooo-dragon-die die-d6 tracked-die" data-dragon-die="d6"><span>6</span></div>
+                <div class="cassinooo-dragon-die die-d8 tracked-die" data-dragon-die="d8"><span>8</span></div>
+              </div>
+            {{/if}}
+
             <div class="cassinooo-dragon-cup-shadow"></div>
             <div class="cassinooo-dragon-cup">
-              <div class="cassinooo-dragon-cup-rim"></div>
+              <div class="cassinooo-dragon-cup-bottom"></div>
               <div class="cassinooo-dragon-cup-body"></div>
+              <div class="cassinooo-dragon-cup-grain"></div>
               <div class="cassinooo-dragon-cup-highlight"></div>
-              <div class="cassinooo-dragon-cup-base"></div>
+              <div class="cassinooo-dragon-cup-mouth"><div></div></div>
             </div>
           </div>
         </div>
@@ -104,5 +115,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">Animação 2.5D do Cassinooo: profundidade simulada por perspectiva, luz, sombra e camadas.</footer>
+  <footer class="cassinooo-table-footer">Dados 2D rastreados dentro do copo, com profundidade simulada por movimento, textura, luz e sombra.</footer>
 </section>
