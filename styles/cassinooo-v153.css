@@ -1,0 +1,61 @@
+/* Cassinooo 0.15.3 — Dragon Dice cup surface/state cleanup */
+
+/* The mouth is intentionally not rendered at all. The upright cup is represented
+   by its tapered shell; only the physical bottom becomes visible after inversion. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-mouth,
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-mouth,
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-mouth,
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-mouth {
+  display:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  animation:none !important;
+}
+
+/* Upright/idle cup never shows the bottom surface. The v152 turn animation is
+   still allowed to reveal it near the end of the inversion. */
+.cassinooo-dragon-dice-table .cassinooo-dragon-cup-bottom {
+  opacity:0;
+  visibility:hidden;
+}
+.cassinooo-dragon-dice-table .is-rolling .cassinooo-dragon-cup-bottom {
+  visibility:visible;
+}
+
+/* Most important: after the server changes rolling -> betting, the newly
+   rendered cup must already be at the exact final inversion pose. No transition
+   is allowed here, otherwise it appears to jump back upright and flip again. */
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-wrap {
+  animation:none !important;
+  transition:none !important;
+  transform:translate3d(0,72px,0) rotate(180deg) scale(1.08) !important;
+}
+.cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-bottom {
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  animation:none !important;
+}
+
+/* Reveal begins from the same locked covered pose. Once is-revealed is applied,
+   the normal lift transition can take over while the cup remains inverted. */
+.cassinooo-dragon-dice-table .is-reveal-start .cassinooo-dragon-cup-wrap {
+  animation:none !important;
+  transition:none !important;
+  transform:translate3d(0,72px,0) rotate(180deg) scale(1.08) !important;
+}
+.cassinooo-dragon-dice-table .is-reveal-start .cassinooo-dragon-cup-bottom,
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-bottom {
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+.cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-wrap {
+  transition:transform .9s cubic-bezier(.18,.78,.18,1),filter .5s ease !important;
+  transform:translate3d(142px,-44px,0) rotate(166deg) scale(.9) !important;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .cassinooo-dragon-dice-table .is-covered .cassinooo-dragon-cup-wrap,
+  .cassinooo-dragon-dice-table .is-revealed .cassinooo-dragon-cup-wrap { transition:none !important; }
+}
