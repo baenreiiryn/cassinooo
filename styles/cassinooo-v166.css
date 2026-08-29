@@ -1,0 +1,72 @@
+/* Cassinooo 0.16.6 — Liar's Dice challenge face-count summary */
+
+.cassinooo-liars-dice-table .cassinooo-liars-challenge-card {
+  width:min(620px,86%) !important;
+  text-align:center;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-challenge-note {
+  margin:0 0 12px;
+  color:#cdb68b;
+  font-size:.72rem;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-face-counts {
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+  margin:0 0 12px;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-face-count {
+  display:grid;
+  place-items:center;
+  gap:2px;
+  min-width:0;
+  padding:8px 5px 7px;
+  border:1px solid rgba(229,184,99,.38);
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(91,31,20,.92),rgba(39,10,8,.94));
+  box-shadow:inset 0 1px rgba(255,225,169,.08),0 5px 12px rgba(0,0,0,.26);
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-face-count .face {
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,239,205,.7);
+  border-radius:7px;
+  background:linear-gradient(145deg,#f0d7a3,#b98a50 52%,#72502e);
+  color:#35170e;
+  font-size:1rem;
+  font-weight:1000;
+  box-shadow:inset 3px 3px 5px rgba(255,255,255,.15),inset -4px -5px 6px rgba(60,35,18,.2),0 4px 5px rgba(0,0,0,.3);
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-face-count strong {
+  color:#fff0b9;
+  font-size:1.05rem;
+  line-height:1;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-face-count small {
+  color:#bda77c;
+  font-size:.56rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-challenge-money {
+  margin-top:4px;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-challenge-money span:last-child strong {
+  color:#a9e4ae;
+}
+
+.cassinooo-liars-dice-table .cassinooo-liars-summary-close {
+  display:block;
+  margin:11px auto 0;
+  min-width:150px;
+}
