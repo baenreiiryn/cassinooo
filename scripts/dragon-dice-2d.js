@@ -50,7 +50,7 @@ export class DragonDice2DAnimator {
       ...cfg,
       element:this.elements[index],
       angle:(index-1)*9,
-      depth:index===1?1.05:index===0?.98:1.01,
+      depth:index===1 ? 1.05 : index===0 ? .98 : 1.01,
       jumpIndex:0
     }));
     for(const body of this.bodies)this._applyBody(body,0);
@@ -78,7 +78,7 @@ export class DragonDice2DAnimator {
     body.vx+=side[body.kind][i];
     body.spin+=(i%2?1:-1)*1.8;
     body.jumpIndex++;
-    body.nextJump+=.34+(body.kind==="d6"?.035:body.kind==="d8"?.07:0);
+    body.nextJump+=.34+(body.kind==="d6" ? .035 : body.kind==="d8" ? .07 : 0);
   }
 
   _solveWalls(body){
