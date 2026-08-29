@@ -2,7 +2,7 @@
   "id": "cassinooo",
   "title": "Cassinooo",
   "description": "Cassino compartilhado para Foundry VTT com Blackjack, Roleta, Beholdem e Dados do Dragão em tempo real, usando animações 2D com profundidade simulada (2.5D).",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "compatibility": {
     "minimum": "13",
     "verified": "13.348",
@@ -34,7 +34,8 @@
     "styles/cassinooo-v140.css",
     "styles/cassinooo-v150.css",
     "styles/cassinooo-v151.css",
-    "styles/cassinooo-v152.css"
+    "styles/cassinooo-v152.css",
+    "styles/cassinooo-v153.css"
   ],
   "socket": true
 }
