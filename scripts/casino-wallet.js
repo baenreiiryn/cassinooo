@@ -25,6 +25,10 @@ function sanitizeDeposit(value) {
 }
 function primaryGM() { return game.users.filter((u) => u.isGM && u.active).sort((a, b) => a.id.localeCompare(b.id))[0] ?? null; }
 function isPrimaryGM() { return Boolean(game.user?.isGM && primaryGM()?.id === game.user.id); }
+function settingValue(key, fallback) {
+  try { return game.settings.get(MODULE_ID, key) ?? fallback; }
+  catch (_) { return fallback; }
+}
 
 export function registerCasinoWalletSettings() {
   game.settings.register(MODULE_ID, CASINO_WALLET_SETTING, {
@@ -40,6 +44,39 @@ export function getCasinoWalletState() { return normalizeWalletState(game.settin
 export function getCasinoWalletBalance(userId = game.user?.id) {
   if (!userId) return 0;
   return roundMoney(getCasinoWalletState().balances?.[userId] ?? 0);
+}
+
+export function hasOpenCasinoExposure(userId) {
+  if (!userId) return false;
+  const wallet = getCasinoWalletState();
+
+  const blackjack = settingValue("blackjackState", {});
+  const blackjackBet = Number(blackjack?.hands?.[userId]?.bet) || 0;
+  if (["dealing", "players", "dealer"].includes(blackjack?.phase) && blackjackBet > 0) return true;
+  if (blackjack?.phase === "finished" && wallet.settlement.blackjack?.armed && blackjackBet > 0) return true;
+
+  const roulette = settingValue("rouletteState", {});
+  const rouletteBet = Number(settingValue("rouletteBets", {})?.[userId]?.amount) || 0;
+  if (roulette?.phase === "spinning" && rouletteBet > 0) return true;
+  if (roulette?.phase === "settled" && wallet.settlement.roulette?.armed && rouletteBet > 0) return true;
+
+  const beholdem = settingValue("beholdemState", {});
+  const beholdemBet = Number(beholdem?.hands?.[userId]?.bet) || 0;
+  if (["dealing", "preflop", "flop", "turn", "river"].includes(beholdem?.phase) && beholdemBet > 0) return true;
+  if (beholdem?.phase === "showdown" && wallet.settlement.beholdem?.armed && beholdemBet > 0) return true;
+
+  const dragon = settingValue("dragonDiceState", {});
+  const dragonWager = settingValue("dragonDiceBets", {})?.[userId] ?? {};
+  const dragonTotal = ["heart", "gold", "black", "heads", "perfect"].reduce((sum, key) => sum + (Number(dragonWager[key]) || 0), 0);
+  if (dragon?.phase === "betting" && dragonTotal > 0) return true;
+  if (dragon?.phase === "revealed" && wallet.settlement.dragonDice?.armed && dragonTotal > 0) return true;
+
+  const liars = settingValue("liarsDiceState", {});
+  const liarsWager = Number(settingValue("liarsDiceWagers", {})?.[userId]) || 0;
+  if (["rolling", "active", "revealed", "between"].includes(liars?.phase) && liarsWager > 0) return true;
+  if (liars?.phase === "finished" && wallet.settlement.liarsDice?.armed && liarsWager > 0) return true;
+
+  return false;
 }
 
 async function saveWalletState(state) {
@@ -109,6 +146,10 @@ async function applyDeposit(userId, amount) {
 
 async function applyWithdraw(userId) {
   if (!userId || !game.users.get(userId)) return false;
+  if (hasOpenCasinoExposure(userId)) {
+    notifyUser(userId, "Você possui fichas comprometidas em uma aposta ativa. Aguarde o resultado antes de sacar.", "warn");
+    return false;
+  }
   const state = getCasinoWalletState();
   const amount = roundMoney(state.balances[userId] ?? 0);
   if (amount <= 0) { notifyUser(userId, "Não há fichas para sacar.", "warn"); return false; }
@@ -211,12 +252,13 @@ export async function attachCasinoWalletControls(app) {
   const bar = document.createElement("div");
   bar.className = "cassinooo-wallet-bar";
   const balance = getCasinoWalletBalance(game.user.id);
+  const withdrawalBlocked = hasOpenCasinoExposure(game.user.id);
   bar.innerHTML = `
     <span class="cassinooo-wallet-label"><i class="fa-solid fa-coins"></i> Fichas</span>
     <strong class="cassinooo-wallet-balance">${balance}</strong>
     <input type="number" min="1" step="1" value="10" data-cassinooo-wallet-amount aria-label="Quantidade de fichas">
     <button type="button" data-cassinooo-wallet-deposit><i class="fa-solid fa-plus"></i> Adicionar</button>
-    <button type="button" data-cassinooo-wallet-withdraw ${balance <= 0 ? "disabled" : ""}><i class="fa-solid fa-sack-dollar"></i> Sacar</button>`;
+    <button type="button" data-cassinooo-wallet-withdraw ${(balance <= 0 || withdrawalBlocked) ? "disabled" : ""} title="${withdrawalBlocked ? "Aguarde a resolução das apostas ativas" : "Converter todas as fichas em PO"}"><i class="fa-solid fa-sack-dollar"></i> Sacar</button>`;
   host.append(bar);
 
   const { DialogV2 } = foundry.applications.api;
