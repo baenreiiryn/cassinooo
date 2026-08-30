@@ -17,6 +17,11 @@
     <section class="cassinooo-pachinko-gmbar">
       <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
       <strong>Máquina {{machineNumber}}</strong>
+      <label class="cassinooo-pachinko-currency-control">1 crédito = 1
+        <select data-pachinko-credit-currency {{#unless canSetCreditCurrency}}disabled{{/unless}}>
+          {{#each currencyOptions}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}} · {{name}}</option>{{/each}}
+        </select>
+      </label>
       <select data-pachinko-player>
         <option value="">— Escolha o jogador —</option>
         {{#each players}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
@@ -31,6 +36,8 @@
     <strong>{{machineStatus}}</strong>
     <span>Créditos</span>
     <strong class="cassinooo-pachinko-credit-display">{{credits}}</strong>
+    <span>Taxa</span>
+    <strong>1 crédito = 1 {{creditCurrencyLabel}}</strong>
   </div>
 
   <div class="cassinooo-pachinko-viewport">
@@ -89,11 +96,11 @@
 
       <section class="cassinooo-pachinko-credit-panel">
         {{#if isOwner}}
-          <label>Adicionar créditos
+          <label>Comprar créditos
             <input type="number" min="1" step="1" value="1" data-pachinko-deposit-amount {{#unless canDeposit}}disabled{{/unless}}>
           </label>
-          <button type="button" data-pachinko-deposit {{#unless canDeposit}}disabled{{/unless}}><i class="fa-solid fa-coins"></i> Inserir PO</button>
-          <button type="button" data-pachinko-withdraw {{#unless canWithdraw}}disabled{{/unless}}><i class="fa-solid fa-sack-dollar"></i> Sacar tudo</button>
+          <button type="button" data-pachinko-deposit {{#unless canDeposit}}disabled{{/unless}}><i class="fa-solid fa-coins"></i> Comprar com {{creditCurrencyLabel}}</button>
+          <button type="button" data-pachinko-withdraw {{#unless canWithdraw}}disabled{{/unless}}><i class="fa-solid fa-sack-dollar"></i> Sacar em {{creditCurrencyLabel}}</button>
         {{else}}
           <div class="cassinooo-pachinko-owner-note">
             {{#if locked}}<i class="fa-solid fa-lock"></i> Máquina travada{{else}}<i class="fa-solid fa-user"></i> Reservada para {{ownerName}}{{/if}}
@@ -117,5 +124,5 @@
     </div>
   </div>
 
-  <footer class="cassinooo-table-footer">1 crédito = 1 PO. O Mestre só trava/destrava máquinas. O jogador controla créditos, alavanca e os três botões de parada.</footer>
+  <footer class="cassinooo-table-footer">O Mestre define a moeda de cada crédito antes de destravar a máquina. O jogador controla créditos, alavanca e os três botões de parada.</footer>
 </section>
