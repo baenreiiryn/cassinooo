@@ -8,6 +8,31 @@
 .cassinooo-theme-setting{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;margin:6px 0;color:#d8bd88;font-size:.68rem;font-weight:800}
 .cassinooo-theme-setting select{height:29px;margin:0}
 
+/* Shared color themes. Background images remain untouched. */
+.cassinooo-theme-medieval{--casino-theme-accent:#d7a653;--casino-theme-accent2:#f0d28b;--casino-theme-deep:#2b100a;--casino-theme-glow:rgba(215,166,83,.34)}
+.cassinooo-theme-cosmic{--casino-theme-accent:#9b80dc;--casino-theme-accent2:#d5c4ff;--casino-theme-deep:#11091e;--casino-theme-glow:rgba(143,108,218,.42)}
+.cassinooo-theme-infernal{--casino-theme-accent:#e85f2b;--casino-theme-accent2:#ffb06e;--casino-theme-deep:#200302;--casino-theme-glow:rgba(239,70,25,.45)}
+.cassinooo-theme-tavern{--casino-theme-accent:#c99b57;--casino-theme-accent2:#f0d49b;--casino-theme-deep:#1e1108;--casino-theme-glow:rgba(201,155,87,.34)}
+
+.cassinooo-theme-medieval .cassinooo-table-header,
+.cassinooo-theme-cosmic .cassinooo-table-header,
+.cassinooo-theme-infernal .cassinooo-table-header,
+.cassinooo-theme-tavern .cassinooo-table-header{border-color:var(--casino-theme-accent)!important;box-shadow:0 4px 13px rgba(0,0,0,.25),inset 0 -1px rgba(255,255,255,.04)}
+.cassinooo-theme-medieval .cassinooo-table-header h2,.cassinooo-theme-cosmic .cassinooo-table-header h2,.cassinooo-theme-infernal .cassinooo-table-header h2,.cassinooo-theme-tavern .cassinooo-table-header h2{color:var(--casino-theme-accent2)!important}
+.cassinooo-theme-medieval .cassinooo-gm-badge,.cassinooo-theme-cosmic .cassinooo-gm-badge,.cassinooo-theme-infernal .cassinooo-gm-badge,.cassinooo-theme-tavern .cassinooo-gm-badge{color:var(--casino-theme-accent2)!important}
+.cassinooo-theme-medieval .cassinooo-felt,.cassinooo-theme-medieval .cassinooo-roulette-felt,.cassinooo-theme-medieval .cassinooo-beholdem-board,.cassinooo-theme-medieval .cassinooo-dragon-felt,.cassinooo-theme-medieval .cassinooo-liars-felt,
+.cassinooo-theme-cosmic .cassinooo-felt,.cassinooo-theme-cosmic .cassinooo-roulette-felt,.cassinooo-theme-cosmic .cassinooo-beholdem-board,.cassinooo-theme-cosmic .cassinooo-dragon-felt,.cassinooo-theme-cosmic .cassinooo-liars-felt,
+.cassinooo-theme-infernal .cassinooo-felt,.cassinooo-theme-infernal .cassinooo-roulette-felt,.cassinooo-theme-infernal .cassinooo-beholdem-board,.cassinooo-theme-infernal .cassinooo-dragon-felt,.cassinooo-theme-infernal .cassinooo-liars-felt,
+.cassinooo-theme-tavern .cassinooo-felt,.cassinooo-theme-tavern .cassinooo-roulette-felt,.cassinooo-theme-tavern .cassinooo-beholdem-board,.cassinooo-theme-tavern .cassinooo-dragon-felt,.cassinooo-theme-tavern .cassinooo-liars-felt{border-color:var(--casino-theme-accent)!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.04),inset 0 0 70px rgba(0,0,0,.38),0 0 26px var(--casino-theme-glow)!important}
+.cassinooo-theme-cosmic .window-content{background:radial-gradient(circle at 50% 0,#281443,#090610 72%)!important}
+.cassinooo-theme-infernal .window-content{background:radial-gradient(circle at 50% 0,#560b07,#150201 72%)!important}
+.cassinooo-theme-tavern .window-content{background:radial-gradient(circle at 50% 0,#513016,#160c06 72%)!important}
+.cassinooo-theme-medieval .window-content{background:radial-gradient(circle at 50% 0,#40170d,#120706 72%)!important}
+.cassinooo-theme-cosmic .cassinooo-seat{border-color:#876bbd!important}
+.cassinooo-theme-infernal .cassinooo-seat{border-color:#bd4923!important}
+.cassinooo-theme-tavern .cassinooo-seat{border-color:#a9783d!important}
+
+/* Pachinko lever: ball and stick are one rigid arm. */
 .cassinooo-pachinko-lever .lever-arm{position:absolute;left:53px;top:166px;width:0;height:0;z-index:3;transform-origin:0 0;transform:rotate(0deg);transition:transform .18s ease}
 .cassinooo-pachinko-lever .lever-arm .lever-stick{position:absolute;left:-4px;top:-120px;width:9px;height:121px;border-radius:6px;background:linear-gradient(90deg,#5f5f5f,#e0d3b4 45%,#777);box-shadow:2px 3px 4px rgba(0,0,0,.5)}
 .cassinooo-pachinko-lever .lever-arm .lever-ball{position:absolute;left:-25px;top:-162px;width:42px;height:42px;border:4px solid #38110b;border-radius:50%;background:radial-gradient(circle at 35% 28%,#ff9c78,#b92518 55%,#5c0c08);box-shadow:0 5px 9px rgba(0,0,0,.48)}
