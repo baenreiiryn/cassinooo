@@ -1,14 +1,19 @@
 <form class="cassinooo-settings-shell">
   <header class="cassinooo-settings-header">
     <h2><i class="fa-solid fa-images"></i> Aparência das mesas</h2>
-    <p>Escolha imagens do User Data pelo File Picker do Foundry. Os caminhos são salvos para todo o mundo.</p>
+    <p>Escolha um tema e, se quiser, uma imagem de fundo do User Data para cada jogo.</p>
   </header>
 
-  <h3>Fundos das mesas</h3>
+  <h3>Mesas e máquinas</h3>
   <div class="cassinooo-settings-grid">
     {{#each games}}
       <article class="cassinooo-background-setting">
         <div class="cassinooo-background-title"><i class="{{icon}}"></i><strong>{{label}}</strong></div>
+        <label class="cassinooo-theme-setting">Tema
+          <select name="theme-{{id}}">
+            {{#each themeOptions}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+          </select>
+        </label>
         <div class="cassinooo-background-preview">
           {{#if value}}<img src="{{value}}" alt="Prévia do fundo de {{label}}">{{else}}<span><i class="fa-solid fa-image"></i> Sem imagem definida</span>{{/if}}
         </div>
@@ -21,18 +26,8 @@
     {{/each}}
   </div>
 
-  <section class="cassinooo-model-info">
-    <h3><i class="fa-solid fa-coins"></i> Tema do Pachinko</h3>
-    <p>O tema troca cores e símbolos do slot. Uma imagem de fundo personalizada continua sendo usada atrás do layout fixo da máquina.</p>
-    <label>Estilo da máquina
-      <select name="pachinkoTheme">
-        {{#each pachinkoThemes}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
-      </select>
-    </label>
-  </section>
-
   <footer class="cassinooo-settings-footer">
-    <p><i class="fa-solid fa-circle-info"></i> Faça upload para uma pasta permitida do User Data, como <strong>assets</strong> ou uma pasta dentro do mundo atual.</p>
+    <p><i class="fa-solid fa-circle-info"></i> O tema altera cores e acabamento. O background personalizado continua atrás do layout fixo de cada jogo.</p>
     <button type="button" data-save-backgrounds><i class="fa-solid fa-floppy-disk"></i> Salvar aparência</button>
   </footer>
 </form>
