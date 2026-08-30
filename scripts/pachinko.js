@@ -1,4 +1,5 @@
 import { MODULE_ID, SOCKET_NAME } from "./state.js";
+import { casinoCurrencyMeta, changeCasinoCurrency, normalizeCasinoCurrency } from "./casino-wallet.js";
 
 export const PACHINKO_STATE_SETTING = "pachinkoState";
 export const PACHINKO_THEME_SETTING = "pachinkoTheme";
@@ -35,6 +36,7 @@ function emptyMachine(number){
     locked:true,
     userId:"",
     credits:0,
+    creditCurrency:"gp",
     phase:"idle",
     reels:[["coin","bar","cherry"],["bell","coin","bar"],["cherry","bell","coin"]],
     stopped:[true,true,true],
@@ -53,11 +55,11 @@ function emptyState(){
 
 function normalizeState(raw){
   const state=foundry.utils.deepClone(raw??emptyState());
-  state.machines=Array.from({length:6},(_,i)=>({
-    ...emptyMachine(i+1),
-    ...(state.machines?.[i]??{}),
-    number:i+1
-  }));
+  state.machines=Array.from({length:6},(_,i)=>{
+    const machine={...emptyMachine(i+1),...(state.machines?.[i]??{}),number:i+1};
+    machine.creditCurrency=normalizeCasinoCurrency(machine.creditCurrency);
+    return machine;
+  });
   return state;
 }
 
@@ -85,44 +87,25 @@ function notifyUser(userId,message,level="info"){
   if(game.user?.id===userId) ui.notifications?.[level]?.(message);
 }
 
-function currencyInfo(actor){
-  if(!actor) return null;
-  const candidates=[
-    "system.currency.gp",
-    "system.currency.gold",
-    "system.gold",
-    "system.resources.gold.value",
-    "system.resources.currency.gold"
-  ];
-  for(const path of candidates){
-    const value=foundry.utils.getProperty(actor,path);
-    if(Number.isFinite(Number(value))) return {path,value:Math.floor(Number(value))};
-  }
-  return null;
-}
-
-function linkedActor(userId){
-  const user=game.users.get(userId);
-  const actor=user?.character;
-  return actor?.update?actor:null;
-}
-
-async function changeGold(userId,delta){
-  const actor=linkedActor(userId);
-  if(!actor) throw new Error("Vincule um personagem ao seu usuário antes de usar créditos.");
-  const currency=currencyInfo(actor);
-  if(!currency) throw new Error("Não encontrei um campo de PO/ouro compatível na ficha vinculada.");
-  const next=currency.value+delta;
-  if(next<0) throw new Error(`O personagem possui apenas ${currency.value} PO.`);
-  await actor.update({[currency.path]:next});
-  return {actor,path:currency.path,previous:currency.value,next};
-}
-
 function ownedMachine(state,index,userId){
   const i=sanitizeMachineIndex(index);
   if(i<0) return null;
   const machine=state.machines[i];
   return machine?.userId===userId?machine:null;
+}
+
+export async function gmSetPachinkoCreditCurrency(index,currencyId){
+  if(!game.user?.isGM) return false;
+  const i=sanitizeMachineIndex(index);
+  if(i<0) return false;
+  const state=getPachinkoState();
+  const machine=state.machines[i];
+  if(machine.phase==="spinning"){ ui.notifications?.warn("Espere os três rolos pararem antes de alterar a moeda da máquina."); return false; }
+  if(!machine.locked){ ui.notifications?.warn("Trave a máquina antes de alterar o valor do crédito."); return false; }
+  if(Number(machine.credits)>0){ ui.notifications?.warn("Saque todos os créditos antes de alterar a moeda da máquina."); return false; }
+  machine.creditCurrency=normalizeCasinoCurrency(currencyId);
+  await saveState(state);
+  return true;
 }
 
 export async function gmUnlockPachinkoMachine(index,userId){
@@ -137,7 +120,9 @@ export async function gmUnlockPachinkoMachine(index,userId){
     return false;
   }
   if(machine.userId!==userId){
+    const currency=machine.creditCurrency;
     const fresh=emptyMachine(i+1);
+    fresh.creditCurrency=currency;
     fresh.userId=userId;
     fresh.locked=false;
     state.machines[i]=fresh;
@@ -230,12 +215,13 @@ async function applyDeposit(message){
   const machine=ownedMachine(state,message.machineIndex,message.requesterId);
   const amount=sanitizeCredits(message.amount);
   if(!machine||machine.locked||machine.phase==="spinning"||amount<=0) return false;
+  const meta=casinoCurrencyMeta(machine.creditCurrency);
   let change;
   try{
-    change=await changeGold(message.requesterId,-amount);
+    change=await changeCasinoCurrency(message.requesterId,meta.id,-amount);
     machine.credits+=amount;
     await saveState(state);
-    notifyUser(message.requesterId,`${amount} PO convertidas em ${amount} créditos na máquina ${Number(message.machineIndex)+1}.`);
+    notifyUser(message.requesterId,`${amount} ${meta.label} convertidas em ${amount} créditos na máquina ${Number(message.machineIndex)+1}.`);
     return true;
   }catch(err){
     console.error(`${MODULE_ID} | Falha ao depositar Pachinko`,err);
@@ -251,14 +237,15 @@ async function applyWithdraw(message){
   if(!machine||machine.phase==="spinning") return false;
   const amount=sanitizeCredits(machine.credits);
   if(amount<=0){ notifyUser(message.requesterId,"Não há créditos para sacar.","warn"); return false; }
+  const meta=casinoCurrencyMeta(machine.creditCurrency);
   let change;
   try{
-    change=await changeGold(message.requesterId,amount);
+    change=await changeCasinoCurrency(message.requesterId,meta.id,amount);
     machine.credits=0;
     machine.lastWin=0;
     machine.lastLineWins=[];
     await saveState(state);
-    notifyUser(message.requesterId,`${amount} créditos retornaram como ${amount} PO para a ficha.`);
+    notifyUser(message.requesterId,`${amount} créditos retornaram como ${amount} ${meta.label} para a ficha.`);
     return true;
   }catch(err){
     console.error(`${MODULE_ID} | Falha ao sacar Pachinko`,err);
