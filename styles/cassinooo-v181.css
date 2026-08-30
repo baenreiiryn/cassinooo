@@ -1,0 +1,38 @@
+/* Cassinooo 0.18.1 — GM-managed casino exchange */
+
+.cassinooo-wallet-bar.gm-cashier{
+  flex:1 0 100%;
+  width:100%;
+  margin:5px 0 0;
+  justify-content:flex-end;
+  box-sizing:border-box;
+}
+.cassinooo-wallet-bar.gm-cashier select{
+  height:27px;
+  margin:0;
+  padding:1px 5px;
+  font-size:.59rem;
+}
+.cassinooo-wallet-bar.gm-cashier [data-cassinooo-cashier-player]{min-width:175px;max-width:235px}
+.cassinooo-wallet-bar.gm-cashier [data-cassinooo-cashier-currency]{width:92px}
+.cassinooo-wallet-bar.gm-cashier [data-cassinooo-cashier-amount]{width:66px}
+.cassinooo-wallet-bar.player-wallet small{color:#aa9774;font-size:.54rem;white-space:nowrap}
+
+.cassinooo-pachinko-currency-control{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  color:#e0c58d;
+  font-size:.62rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+.cassinooo-pachinko-currency-control select{
+  width:112px!important;
+  min-width:112px;
+  height:29px!important;
+  margin:0!important;
+  font-size:.62rem!important;
+}
+.cassinooo-pachinko-currency-control select:disabled{opacity:.55}
+.cassinooo-pachinko-statusbar{flex-wrap:wrap}
