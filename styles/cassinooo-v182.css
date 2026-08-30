@@ -1,0 +1,80 @@
+/* Cassinooo 0.18.2 — compact cashier + automatic coin exchange */
+
+.cassinooo-wallet-bar.gm-cashier{
+  flex:0 1 370px!important;
+  width:370px!important;
+  max-width:370px!important;
+  min-width:300px!important;
+  margin:0 0 0 auto!important;
+  padding:4px 6px!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:3px!important;
+  box-sizing:border-box!important;
+  align-self:flex-start;
+}
+.cassinooo-cashier-head,
+.cassinooo-cashier-actions{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  min-width:0;
+}
+.cassinooo-cashier-head .cassinooo-wallet-label{
+  flex:0 0 auto;
+  font-size:.56rem;
+  white-space:nowrap;
+}
+.cassinooo-cashier-head [data-cassinooo-cashier-player]{
+  flex:1 1 auto;
+  width:0!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:24px!important;
+  margin:0!important;
+  padding:1px 4px!important;
+  font-size:.55rem!important;
+}
+.cassinooo-cashier-actions [data-cassinooo-cashier-amount]{
+  flex:0 0 56px;
+  width:56px!important;
+  height:24px!important;
+  margin:0!important;
+  padding:1px 4px!important;
+  font-size:.56rem!important;
+}
+.cassinooo-cashier-actions [data-cassinooo-cashier-currency]{
+  flex:0 0 52px;
+  width:52px!important;
+  min-width:52px!important;
+  height:24px!important;
+  margin:0!important;
+  padding:1px 3px!important;
+  font-size:.55rem!important;
+}
+.cassinooo-cashier-actions button{
+  flex:1 1 0;
+  min-width:0!important;
+  height:24px!important;
+  min-height:24px!important;
+  margin:0!important;
+  padding:1px 5px!important;
+  font-size:.53rem!important;
+  white-space:nowrap;
+}
+.cassinooo-wallet-bar.player-wallet{
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:300px;
+  margin-left:auto!important;
+  padding:4px 7px!important;
+}
+
+@media (max-width:900px){
+  .cassinooo-wallet-bar.gm-cashier{
+    flex-basis:330px!important;
+    width:330px!important;
+    max-width:330px!important;
+  }
+  .cassinooo-cashier-actions button{font-size:.49rem!important;padding-inline:3px!important}
+}
