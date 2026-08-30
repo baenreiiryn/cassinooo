@@ -1,0 +1,120 @@
+<section class="cassinooo-pachinko-shell theme-{{themeId}}">
+  <header class="cassinooo-table-header cassinooo-pachinko-header">
+    <div>
+      <h2>Pachinko</h2>
+      <p>Slot clássico de 3 rolos · tema {{themeLabel}}</p>
+    </div>
+    <div class="cassinooo-pachinko-machine-select">
+      <label>Máquina
+        <select data-pachinko-machine>
+          {{#each machineOptions}}<option value="{{index}}" {{#if selected}}selected{{/if}}>Máquina {{number}} · {{status}}</option>{{/each}}
+        </select>
+      </label>
+    </div>
+  </header>
+
+  {{#if isGM}}
+    <section class="cassinooo-pachinko-gmbar">
+      <span class="cassinooo-gm-badge"><i class="fa-solid fa-crown"></i> Controle do Mestre</span>
+      <strong>Máquina {{machineNumber}}</strong>
+      <select data-pachinko-player>
+        <option value="">— Escolha o jogador —</option>
+        {{#each players}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}{{#unless active}} (offline){{/unless}}</option>{{/each}}
+      </select>
+      <button type="button" data-pachinko-unlock><i class="fa-solid fa-lock-open"></i> Destravar</button>
+      <button type="button" data-pachinko-lock><i class="fa-solid fa-lock"></i> Travar</button>
+    </section>
+  {{/if}}
+
+  <div class="cassinooo-pachinko-statusbar">
+    <span>Máquina {{machineNumber}}</span>
+    <strong>{{machineStatus}}</strong>
+    <span>Créditos</span>
+    <strong class="cassinooo-pachinko-credit-display">{{credits}}</strong>
+  </div>
+
+  <div class="cassinooo-pachinko-viewport">
+    <div class="cassinooo-pachinko-board theme-{{themeId}}">
+      <div class="cassinooo-pachinko-titleplate"><span>PACHINKO</span><small>FORTUNE MACHINE</small></div>
+
+      <section class="cassinooo-pachinko-screen">
+        <div class="cassinooo-payline cassinooo-payline-top {{#if lines.0.selected}}active{{/if}}"></div>
+        <div class="cassinooo-payline cassinooo-payline-middle {{#if lines.1.selected}}active{{/if}}"></div>
+        <div class="cassinooo-payline cassinooo-payline-bottom {{#if lines.2.selected}}active{{/if}}"></div>
+        <div class="cassinooo-payline cassinooo-payline-diagDown {{#if lines.3.selected}}active{{/if}}"></div>
+        <div class="cassinooo-payline cassinooo-payline-diagUp {{#if lines.4.selected}}active{{/if}}"></div>
+
+        <div class="cassinooo-pachinko-reels">
+          {{#each reels}}
+            <div class="cassinooo-pachinko-reel {{#if spinning}}is-spinning{{/if}} {{#if stopped}}is-stopped{{/if}}">
+              {{#if spinning}}
+                <div class="cassinooo-pachinko-strip reel-speed-{{index}}">
+                  {{#each stripSymbols}}<div class="cassinooo-slot-symbol"><b>{{glyph}}</b><small>{{label}}</small></div>{{/each}}
+                </div>
+              {{else}}
+                <div class="cassinooo-pachinko-final-cells">
+                  {{#each cells}}<div class="cassinooo-slot-symbol"><b>{{glyph}}</b><small>{{label}}</small></div>{{/each}}
+                </div>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      </section>
+
+      <div class="cassinooo-pachinko-stop-row">
+        {{#each reels}}
+          <button type="button" data-pachinko-stop="{{index}}" {{#unless canStop}}disabled{{/unless}}><span>PARAR {{number}}</span></button>
+        {{/each}}
+      </div>
+
+      <aside class="cassinooo-pachinko-paytable">
+        <h3>PRÊMIOS</h3>
+        {{#each payouts}}<div><span class="symbol">{{glyph}}</span><span>3× {{label}}</span><strong>{{multiplier}}×</strong></div>{{/each}}
+        <div><span class="symbol">♦</span><span>2 cerejas/gemas</span><strong>2×</strong></div>
+        <div><span class="symbol">♦</span><span>1 cereja/gema</span><strong>1×</strong></div>
+      </aside>
+
+      <section class="cassinooo-pachinko-betpanel">
+        <h3>LINHAS</h3>
+        <div class="cassinooo-pachinko-line-options">
+          {{#each lines}}
+            <label><input type="checkbox" value="{{id}}" data-pachinko-line {{#if selected}}checked{{/if}} {{#unless ../canSpin}}disabled{{/unless}}> {{label}}</label>
+          {{/each}}
+        </div>
+        <label class="cassinooo-pachinko-bet-input">Aposta por linha
+          <input type="number" min="1" step="1" value="{{betPerLine}}" data-pachinko-bet {{#unless canSpin}}disabled{{/unless}}>
+        </label>
+        <div class="cassinooo-pachinko-total">Custo do giro: <strong data-pachinko-total-bet>0</strong> créditos</div>
+      </section>
+
+      <section class="cassinooo-pachinko-credit-panel">
+        {{#if isOwner}}
+          <label>Adicionar créditos
+            <input type="number" min="1" step="1" value="1" data-pachinko-deposit-amount {{#unless canDeposit}}disabled{{/unless}}>
+          </label>
+          <button type="button" data-pachinko-deposit {{#unless canDeposit}}disabled{{/unless}}><i class="fa-solid fa-coins"></i> Inserir PO</button>
+          <button type="button" data-pachinko-withdraw {{#unless canWithdraw}}disabled{{/unless}}><i class="fa-solid fa-sack-dollar"></i> Sacar tudo</button>
+        {{else}}
+          <div class="cassinooo-pachinko-owner-note">
+            {{#if locked}}<i class="fa-solid fa-lock"></i> Máquina travada{{else}}<i class="fa-solid fa-user"></i> Reservada para {{ownerName}}{{/if}}
+          </div>
+        {{/if}}
+      </section>
+
+      <button type="button" class="cassinooo-pachinko-lever" data-pachinko-lever {{#unless canSpin}}disabled{{/unless}}>
+        <span class="lever-ball"></span><span class="lever-stick"></span><span class="lever-base"></span><em>PUXAR</em>
+      </button>
+
+      {{#if showLastResult}}
+        <section class="cassinooo-pachinko-last-result {{#if lastWin}}win{{/if}}">
+          <strong>{{#if lastWin}}GANHOU {{lastWin}} CRÉDITOS{{else}}SEM PRÊMIO{{/if}}</strong>
+          {{#if hasLineWins}}
+            {{#each lineWins}}<small>{{label}} · {{multiplierText}} = {{payoutText}}</small>{{/each}}
+          {{/if}}
+        </section>
+      {{/if}}
+    </div>
+  </div>
+
+  <footer class="cassinooo-table-footer">1 crédito = 1 PO. O Mestre só trava/destrava máquinas. O jogador controla créditos, alavanca e os três botões de parada.</footer>
+</section>
