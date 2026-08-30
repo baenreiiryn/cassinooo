@@ -6,12 +6,14 @@ import { handleRouletteSocket, recoverRouletteSpin, registerRouletteSettings } f
 import { handleBeholdemSocket, registerBeholdemSettings } from "./beholdem.js";
 import { handleDragonDiceSocket, registerDragonDiceSettings } from "./dragon-dice.js";
 import { handleLiarsDiceSocket, registerLiarsDiceSettings } from "./liars-dice.js";
+import { handlePachinkoSocket, registerPachinkoSettings } from "./pachinko.js";
 
 let blackjackTable = null;
 let rouletteTable = null;
 let beholdemTable = null;
 let dragonDiceTable = null;
 let liarsDiceTable = null;
+let pachinkoTable = null;
 
 async function getBlackjackTable() {
   if (!blackjackTable) {
@@ -54,6 +56,14 @@ async function getLiarsDiceTable() {
   return liarsDiceTable;
 }
 
+async function getPachinkoTable() {
+  if (!pachinkoTable) {
+    const { PachinkoTable } = await import("../applications/pachinko-table.js");
+    pachinkoTable = new PachinkoTable();
+  }
+  return pachinkoTable;
+}
+
 function reportOpenError(gameName, err) {
   console.error(`cassinooo | Falha ao abrir ${gameName}`, err);
   ui.notifications?.error(`Cassinooo: não foi possível abrir ${gameName}. Veja o console para detalhes.`);
@@ -75,13 +85,17 @@ function openDragonDice() {
 function openLiarsDice() {
   void getLiarsDiceTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Liar's Dice", err));
 }
+function openPachinko() {
+  void getPachinkoTable().then((app) => app.render({ force: true })).catch((err) => reportOpenError("Pachinko", err));
+}
 
 async function refreshOpenBlackjack() { if (blackjackTable?.rendered) await blackjackTable.render({ force: true }); }
 async function refreshOpenRoulette() { if (rouletteTable?.rendered) await rouletteTable.render({ force: true }); }
 async function refreshOpenBeholdem() { if (beholdemTable?.rendered) await beholdemTable.render({ force: true }); }
 async function refreshOpenDragonDice() { if (dragonDiceTable?.rendered) await dragonDiceTable.render({ force: true }); }
 async function refreshOpenLiarsDice() { if (liarsDiceTable?.rendered) await liarsDiceTable.render({ force: true }); }
-async function refreshOpenCasinoTables() { await Promise.all([refreshOpenBlackjack(), refreshOpenRoulette(), refreshOpenBeholdem(), refreshOpenDragonDice(), refreshOpenLiarsDice()]); }
+async function refreshOpenPachinko() { if (pachinkoTable?.rendered) await pachinkoTable.render({ force: true }); }
+async function refreshOpenCasinoTables() { await Promise.all([refreshOpenBlackjack(), refreshOpenRoulette(), refreshOpenBeholdem(), refreshOpenDragonDice(), refreshOpenLiarsDice(), refreshOpenPachinko()]); }
 
 function makeLauncherButton({ id, icon, label, onClick }) {
   const button = document.createElement("button");
@@ -110,7 +124,8 @@ function injectJournalButtons(app, element) {
     makeLauncherButton({ id: "cassinooo-open-roulette", icon: "fa-solid fa-circle-notch", label: "Roleta", onClick: openRoulette }),
     makeLauncherButton({ id: "cassinooo-open-beholdem", icon: "fa-solid fa-spade", label: "Beholdem", onClick: openBeholdem }),
     makeLauncherButton({ id: "cassinooo-open-dragon-dice", icon: "fa-solid fa-dice-d20", label: "Dados do Dragão", onClick: openDragonDice }),
-    makeLauncherButton({ id: "cassinooo-open-liars-dice", icon: "fa-solid fa-dice", label: "Liar's Dice", onClick: openLiarsDice })
+    makeLauncherButton({ id: "cassinooo-open-liars-dice", icon: "fa-solid fa-dice", label: "Liar's Dice", onClick: openLiarsDice }),
+    makeLauncherButton({ id: "cassinooo-open-pachinko", icon: "fa-solid fa-coins", label: "Pachinko", onClick: openPachinko })
   );
   const footer = root.querySelector("footer.directory-footer, .directory-footer");
   if (footer) footer.append(wrapper); else root.append(wrapper);
@@ -122,6 +137,7 @@ function setupApplicationScale(app) {
   if (name === "RouletteTable") setupScaledBoard(app, { boardSelector: ".cassinooo-roulette-felt", designWidth: 1100, designHeight: 690 });
   if (name === "DragonDiceTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-dragon-viewport", boardSelector: ".cassinooo-dragon-felt", designWidth: 1100, designHeight: 700 });
   if (name === "LiarsDiceTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-liars-viewport", boardSelector: ".cassinooo-liars-felt", designWidth: 1100, designHeight: 700 });
+  if (name === "PachinkoTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-pachinko-viewport", boardSelector: ".cassinooo-pachinko-board", designWidth: 1000, designHeight: 700 });
 }
 
 Hooks.once("init", () => {
@@ -133,6 +149,7 @@ Hooks.once("init", () => {
   registerBeholdemSettings();
   registerDragonDiceSettings();
   registerLiarsDiceSettings();
+  registerPachinkoSettings();
 });
 
 Hooks.once("ready", () => {
@@ -143,11 +160,13 @@ Hooks.once("ready", () => {
     await handleBeholdemSocket(message);
     await handleDragonDiceSocket(message);
     await handleLiarsDiceSocket(message);
+    await handlePachinkoSocket(message);
     if (["seats-updated", "blackjack-updated"].includes(message?.type)) await refreshOpenBlackjack();
     if (["roulette-seats-updated", "roulette-updated"].includes(message?.type)) await refreshOpenRoulette();
     if (["beholdem-seats-updated", "beholdem-updated"].includes(message?.type)) await refreshOpenBeholdem();
     if (["dragon-dice-seats-updated", "dragon-dice-updated"].includes(message?.type)) await refreshOpenDragonDice();
     if (["liars-dice-seats-updated", "liars-dice-updated"].includes(message?.type)) await refreshOpenLiarsDice();
+    if (message?.type === "pachinko-updated") await refreshOpenPachinko();
     if (message?.type === "backgrounds-updated") await refreshOpenCasinoTables();
   });
 });
@@ -157,6 +176,7 @@ Hooks.on("cassinoooRouletteUpdated", refreshOpenRoulette);
 Hooks.on("cassinoooBeholdemUpdated", refreshOpenBeholdem);
 Hooks.on("cassinoooDragonDiceUpdated", refreshOpenDragonDice);
 Hooks.on("cassinoooLiarsDiceUpdated", refreshOpenLiarsDice);
+Hooks.on("cassinoooPachinkoUpdated", refreshOpenPachinko);
 Hooks.on("cassinoooBackgroundsUpdated", refreshOpenCasinoTables);
 Hooks.on("renderJournalDirectory", injectJournalButtons);
 Hooks.on("renderApplicationV2", (app, element) => {
