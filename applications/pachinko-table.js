@@ -1,11 +1,13 @@
 import { getTableBackground } from "../scripts/backgrounds.js";
 import { setupScaledBoard } from "../scripts/scaled-board.js";
+import { CASINO_CURRENCY_OPTIONS, casinoCurrencyMeta } from "../scripts/casino-wallet.js";
 import {
   PACHINKO_LINES,
   PACHINKO_PAYOUTS,
   getPachinkoState,
   getPachinkoTheme,
   gmLockPachinkoMachine,
+  gmSetPachinkoCreditCurrency,
   gmUnlockPachinkoMachine,
   requestPachinkoDeposit,
   requestPachinkoSpin,
@@ -25,9 +27,10 @@ const THEMES={
 function themeData(id){ return THEMES[id]??THEMES.medieval; }
 function symbolView(theme,id){ const [glyph,label]=theme.symbols[id]??["?",id]; return {id,glyph,label}; }
 function machineStatus(machine){
-  if(!machine.userId) return machine.locked?"Travada · sem jogador":"Livre";
+  const currency=casinoCurrencyMeta(machine.creditCurrency);
+  if(!machine.userId) return `${machine.locked?"Travada · sem jogador":"Livre"} · 1 crédito = 1 ${currency.label}`;
   const name=game.users.get(machine.userId)?.name??"Jogador";
-  return `${machine.locked?"Travada":"Destravada"} · ${name}`;
+  return `${machine.locked?"Travada":"Destravada"} · ${name} · 1 crédito = 1 ${currency.label}`;
 }
 
 export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
@@ -54,6 +57,7 @@ export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
     const activeLineSet=new Set(machine.activeLines??["middle"]);
     const baseSymbols=Object.keys(PACHINKO_PAYOUTS).map(id=>symbolView(theme,id));
     const stripSymbols=[...baseSymbols,...baseSymbols,...baseSymbols];
+    const currency=casinoCurrencyMeta(machine.creditCurrency);
 
     const reels=machine.reels.map((cells,reelIndex)=>({
       index:reelIndex,
@@ -74,6 +78,7 @@ export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
     }));
     const players=game.users.filter(u=>!u.isGM).map(u=>({id:u.id,name:u.name,active:u.active,selected:u.id===machine.userId}));
     const machineOptions=state.machines.map((m,i)=>({index:i,number:i+1,selected:i===index,status:machineStatus(m),locked:m.locked,userName:m.userId?game.users.get(m.userId)?.name??"Jogador":""}));
+    const currencyOptions=CASINO_CURRENCY_OPTIONS.map(entry=>({...entry,selected:entry.id===currency.id}));
 
     return foundry.utils.mergeObject(context,{
       isGM:game.user?.isGM??false,
@@ -81,6 +86,11 @@ export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
       machineNumber:index+1,
       machineOptions,
       players,
+      currencyOptions,
+      creditCurrencyId:currency.id,
+      creditCurrencyLabel:currency.label,
+      creditCurrencyName:currency.name,
+      canSetCreditCurrency:Boolean(game.user?.isGM&&machine.locked&&!spinning&&Number(machine.credits)<=0),
       themeId,
       themeLabel:theme.label,
       ownerName:owner?.name??"Nenhum jogador",
@@ -135,17 +145,29 @@ export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
     syncLines();
 
     this.element.querySelector("[data-pachinko-deposit]")?.addEventListener("click",async()=>{
+      const state=getPachinkoState();
+      const machine=state.machines[this._machineIndex];
+      const currency=casinoCurrencyMeta(machine?.creditCurrency);
       const input=this.element.querySelector("[data-pachinko-deposit-amount]");
       const amount=Math.max(0,Math.floor(Number(input?.value)||0));
-      if(amount<=0){ ui.notifications?.warn("Informe quantas PO deseja converter em créditos."); return; }
+      if(amount<=0){ ui.notifications?.warn("Informe quantos créditos deseja comprar."); return; }
       let confirmed=false;
+      const content=`<p>Comprar <strong>${amount} créditos</strong> por <strong>${amount} ${currency.label}</strong> da ficha vinculada?</p><p><small>Taxa da máquina: 1 crédito = 1 ${currency.label} (${currency.name}).</small></p>`;
       if(DialogV2?.confirm){
-        confirmed=await DialogV2.confirm({window:{title:"Confirmar créditos"},content:`<p>Converter <strong>${amount} PO</strong> da ficha vinculada em <strong>${amount} créditos</strong> na máquina ${this._machineIndex+1}?</p>`});
-      }else confirmed=window.confirm(`Converter ${amount} PO em ${amount} créditos?`);
+        confirmed=await DialogV2.confirm({window:{title:"Confirmar créditos"},content});
+      }else confirmed=window.confirm(`Comprar ${amount} créditos por ${amount} ${currency.label}?`);
       if(confirmed) requestPachinkoDeposit(this._machineIndex,amount);
     });
 
-    this.element.querySelector("[data-pachinko-withdraw]")?.addEventListener("click",()=>requestPachinkoWithdraw(this._machineIndex));
+    this.element.querySelector("[data-pachinko-withdraw]")?.addEventListener("click",async()=>{
+      const machine=getPachinkoState().machines[this._machineIndex];
+      const currency=casinoCurrencyMeta(machine?.creditCurrency);
+      const amount=Math.max(0,Math.floor(Number(machine?.credits)||0));
+      if(amount<=0) return;
+      const content=`<p>Sacar <strong>${amount} créditos</strong> como <strong>${amount} ${currency.label}</strong> para a ficha vinculada?</p>`;
+      const confirmed=DialogV2?.confirm?await DialogV2.confirm({window:{title:"Sacar créditos"},content}):window.confirm(`Sacar ${amount} créditos como ${amount} ${currency.label}?`);
+      if(confirmed) requestPachinkoWithdraw(this._machineIndex);
+    });
 
     this.element.querySelector("[data-pachinko-lever]")?.addEventListener("click",()=>{
       const bet=Math.max(0,Math.floor(Number(this.element.querySelector("[data-pachinko-bet]")?.value)||0));
@@ -157,6 +179,10 @@ export class PachinkoTable extends HandlebarsApplicationMixin(ApplicationV2){
     for(const button of this.element.querySelectorAll("button[data-pachinko-stop]")) button.addEventListener("click",()=>requestPachinkoStop(this._machineIndex,Number(button.dataset.pachinkoStop)));
 
     if(!game.user?.isGM) return;
+    this.element.querySelector("select[data-pachinko-credit-currency]")?.addEventListener("change",async event=>{
+      const ok=await gmSetPachinkoCreditCurrency(this._machineIndex,event.currentTarget.value);
+      if(!ok) await this.render({force:true});
+    });
     this.element.querySelector("[data-pachinko-unlock]")?.addEventListener("click",()=>{
       const select=this.element.querySelector("select[data-pachinko-player]");
       if(!select?.value){ ui.notifications?.warn("Escolha o jogador para destravar esta máquina."); return; }
