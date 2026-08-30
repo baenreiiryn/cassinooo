@@ -21,6 +21,16 @@
     {{/each}}
   </div>
 
+  <section class="cassinooo-model-info">
+    <h3><i class="fa-solid fa-coins"></i> Tema do Pachinko</h3>
+    <p>O tema troca cores e símbolos do slot. Uma imagem de fundo personalizada continua sendo usada atrás do layout fixo da máquina.</p>
+    <label>Estilo da máquina
+      <select name="pachinkoTheme">
+        {{#each pachinkoThemes}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+      </select>
+    </label>
+  </section>
+
   <footer class="cassinooo-settings-footer">
     <p><i class="fa-solid fa-circle-info"></i> Faça upload para uma pasta permitida do User Data, como <strong>assets</strong> ou uma pasta dentro do mundo atual.</p>
     <button type="button" data-save-backgrounds><i class="fa-solid fa-floppy-disk"></i> Salvar aparência</button>
