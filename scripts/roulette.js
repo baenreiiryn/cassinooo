@@ -1,4 +1,5 @@
 import { MODULE_ID, SOCKET_NAME } from "./state.js";
+import { getCasinoWalletBalance } from "./casino-wallet.js";
 
 export const ROULETTE_STATE_SETTING = "rouletteState";
 export const ROULETTE_SEATS_SETTING = "rouletteSeats";
@@ -9,17 +10,7 @@ const EMPTY_SEATS = { 0: "", 1: "", 2: "", 3: "", 4: "", 5: "" };
 const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 let recoveryTimer = null;
 
-function emptyState() {
-  return {
-    phase: "idle",
-    result: null,
-    spinNonce: null,
-    spinStartedAt: null,
-    roundResults: [],
-    message: "Aguardando o Mestre girar a roleta."
-  };
-}
-
+function emptyState() { return { phase: "idle", result: null, spinNonce: null, spinStartedAt: null, roundResults: [], message: "Aguardando o Mestre girar a roleta." }; }
 function sleep(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
 function primaryGM() { return game.users.filter((u) => u.isGM && u.active).sort((a, b) => a.id.localeCompare(b.id))[0] ?? null; }
 function isPrimaryGM() { return Boolean(game.user?.isGM && primaryGM()?.id === game.user.id); }
@@ -80,14 +71,20 @@ async function saveState(state) {
 async function saveBets(bets) { await game.settings.set(MODULE_ID, ROULETTE_BETS_SETTING, bets); Hooks.callAll("cassinoooRouletteUpdated", getRouletteState()); game.socket.emit(SOCKET_NAME, { type: "roulette-updated" }); }
 async function applyBet(userId, type, amount) {
   if (getRouletteState().phase === "spinning" || !game.users.get(userId)) return false;
+  const safeAmount = sanitizeAmount(amount);
+  if (safeAmount > getCasinoWalletBalance(userId)) return false;
   const validTypes = new Set(getRouletteBetOptions().map((option) => option.value));
-  const bets = getRouletteBets(); bets[userId] = { type: validTypes.has(type) ? type : "", amount: sanitizeAmount(amount) }; await saveBets(bets); return true;
+  const bets = getRouletteBets();
+  bets[userId] = { type: validTypes.has(type) ? type : "", amount: safeAmount };
+  await saveBets(bets);
+  return true;
 }
 export async function requestRouletteBetChange(userId, type, amount) {
   if (!userId) return false;
   if (game.user?.isGM) return applyBet(userId, type, amount);
   if (game.user?.id !== userId) return false;
-  game.socket.emit(SOCKET_NAME, { type: "roulette-bet", userId, betType: type, amount: sanitizeAmount(amount) }); return true;
+  game.socket.emit(SOCKET_NAME, { type: "roulette-bet", userId, betType: type, amount: sanitizeAmount(amount) });
+  return true;
 }
 
 function settleRound(result) {
@@ -100,7 +97,6 @@ function settleRound(result) {
   }
   return roundResults;
 }
-
 async function settleSpinIfCurrent(nonce) {
   const state = getRouletteState();
   if (state.phase !== "spinning" || state.spinNonce !== nonce || !Number.isInteger(state.result)) return false;
@@ -111,7 +107,6 @@ async function settleSpinIfCurrent(nonce) {
   await saveState(state);
   return true;
 }
-
 export async function recoverRouletteSpin() {
   if (!isPrimaryGM()) return false;
   if (recoveryTimer) { clearTimeout(recoveryTimer); recoveryTimer = null; }
@@ -124,15 +119,17 @@ export async function recoverRouletteSpin() {
   recoveryTimer = window.setTimeout(() => { recoveryTimer = null; void settleSpinIfCurrent(state.spinNonce); }, remaining);
   return true;
 }
-
 export async function spinRoulette() {
   if (!game.user?.isGM || getRouletteState().phase === "spinning") return false;
+  const bets = getRouletteBets();
+  for (const userId of getRouletteSeats().filter(Boolean)) {
+    const amount = sanitizeAmount(bets[userId]?.amount);
+    const balance = getCasinoWalletBalance(userId);
+    if (amount > balance) { ui.notifications?.warn(`${game.users.get(userId)?.name ?? "Jogador"} apostou ${amount} fichas, mas possui apenas ${balance}.`); return false; }
+  }
   const state = { phase: "spinning", result: Math.floor(Math.random() * 37), spinNonce: `${Date.now()}-${Math.random()}`, spinStartedAt: Date.now(), roundResults: [], message: "A roleta está girando..." };
   await saveState(state);
-  if (isPrimaryGM()) {
-    await sleep(ROULETTE_SPIN_DURATION);
-    await settleSpinIfCurrent(state.spinNonce);
-  }
+  if (isPrimaryGM()) { await sleep(ROULETTE_SPIN_DURATION); await settleSpinIfCurrent(state.spinNonce); }
   return true;
 }
 export async function resetRoulette() {
