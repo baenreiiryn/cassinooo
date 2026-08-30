@@ -1,15 +1,20 @@
 import { MODULE_ID, SOCKET_NAME } from "../scripts/state.js";
 import { BACKGROUND_SETTINGS, getTableBackground } from "../scripts/backgrounds.js";
 import { PACHINKO_THEME_SETTING, getPachinkoTheme } from "../scripts/pachinko.js";
+import { CASINO_THEME_OPTIONS, TABLE_THEME_SETTINGS, getTableTheme, normalizeCasinoTheme } from "../scripts/casino-themes.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const FilePicker = foundry.applications.apps.FilePicker;
+
+function themeOptions(current) {
+  return CASINO_THEME_OPTIONS.map((theme) => ({ ...theme, selected: theme.id === current }));
+}
 
 export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "cassinooo-settings",
     classes: ["cassinooo", "cassinooo-settings"],
-    position: { width: 760, height: 760 },
+    position: { width: 760, height: 820 },
     window: { title: "Cassinooo — Configurações", icon: "fa-solid fa-gears" }
   };
 
@@ -17,23 +22,23 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const currentTheme=getPachinkoTheme();
-    return foundry.utils.mergeObject(context, {
-      games: [
-        { id: "blackjack", label: "Blackjack", icon: "fa-solid fa-club", value: getTableBackground("blackjack") },
-        { id: "roulette", label: "Roleta", icon: "fa-solid fa-circle-notch", value: getTableBackground("roulette") },
-        { id: "beholdem", label: "Beholdem", icon: "fa-solid fa-spade", value: getTableBackground("beholdem") },
-        { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20", value: getTableBackground("dragonDice") },
-        { id: "liarsDice", label: "Liar's Dice", icon: "fa-solid fa-dice", value: getTableBackground("liarsDice") },
-        { id: "pachinko", label: "Pachinko", icon: "fa-solid fa-coins", value: getTableBackground("pachinko") }
-      ],
-      pachinkoThemes:[
-        {id:"medieval",label:"Medieval",selected:currentTheme==="medieval"},
-        {id:"cosmic",label:"Horror Cósmico",selected:currentTheme==="cosmic"},
-        {id:"infernal",label:"Infernal",selected:currentTheme==="infernal"},
-        {id:"tavern",label:"Taverna",selected:currentTheme==="tavern"}
-      ]
+    const games = [
+      { id: "blackjack", label: "Blackjack", icon: "fa-solid fa-club" },
+      { id: "roulette", label: "Roleta", icon: "fa-solid fa-circle-notch" },
+      { id: "beholdem", label: "Beholdem", icon: "fa-solid fa-spade" },
+      { id: "dragonDice", label: "Dados do Dragão", icon: "fa-solid fa-dice-d20" },
+      { id: "liarsDice", label: "Liar's Dice", icon: "fa-solid fa-dice" },
+      { id: "pachinko", label: "Pachinko", icon: "fa-solid fa-coins" }
+    ].map((gameInfo) => {
+      const currentTheme = gameInfo.id === "pachinko" ? getPachinkoTheme() : getTableTheme(gameInfo.id);
+      return {
+        ...gameInfo,
+        value: getTableBackground(gameInfo.id),
+        themeOptions: themeOptions(currentTheme)
+      };
     });
+
+    return foundry.utils.mergeObject(context, { games });
   }
 
   _onRender(context, options) {
@@ -63,8 +68,14 @@ export class CasinoSettings extends HandlebarsApplicationMixin(ApplicationV2) {
       const input = this.element.querySelector(`input[name="${gameId}"]`);
       await game.settings.set(MODULE_ID, settingKey, String(input?.value ?? "").trim());
     }
-    const theme=this.element.querySelector("select[name='pachinkoTheme']")?.value??"medieval";
-    await game.settings.set(MODULE_ID,PACHINKO_THEME_SETTING,theme);
+
+    for (const [gameId, settingKey] of Object.entries(TABLE_THEME_SETTINGS)) {
+      const theme = normalizeCasinoTheme(this.element.querySelector(`select[name="theme-${gameId}"]`)?.value);
+      await game.settings.set(MODULE_ID, settingKey, theme);
+    }
+    const pachinkoTheme = normalizeCasinoTheme(this.element.querySelector("select[name='theme-pachinko']")?.value);
+    await game.settings.set(MODULE_ID, PACHINKO_THEME_SETTING, pachinkoTheme);
+
     game.socket.emit(SOCKET_NAME, { type: "backgrounds-updated" });
     Hooks.callAll("cassinoooBackgroundsUpdated");
     ui.notifications?.info("Aparência das mesas do Cassinooo salva.");
