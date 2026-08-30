@@ -1,5 +1,6 @@
 import { CasinoSettings } from "../applications/casino-settings.js";
 import { BACKGROUND_SETTINGS } from "./backgrounds.js";
+import { registerCasinoThemeSettings } from "./casino-themes.js";
 import { MODULE_ID } from "./state.js";
 
 export function registerModuleSettings() {
@@ -13,11 +14,12 @@ export function registerModuleSettings() {
       default: ""
     });
   }
+  registerCasinoThemeSettings();
 
   game.settings.registerMenu(MODULE_ID, "tableBackgrounds", {
     name: "Aparência das mesas",
     label: "Configurar aparência",
-    hint: "Escolha os fundos das mesas do Cassinooo.",
+    hint: "Escolha temas e fundos das mesas do Cassinooo.",
     icon: "fa-solid fa-images",
     type: CasinoSettings,
     restricted: true
