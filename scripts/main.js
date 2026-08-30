@@ -161,6 +161,17 @@ function setupApplicationScale(app) {
   if (name === "PachinkoTable") setupScaledBoard(app, { viewportSelector: ".cassinooo-pachinko-viewport", boardSelector: ".cassinooo-pachinko-board", designWidth: 1000, designHeight: 700 });
 }
 
+function normalizeCasinoChipLabels(app) {
+  const supported = new Set(["BlackjackTable", "RouletteTable", "BeholdemTable", "DragonDiceTable", "LiarsDiceTable"]);
+  if (!supported.has(app?.constructor?.name) || !(app?.element instanceof HTMLElement)) return;
+  const walker = document.createTreeWalker(app.element, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    if (typeof node.nodeValue === "string" && node.nodeValue.includes("PO")) node.nodeValue = node.nodeValue.replace(/\bPO\b/g, "fichas");
+  }
+}
+
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Inicializando Cassinooo`);
   registerSettings();
@@ -176,7 +187,6 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", async () => {
   void recoverRouletteSpin();
-
   const initialViews = {
     blackjack: blackjackWalletView(),
     roulette: rouletteWalletView(),
@@ -217,5 +227,6 @@ Hooks.on("renderApplicationV2", (app, element) => {
   if (app?.constructor?.name === "JournalDirectory") injectJournalButtons(app, element);
   setupApplicationScale(app);
   applyCasinoThemeClass(app);
+  normalizeCasinoChipLabels(app);
   void attachCasinoWalletControls(app);
 });
