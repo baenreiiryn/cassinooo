@@ -1,8 +1,8 @@
 {
   "id": "cassinooo",
   "title": "Cassinooo",
-  "description": "Cassino compartilhado para Foundry VTT com Blackjack, Roleta, Beholdem, Dados do Dragão, Liar's Dice e Pachinko em tempo real, com carteiras persistentes, câmbio controlado pelo Mestre e temas 2.5D.",
-  "version": "0.18.1",
+  "description": "Cassino compartilhado para Foundry VTT com Blackjack, Roleta, Beholdem, Dados do Dragão, Liar's Dice e Pachinko em tempo real, com carteiras persistentes, câmbio automático controlado pelo Mestre e temas 2.5D.",
+  "version": "0.18.2",
   "compatibility": {
     "minimum": "13",
     "verified": "13.348",
@@ -47,7 +47,8 @@
     "styles/cassinooo-v166.css",
     "styles/cassinooo-v170.css",
     "styles/cassinooo-v180.css",
-    "styles/cassinooo-v181.css"
+    "styles/cassinooo-v181.css",
+    "styles/cassinooo-v182.css"
   ],
   "socket": true
 }
