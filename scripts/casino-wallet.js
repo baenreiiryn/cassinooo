@@ -14,6 +14,8 @@ const CURRENCY_PATHS = {
   sp: ["system.currency.sp", "system.currency.silver", "system.silver", "system.resources.silver.value", "system.resources.currency.silver"],
   gp: ["system.currency.gp", "system.currency.gold", "system.gold", "system.resources.gold.value", "system.resources.currency.gold"]
 };
+const CURRENCY_VALUE = { cp: 1, sp: 10, gp: 100 };
+const CURRENCY_ORDER = ["cp", "sp", "gp"];
 
 function emptyWalletState() {
   return {
@@ -112,8 +114,8 @@ function currencyInfo(actor, currencyId) {
   const id = normalizeCasinoCurrency(currencyId);
   for (const basePath of CURRENCY_PATHS[id] ?? []) {
     const raw = foundry.utils.getProperty(actor, basePath);
-    if (Number.isFinite(Number(raw))) return { path: basePath, value: Number(raw), id };
-    if (raw && Number.isFinite(Number(raw.value))) return { path: `${basePath}.value`, value: Number(raw.value), id };
+    if (Number.isFinite(Number(raw))) return { path: basePath, value: Math.max(0, Math.floor(Number(raw))), id };
+    if (raw && Number.isFinite(Number(raw.value))) return { path: `${basePath}.value`, value: Math.max(0, Math.floor(Number(raw.value))), id };
   }
   return null;
 }
@@ -123,16 +125,123 @@ function linkedActor(userId) {
   return actor?.update ? actor : null;
 }
 
+function readCurrencyBundle(actor) {
+  const info = Object.fromEntries(CURRENCY_ORDER.map((id) => [id, currencyInfo(actor, id)]));
+  const missing = CURRENCY_ORDER.filter((id) => !info[id]);
+  if (missing.length) {
+    const labels = missing.map((id) => casinoCurrencyMeta(id).label).join(", ");
+    throw new Error(`A conversão automática precisa dos campos de PC, PP e PO na ficha. Não encontrei: ${labels}.`);
+  }
+  const values = Object.fromEntries(CURRENCY_ORDER.map((id) => [id, info[id].value]));
+  return { info, values };
+}
+
+function totalCopper(values) {
+  return CURRENCY_ORDER.reduce((sum, id) => sum + (Number(values[id]) || 0) * CURRENCY_VALUE[id], 0);
+}
+
+function holdingsText(values) {
+  return `${values.gp} PO, ${values.sp} PP e ${values.cp} PC`;
+}
+
+function distributeChange(values, copper, targetId) {
+  let remaining = Math.max(0, Math.floor(copper));
+  const targetValue = CURRENCY_VALUE[targetId];
+  const ids = [targetId, ...CURRENCY_ORDER.filter((id) => CURRENCY_VALUE[id] < targetValue).sort((a, b) => CURRENCY_VALUE[b] - CURRENCY_VALUE[a])];
+  for (const id of ids) {
+    const factor = CURRENCY_VALUE[id];
+    const count = Math.floor(remaining / factor);
+    if (count > 0) values[id] += count;
+    remaining -= count * factor;
+  }
+  if (remaining > 0) values.cp += remaining;
+}
+
+function debitCurrency(values, currencyId, amount) {
+  const id = normalizeCasinoCurrency(currencyId);
+  const factor = CURRENCY_VALUE[id];
+  let cost = sanitizeAmount(amount) * factor;
+  const originalTotal = totalCopper(values);
+  if (cost > originalTotal) {
+    const meta = casinoCurrencyMeta(id);
+    throw new Error(`Moeda insuficiente. A cobrança equivale a ${amount} ${meta.label}; a ficha possui ${holdingsText(values)}.`);
+  }
+
+  const next = { ...values };
+  const targetUse = Math.min(next[id], Math.floor(cost / factor));
+  next[id] -= targetUse;
+  cost -= targetUse * factor;
+
+  const lower = CURRENCY_ORDER.filter((coin) => CURRENCY_VALUE[coin] < factor).sort((a, b) => CURRENCY_VALUE[b] - CURRENCY_VALUE[a]);
+  for (const coin of lower) {
+    if (cost <= 0) break;
+    const coinValue = CURRENCY_VALUE[coin];
+    const use = Math.min(next[coin], Math.floor(cost / coinValue));
+    next[coin] -= use;
+    cost -= use * coinValue;
+  }
+
+  const higher = CURRENCY_ORDER.filter((coin) => CURRENCY_VALUE[coin] > factor).sort((a, b) => CURRENCY_VALUE[a] - CURRENCY_VALUE[b]);
+  for (const coin of higher) {
+    if (cost <= 0) break;
+    const coinValue = CURRENCY_VALUE[coin];
+    const needed = Math.ceil(cost / coinValue);
+    const use = Math.min(next[coin], needed);
+    if (!use) continue;
+    next[coin] -= use;
+    const converted = use * coinValue;
+    if (converted >= cost) {
+      const change = converted - cost;
+      cost = 0;
+      distributeChange(next, change, id);
+    } else cost -= converted;
+  }
+
+  if (cost > 0) throw new Error("Não foi possível concluir a conversão automática das moedas.");
+  return next;
+}
+
+function compatibilityRollback(actor, info, previousValues, changedIds) {
+  if (changedIds.length === 1) {
+    const id = changedIds[0];
+    return { path: info[id].path, previous: previousValues[id] };
+  }
+  const paths = changedIds.map((id) => info[id].path);
+  if (paths.every((path) => path.startsWith("system.currency."))) {
+    return { path: "system.currency", previous: foundry.utils.deepClone(foundry.utils.getProperty(actor, "system.currency")) };
+  }
+  const id = changedIds[0];
+  return { path: info[id].path, previous: previousValues[id] };
+}
+
 export async function changeCasinoCurrency(userId, currencyId, delta) {
   const actor = linkedActor(userId);
   const meta = casinoCurrencyMeta(currencyId);
   if (!actor) throw new Error("Vincule um personagem ao usuário antes de converter moeda do cassino.");
-  const currency = currencyInfo(actor, meta.id);
-  if (!currency) throw new Error(`Não encontrei um campo de ${meta.name} (${meta.label}) compatível na ficha vinculada.`);
-  const next = roundMoney(currency.value + Number(delta || 0));
-  if (next < 0) throw new Error(`O personagem possui apenas ${currency.value} ${meta.label}.`);
-  await actor.update({ [currency.path]: next });
-  return { actor, path: currency.path, previous: currency.value, next, currency: meta.id };
+  const { info, values } = readCurrencyBundle(actor);
+  const amount = sanitizeAmount(Math.abs(Number(delta) || 0));
+  if (amount <= 0) return { actor, previousValues: {}, nextValues: values, currency: meta.id };
+
+  const nextValues = Number(delta) < 0
+    ? debitCurrency(values, meta.id, amount)
+    : { ...values, [meta.id]: values[meta.id] + amount };
+
+  const changedIds = CURRENCY_ORDER.filter((id) => nextValues[id] !== values[id]);
+  const update = {};
+  const previousValues = {};
+  for (const id of changedIds) {
+    update[info[id].path] = nextValues[id];
+    previousValues[info[id].path] = values[id];
+  }
+  const compat = compatibilityRollback(actor, info, values, changedIds);
+  if (changedIds.length) await actor.update(update);
+  return { actor, ...compat, previousValues, nextValues, currency: meta.id };
+}
+
+export async function rollbackCasinoCurrencyChange(change) {
+  if (!change?.actor || !change?.previousValues || !Object.keys(change.previousValues).length) return false;
+  await change.actor.update(change.previousValues);
+  return true;
 }
 
 // Mantido para compatibilidade com código antigo que esperava ouro.
@@ -154,11 +263,11 @@ export async function gmAddCasinoChips(userId, amount, currencyId) {
     const state = getCasinoWalletState();
     state.balances[userId] = roundMoney((state.balances[userId] ?? 0) + value);
     await saveWalletState(state);
-    notifyUser(userId, `O Mestre adicionou ${value} fichas por ${value} ${meta.label}. Saldo: ${state.balances[userId]} fichas.`);
+    notifyUser(userId, `O Mestre adicionou ${value} fichas por valor equivalente a ${value} ${meta.label}. Saldo: ${state.balances[userId]} fichas.`);
     return true;
   } catch (err) {
     console.error(`${MODULE_ID} | Falha ao adicionar fichas pelo caixa`, err);
-    if (currencyChange) { try { await currencyChange.actor.update({ [currencyChange.path]: currencyChange.previous }); } catch (_) {} }
+    if (currencyChange) { try { await rollbackCasinoCurrencyChange(currencyChange); } catch (_) {} }
     ui.notifications?.error(err?.message ?? "Não foi possível adicionar as fichas.");
     notifyUser(userId, err?.message ?? "Não foi possível adicionar as fichas.", "error");
     return false;
@@ -189,7 +298,7 @@ export async function gmWithdrawCasinoChips(userId, amount, currencyId) {
     return true;
   } catch (err) {
     console.error(`${MODULE_ID} | Falha ao sacar fichas pelo caixa`, err);
-    if (currencyChange) { try { await currencyChange.actor.update({ [currencyChange.path]: currencyChange.previous }); } catch (_) {} }
+    if (currencyChange) { try { await rollbackCasinoCurrencyChange(currencyChange); } catch (_) {} }
     ui.notifications?.error(err?.message ?? "Não foi possível sacar as fichas.");
     notifyUser(userId, err?.message ?? "Não foi possível sacar as fichas.", "error");
     return false;
@@ -268,17 +377,21 @@ export async function attachCasinoWalletControls(app) {
 
   const players = game.users.filter((user) => !user.isGM);
   bar.innerHTML = `
-    <span class="cassinooo-wallet-label"><i class="fa-solid fa-cash-register"></i> Caixa</span>
-    <select data-cassinooo-cashier-player aria-label="Jogador">
-      <option value="">— Jogador —</option>
-      ${players.map((user) => `<option value="${user.id}">${user.name} · ${getCasinoWalletBalance(user.id)} fichas</option>`).join("")}
-    </select>
-    <input type="number" min="1" step="1" value="10" data-cassinooo-cashier-amount aria-label="Quantidade de fichas">
-    <select data-cassinooo-cashier-currency aria-label="Moeda">
-      ${CASINO_CURRENCY_OPTIONS.map((entry) => `<option value="${entry.id}">${entry.label} · ${entry.name}</option>`).join("")}
-    </select>
-    <button type="button" data-cassinooo-cashier-add><i class="fa-solid fa-plus"></i> Adicionar</button>
-    <button type="button" data-cassinooo-cashier-withdraw><i class="fa-solid fa-sack-dollar"></i> Sacar</button>`;
+    <div class="cassinooo-cashier-head">
+      <span class="cassinooo-wallet-label"><i class="fa-solid fa-cash-register"></i> Caixa</span>
+      <select data-cassinooo-cashier-player aria-label="Jogador">
+        <option value="">— Jogador —</option>
+        ${players.map((user) => `<option value="${user.id}">${user.name} · ${getCasinoWalletBalance(user.id)} fichas</option>`).join("")}
+      </select>
+    </div>
+    <div class="cassinooo-cashier-actions">
+      <input type="number" min="1" step="1" value="10" data-cassinooo-cashier-amount aria-label="Quantidade de fichas">
+      <select data-cassinooo-cashier-currency aria-label="Moeda">
+        ${CASINO_CURRENCY_OPTIONS.map((entry) => `<option value="${entry.id}">${entry.label}</option>`).join("")}
+      </select>
+      <button type="button" data-cassinooo-cashier-add title="Cobrar moeda e adicionar fichas"><i class="fa-solid fa-plus"></i> Adicionar</button>
+      <button type="button" data-cassinooo-cashier-withdraw title="Sacar fichas na moeda escolhida"><i class="fa-solid fa-sack-dollar"></i> Sacar</button>
+    </div>`;
   host.append(bar);
 
   const selected = () => {
@@ -292,8 +405,8 @@ export async function attachCasinoWalletControls(app) {
   bar.querySelector("[data-cassinooo-cashier-add]")?.addEventListener("click", async () => {
     const data = selected();
     if (!data.userId || data.amount <= 0) { ui.notifications?.warn("Escolha o jogador e informe a quantidade de fichas."); return; }
-    const content = `<p>Adicionar <strong>${data.amount} fichas</strong> para <strong>${data.user?.name ?? "Jogador"}</strong> cobrando <strong>${data.amount} ${data.meta.label}</strong> da ficha vinculada?</p>`;
-    const confirmed = DialogV2?.confirm ? await DialogV2.confirm({ window: { title: "Adicionar fichas" }, content }) : window.confirm(`Cobrar ${data.amount} ${data.meta.label} e adicionar ${data.amount} fichas?`);
+    const content = `<p>Adicionar <strong>${data.amount} fichas</strong> para <strong>${data.user?.name ?? "Jogador"}</strong> cobrando valor equivalente a <strong>${data.amount} ${data.meta.label}</strong>? Se necessário, PC/PP/PO serão convertidas automaticamente.</p>`;
+    const confirmed = DialogV2?.confirm ? await DialogV2.confirm({ window: { title: "Adicionar fichas" }, content }) : window.confirm(`Cobrar o equivalente a ${data.amount} ${data.meta.label} e adicionar ${data.amount} fichas?`);
     if (confirmed) await gmAddCasinoChips(data.userId, data.amount, data.currencyId);
   });
 
